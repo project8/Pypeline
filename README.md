@@ -9,5 +9,6 @@ I hope to maintain compatibility with both python 2.7 and python 3.2 or greater 
 
 Dependencies
 ------------
-couchdb-python: 1) for python 2.x I'm using: http://code.google.com/p/couchdb-python/
-                2) for python 3.x I'm using the port: https://github.com/lilydjwg/couchdb-python3
+couchdb-python:
+    1) for python 2.x I'm using: http://code.google.com/p/couchdb-python/
+    2) for python 3.x I'm using the port: https://github.com/lilydjwg/couchdb-python3
