@@ -24,21 +24,6 @@ class Pypeline:
             raise UserWarning('The dripline command database was not found!')
         self.CheckHeartbeat()
 
-    def CheckHeartbeat(self):
-        '''
-            Checks dripline's heartbeat to be sure it is running.
-        '''
-        heartbeat_doc = {
-            'type':'command',
-            'command':{
-                "do":"get",
-                "channel":"heartbeat",
-            },
-        }
-        self._cmd_database.save(heartbeat_doc)
-        if not self._cmd_database[heartbeat_doc['_id']]['result'] == "thump":
-            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
-
     def Get(self, channel):
         '''
             Request and return the current value of some channel.
@@ -74,3 +59,12 @@ class Pypeline:
                 "value",value,
             },
         }
+
+    def CheckHeartbeat(self):
+        '''
+            Checks dripline's heartbeat to be sure it is running.
+        '''
+        pulse = self.Get("heartbeat")
+        if not pulse:
+            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
+
