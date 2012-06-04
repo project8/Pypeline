@@ -9,7 +9,6 @@ class Pypeline:
         Class to interface with dripline. Should allow for natural scripting/automation of run tasks.
     '''
 
-
     def __init__(self, dripline_url="http://127.0.0.1:5984"):
         '''
             Initializes an instance of pypeline by connecting to the server.
@@ -38,4 +37,40 @@ class Pypeline:
         }
         self._cmd_database.save(heartbeat_doc)
         if not self._cmd_database[heartbeat_doc['_id']]['result'] == "thump":
-            raise UserWarning('could not find dripline pulse, be sure it is running.')
+            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
+
+    def Get(self, channel):
+        '''
+            Request and return the current value of some channel.
+
+            Inputs:
+                <channel> must be an active channel in dripline.
+        '''
+        get_doc = {
+            'type':'command',
+            'command':{
+                "do":"get",
+                "channel":channel,
+            },
+        }
+        self._cmd_database.save(get_doc)
+        return self._cmd_database[get_doc['_id']]['result']
+
+    def Set(self, channel, value):
+        '''
+            Change the setting of a dripline channel
+
+            Inputs:
+                <channel> must be an active channel in dripline
+                <value> value to assign to <channel>
+
+            WARNING! I do not yet check to ensure setting of the correct type.
+        '''
+        set_doc = {
+            'type':'command',
+            'command':{
+                "do":"set"
+                "channel":channel,
+                "value",value,
+            },
+        }
