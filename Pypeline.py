@@ -54,7 +54,7 @@ class Pypeline:
         set_doc = {
             'type':'command',
             'command':{
-                "do":"set"
+                "do":"set",
                 "channel":channel,
                 "value",value,
             },
