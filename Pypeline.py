@@ -56,7 +56,7 @@ class Pypeline:
             'command':{
                 "do":"set",
                 "channel":channel,
-                "value",value,
+                "value":value,
             },
         }
 
@@ -65,6 +65,6 @@ class Pypeline:
             Checks dripline's heartbeat to be sure it is running.
         '''
         pulse = self.Get("heartbeat")
-        if not pulse:
+        if not pulse == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
-
+        return pulse
