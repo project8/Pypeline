@@ -8,10 +8,17 @@ using namespace boost::python;
 
 // Functions will go here
 void make_spectrum(const char* filename) {
+    cout << "name of file is: " << filename << "!\n";
 }
 
 BOOST_PYTHON_MODULE(PowerSpectrum)
 // Here the methods/functions are added to the module (must be defined above)
+/*from the docs the def overloads are:
+    def("name", function_ptr);
+    def("name", function_ptr, call_policies);
+    def("name", function_ptr, "documentation string");
+    def("name", function_ptr, call_policies, "documentation string");
+    */
 {
     def("make_spectrum", make_spectrum);
 }

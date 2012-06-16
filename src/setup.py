@@ -8,5 +8,5 @@ setup(name="PyplineExtend",
     ext_modules=[
         Extension("PowerSpectrum", ["PowerSpectrumModule.cpp"],
             libraries = ["boost_python-mt"],
-            library_dirs = filter(None, environdict['LD_LIBRARY_PATH'].split(':')))
+            library_dirs = filter(None, environ['LD_LIBRARY_PATH'].split(':')))
     ])
