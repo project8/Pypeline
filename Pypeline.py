@@ -88,7 +88,7 @@ class Pypeline:
             new_change = self._cmd_database.changes(since=last_sequence)
             if new_change['last_seq'] > last_sequence:
                 for a_change in new_change['results']:
-                    if (a_change['id'] == get_doc['_id'] and 'result' in self._cmd_database[get_doc['_id']]):
+                    if (a_change['id'] == set_doc['_id'] and 'result' in self._cmd_database[set_doc['_id']]):
                         notfound = False
             else:
                 sleep(3)
