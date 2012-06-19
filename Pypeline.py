@@ -2,6 +2,8 @@
     File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
 '''
 
+from time import sleep
+from uuid import uuid4
 from couchdb import Server as CouchServer
 
 class Pypeline:
@@ -18,6 +20,7 @@ class Pypeline:
                 if none is provided then the default (http://127.0.0.1:5984/).
         '''
         self._server = CouchServer(dripline_url)
+        self._timeout = 15 #timeout is 15 seconds...
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
         else:
@@ -31,7 +34,9 @@ class Pypeline:
             Inputs:
                 <channel> must be an active channel in dripline.
         '''
+        last_sequence = self._cmd_database.changes()['last_seq']
         get_doc = {
+            '_id':uuid4().hex,
             'type':'command',
             'command':{
                 "do":"get",
@@ -39,6 +44,18 @@ class Pypeline:
             },
         }
         self._cmd_database.save(get_doc)
+        timer = 0
+        notfound = True
+        while (timer < self._timeout and notfound):
+            new_change = self._cmd_database.changes(since=last_sequence)
+            if new_change['last_seq'] > last_sequence:
+                for a_change in new_change['results']:
+                    if (a_change['id'] == get_doc['_id'] and 'result' in self._cmd_database[get_doc['_id']]):
+                            channelvalue = self._cmd_database[get_doc['_id']]['result']
+                            notfound = False
+            else:
+                sleep(3)
+                timer = timer + 3
         return self._cmd_database[get_doc['_id']]['result']
 
     def Set(self, channel, value):
