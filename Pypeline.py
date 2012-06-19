@@ -51,17 +51,17 @@ class Pypeline:
             if new_change['last_seq'] > last_sequence:
                 for a_change in new_change['results']:
                     if (a_change['id'] == get_doc['_id'] and 'result' in self._cmd_database[get_doc['_id']]):
-                            channelvalue = self._cmd_database[get_doc['_id']]['result']
-                            notfound = False
-            else:
-                sleep(3)
-                timer = timer + 3
+                        channelvalue = self._cmd_database[get_doc['_id']]['result']
+                        notfound = False
+                        break
+            sleep(3)
+            timer = timer + 3
         if notfound:
             print("timed out waiting for result, returning None")
             return None
         return self._cmd_database[get_doc['_id']]['result']
 
-    def Set(self, channel, value):
+    def Set(self, channel, value, check=False):
         '''
             Change the setting of a dripline channel
 
@@ -71,14 +71,45 @@ class Pypeline:
 
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
+        last_sequence = self._cmd_database.changes()['last_seq']
         set_doc = {
             'type':'command',
             'command':{
                 "do":"set",
                 "channel":channel,
-                "value":value,
+                "value":str(value),
             },
         }
+        self._cmd_database.save(set_doc)
+        print('set document saved')
+        timer = 0
+        notfound = True
+        while (timer < self._timeout and notfound):
+            new_change = self._cmd_database.changes(since=last_sequence)
+            if new_change['last_seq'] > last_sequence:
+                for a_change in new_change['results']:
+                    if (a_change['id'] == set_doc['_id'] and 'result' in self._cmd_database[set_doc['_id']]):
+                        notfound = False
+                        break
+            sleep(3)
+            timer = timer + 3
+            print('timer is at '+str(timer))
+        print('while loop finished')
+        if notfound:
+            print("timed out waiting for result, returning None")
+            return None
+        elif not self._cmd_database[set_doc['_id']]['result'] == 'ok':
+            print("dripline did not respond with okay in time, returning None")
+            return None
+
+        if check:
+            newval = Get(channel, value)
+            if not newval == value:
+                print("Set() seems to have worked but the value is " + str(newval) + 
+                        " not " + str(value) + " as requested!")
+                print("returning None")
+                return None
+        return True
 
     def ChangeTimeout(self, duration):
         '''
