@@ -90,10 +90,10 @@ class Pypeline:
                 for a_change in new_change['results']:
                     if (a_change['id'] == set_doc['_id'] and 'result' in self._cmd_database[set_doc['_id']]):
                         notfound = False
-            else:
-                sleep(3)
-                timer = timer + 3
-                print('timer is at '+str(timer))
+                        break
+            sleep(3)
+            timer = timer + 3
+            print('timer is at '+str(timer))
         print('while loop finished')
         if notfound:
             print("timed out waiting for result, returning None")
