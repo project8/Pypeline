@@ -21,11 +21,31 @@ class Pypeline:
         '''
         self._server = CouchServer(dripline_url)
         self._timeout = 15 #timeout is 15 seconds...
+        self._sleep_time = 3 #number of seconds to sleep while waiting
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
         self.CheckHeartbeat()
+
+    def _wait_for_changes(self, document_id, last_seq):
+        '''
+            "Private" method which listens to the changes feed for updates to a particular document.
+            Upon seeing the document update, attempts to return the value of the 'results' field.
+
+            Inputs:
+                <document_id> is the value of the '_id' field of a document in dripline_cmd database
+        '''
+        timer = 0
+        while (timer < self.timeout):
+            new_changes = self._cmd_database.changes(since=last_seq)
+            if new_change['last_seq'] > last_sequence:
+                for a_change in new_change['results']:
+                    if (a_change['id'] == document_id and 'result' in self._cmd_database[document_id]):
+                        result = self._cmd_database[document_id]['result']
+                        break
+            sleep(self._sleep_time)
+            timer = timer + self._sleep_time
 
     def Get(self, channel):
         '''
