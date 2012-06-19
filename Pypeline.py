@@ -56,6 +56,9 @@ class Pypeline:
             else:
                 sleep(3)
                 timer = timer + 3
+        if notfound:
+            print("timed out waiting for result, returning None")
+            return None
         return self._cmd_database[get_doc['_id']]['result']
 
     def Set(self, channel, value):
@@ -76,6 +79,12 @@ class Pypeline:
                 "value":value,
             },
         }
+
+    def ChangeTimeout(self, duration):
+        '''
+            Change how long a get will look for changes before timeout.
+        '''
+        self._timeout = duration
 
     def CheckHeartbeat(self):
         '''
