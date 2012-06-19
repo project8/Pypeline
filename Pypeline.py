@@ -53,9 +53,9 @@ class Pypeline:
                     if (a_change['id'] == get_doc['_id'] and 'result' in self._cmd_database[get_doc['_id']]):
                         channelvalue = self._cmd_database[get_doc['_id']]['result']
                         notfound = False
-            else:
-                sleep(3)
-                timer = timer + 3
+                        break
+            sleep(3)
+            timer = timer + 3
         if notfound:
             print("timed out waiting for result, returning None")
             return None
