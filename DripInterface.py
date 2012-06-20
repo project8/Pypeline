@@ -22,11 +22,12 @@ class DripInterface:
         self._server = CouchServer(dripline_url)
         self._timeout = 15 #timeout is 15 seconds...
         self._sleep_time = 3 #number of seconds to sleep while waiting
+        self._wait_state = {}
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
-        self.CheckHeartbeat()
+        #self.CheckHeartbeat()
 
     def _wait_for_changes(self, document_id, last_seq, timeout=None):
         '''
@@ -41,7 +42,7 @@ class DripInterface:
                                for changes.
                                [=None] uses the value in self._timeout
         '''
-        if timeout == None:
+        if not timeout:
             timeout = self._timeout
         result = None
         timer = 0
@@ -61,16 +62,24 @@ class DripInterface:
             print('Change never found, timeout exceeded')
         return result
 
-    def Get(self, channel):
+    def Get(self, channel, wait_time=None):
         '''
             Request and return the current value of some channel.
 
             Inputs:
                 <channel> must be an active channel in dripline.
+                <wait_time> determines if and how long Get() will wait for a changes feed post
+                            [=None] (default) does not wait for changes
+                            <0 uses default time
         '''
-        last_sequence = self._cmd_database.changes()['last_seq']
+        result = {'_id':uuid4().hex,
+            'last_seq':self._cmd_database.changes()['last_seq'],
+            'result':{}
+        }
+        if wait_time < 0:
+            wait_time = self._timeout
         get_doc = {
-            '_id':uuid4().hex,
+            '_id':result['_id'],
             'type':'command',
             'command':{
                 "do":"get",
@@ -78,12 +87,14 @@ class DripInterface:
             },
         }
         self._cmd_database.save(get_doc)
-        change = self._wait_for_changes(get_doc['_id'], last_sequence)
-        if not change:
-            print("wait for changes returned None, doing the same")
-        return self._cmd_database[get_doc['_id']]['result']
+        if wait_time:
+            change = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
+            if not change:
+                print("wait for changes returned None, doing the same")
+            result['result'] = self._cmd_database[result['_id']]['result']
+        return result
 
-    def Set(self, channel, value, check=False):
+    def Set(self, channel, value, check=False, wait_time=None):
         '''
             Change the setting of a dripline channel
 
@@ -92,12 +103,20 @@ class DripInterface:
                 <value> value to assign to <channel>
                 <check> uses Get() to check the value,
                         WARNING: this doesn't deal with machine rounding
+                <wait_time> determines if and how long Set() will wait for a changes feed post
+                            [=None] (default) does not wait for changes
+                            <0 uses default time
 
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
-        last_sequence = self._cmd_database.changes()['last_seq']
+        result = {'_id':uuid4().hex,
+            'last_seq':self._cmd_database.changes()['last_seq'],
+            'result':{}
+        }
+        if wait_time < 0:
+            wait_time = self._timeout
         set_doc = {
-            '_id':uuid4().hex,
+            '_id':result['_id'],
             'type':'command',
             'command':{
                 "do":"set",
@@ -106,9 +125,8 @@ class DripInterface:
             },
         }
         self._cmd_database.save(set_doc)
-        result = self._wait_for_changes(set_doc['_id'], last_sequence)
-        
-        #if check evaluates to True, see if Get returns the requested value
+        if wait_time:
+            result = self._wait_for_changes(result['_id'], result['last_seq'], wait_time)
         if check:
             newval = Get(channel, value)
             if not newval == value:
@@ -118,7 +136,7 @@ class DripInterface:
                 result = None
         return result
 
-    def Run(self, durration=250, rate=500, filename=None)
+    def Run(self, durration=250, rate=500, filename=None, wait_time=None):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -129,10 +147,15 @@ class DripInterface:
                            [=None] results in a uuid4().hex hash prefix and .egg extension
                            NOTE: you should probably just take the default unless you have
                            a good reason not to do so.
+                <wait_time> determines if and how long Run() will wait for a changes feed post
+                            [=False], if false then returns None
         '''
+        result = {'_id':uuid4().hex,
+            'last_seq':self._cmd_database.changes()['last_seq'],
+            'result':{}
+        }
         if not filename:
             filename = uuid4().hex + '.egg'
-        last_sequence = self._cmd_database.changes()['last_seq']
         run_doc = {
             '_id':uuid4().hex,
             'type':'command',
@@ -144,10 +167,11 @@ class DripInterface:
             },
         }
         self._cmd_database.save(run_doc)
-        result = self._wait_for_changes(run_doc['_id'], last_sequence)
+        if wait_time:
+            result = self._wait_for_changes(run_doc['_id'], result['last_seq'], wait_time)
         return result
 
-    def ChangeTimeout(self, duration):
+    def SetDefaultTimeout(self, duration):
         '''
             Change how long a get will look for changes before timeout.a
         '''
@@ -157,7 +181,7 @@ class DripInterface:
         '''
             Checks dripline's heartbeat to be sure it is running.
         '''
-        pulse = self.Get("heartbeat")
+        pulse['result'] = self.Get("heartbeat", wait_time=-1)
         if not pulse == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return pulse
