@@ -6,7 +6,7 @@ from time import sleep
 from uuid import uuid4
 from couchdb import Server as CouchServer
 
-class Pypeline:
+class DripInterface:
     '''
         Class to interface with dripline. Should allow for natural scripting/automation of run tasks.
     '''
