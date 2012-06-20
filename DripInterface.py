@@ -8,7 +8,7 @@ from couchdb import Server as CouchServer
 
 class DripInterface:
     '''
-        Class to interface with dripline. Should allow for natural scripting/automation of run tasks.
+        Class to interact with Dripline via couchDB.
     '''
 
     def __init__(self, dripline_url="http://127.0.0.1:5984"):
@@ -30,11 +30,16 @@ class DripInterface:
 
     def _wait_for_changes(self, document_id, last_seq, timeout=None):
         '''
-            "Private" method which listens to the changes feed for updates to a particular document.
-            Upon seeing the document update, attempts to return the value of the 'results' field.
+            "Private" method which listens to the changes feed
+            for updates to a particular document. Upon seeing an update,
+            attempts to return the value of the 'results' field.
 
             Inputs:
-                <document_id> is the value of the '_id' field of a document in dripline_cmd database
+                <document_id> is the value of the '_id' field of the
+                              document in the dripline_cmd database
+                <timeout>=None is the time, in seconds, to wait between failed checks
+                               for changes.
+                               [=None] uses the value in self._timeout
         '''
         if timeout == None:
             timeout = self._timeout
@@ -45,7 +50,8 @@ class DripInterface:
             new_changes = self._cmd_database.changes(since=last_seq)
             if new_changes['last_seq'] > last_seq:
                 for a_change in new_changes['results']:
-                    if (a_change['id'] == document_id and 'result' in self._cmd_database[document_id]):
+                    if (a_change['id'] == document_id and
+                     'result' in self._cmd_database[document_id]):
                         result = self._cmd_database[document_id]['result']
                         notfound = False
                         break
@@ -84,11 +90,14 @@ class DripInterface:
             Inputs:
                 <channel> must be an active channel in dripline
                 <value> value to assign to <channel>
+                <check> uses Get() to check the value,
+                        WARNING: this doesn't deal with machine rounding
 
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
         last_sequence = self._cmd_database.changes()['last_seq']
         set_doc = {
+            '_id':uuid4().hex,
             'type':'command',
             'command':{
                 "do":"set",
@@ -109,9 +118,38 @@ class DripInterface:
                 result = None
         return result
 
+    def Run(self, durration=250, rate=500, filename=None)
+        '''
+            Take a digitizer run of fixed time and sample rate.
+
+            Inputs:
+                <durration> is the time interval (in ms) that will be digitized
+                <rate> is the sample rate (in MHz) of the digitizer
+                <filename> is the file on disk where the data will be written
+                           [=None] results in a uuid4().hex hash prefix and .egg extension
+                           NOTE: you should probably just take the default unless you have
+                           a good reason not to do so.
+        '''
+        if not filename:
+            filename = uuid4().hex + '.egg'
+        last_sequence = self._cmd_database.changes()['last_seq']
+        run_doc = {
+            '_id':uuid4().hex,
+            'type':'command',
+            'command':{
+                "do":"run",
+                "durration":durration,
+                "rate":rate,
+                "output":filename,
+            },
+        }
+        self._cmd_database.save(run_doc)
+        result = self._wait_for_changes(run_doc['_id'], last_sequence)
+        return result
+
     def ChangeTimeout(self, duration):
         '''
-            Change how long a get will look for changes before timeout.
+            Change how long a get will look for changes before timeout.a
         '''
         self._timeout = duration
 
