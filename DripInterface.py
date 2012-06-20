@@ -156,6 +156,7 @@ class DripInterface:
             'last_seq':self._cmd_database.changes()['last_seq'],
             'result':{}
         }
+        print('run doc _id is ' + str(result['_id']))
         if wait_time < 0:
             wait_time = self._timeout + durration * 0.001
         if not filename:
