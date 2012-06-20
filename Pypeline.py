@@ -21,11 +21,39 @@ class Pypeline:
         '''
         self._server = CouchServer(dripline_url)
         self._timeout = 15 #timeout is 15 seconds...
+        self._sleep_time = 3 #number of seconds to sleep while waiting
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
         self.CheckHeartbeat()
+
+    def _wait_for_changes(self, document_id, last_seq, timeout=None):
+        '''
+            "Private" method which listens to the changes feed for updates to a particular document.
+            Upon seeing the document update, attempts to return the value of the 'results' field.
+
+            Inputs:
+                <document_id> is the value of the '_id' field of a document in dripline_cmd database
+        '''
+        if timeout == None:
+            timeout = self._timeout
+        result = None
+        timer = 0
+        notfound = True
+        while (timer < timeout and notfound):
+            new_changes = self._cmd_database.changes(since=last_seq)
+            if new_changes['last_seq'] > last_seq:
+                for a_change in new_changes['results']:
+                    if (a_change['id'] == document_id and 'result' in self._cmd_database[document_id]):
+                        result = self._cmd_database[document_id]['result']
+                        notfound = False
+                        break
+            sleep(self._sleep_time)
+            timer = timer + self._sleep_time
+        if notfound:
+            print('Change never found, timeout exceeded')
+        return result
 
     def Get(self, channel):
         '''
@@ -44,21 +72,9 @@ class Pypeline:
             },
         }
         self._cmd_database.save(get_doc)
-        timer = 0
-        notfound = True
-        while (timer < self._timeout and notfound):
-            new_change = self._cmd_database.changes(since=last_sequence)
-            if new_change['last_seq'] > last_sequence:
-                for a_change in new_change['results']:
-                    if (a_change['id'] == get_doc['_id'] and 'result' in self._cmd_database[get_doc['_id']]):
-                        channelvalue = self._cmd_database[get_doc['_id']]['result']
-                        notfound = False
-                        break
-            sleep(3)
-            timer = timer + 3
-        if notfound:
-            print("timed out waiting for result, returning None")
-            return None
+        change = self._wait_for_changes(get_doc['_id'], last_sequence)
+        if not change:
+            print("wait for changes returned None, doing the same")
         return self._cmd_database[get_doc['_id']]['result']
 
     def Set(self, channel, value, check=False):
@@ -81,35 +97,17 @@ class Pypeline:
             },
         }
         self._cmd_database.save(set_doc)
-        print('set document saved')
-        timer = 0
-        notfound = True
-        while (timer < self._timeout and notfound):
-            new_change = self._cmd_database.changes(since=last_sequence)
-            if new_change['last_seq'] > last_sequence:
-                for a_change in new_change['results']:
-                    if (a_change['id'] == set_doc['_id'] and 'result' in self._cmd_database[set_doc['_id']]):
-                        notfound = False
-                        break
-            sleep(3)
-            timer = timer + 3
-            print('timer is at '+str(timer))
-        print('while loop finished')
-        if notfound:
-            print("timed out waiting for result, returning None")
-            return None
-        elif not self._cmd_database[set_doc['_id']]['result'] == 'ok':
-            print("dripline did not respond with okay in time, returning None")
-            return None
-
+        result = self._wait_for_changes(set_doc['_id'], last_sequence)
+        
+        #if check evaluates to True, see if Get returns the requested value
         if check:
             newval = Get(channel, value)
             if not newval == value:
                 print("Set() seems to have worked but the value is " + str(newval) + 
                         " not " + str(value) + " as requested!")
                 print("returning None")
-                return None
-        return True
+                result = None
+        return result
 
     def ChangeTimeout(self, duration):
         '''

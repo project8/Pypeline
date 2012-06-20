@@ -13,3 +13,9 @@ couchdb-python:
     
     1) for python 2.x I'm using: [couchdb-python](http://code.google.com/p/couchdb-python)
     2) for python 3.x I'm using the port: [couchdb-python3](https://github.com/lilydjwg/couchdb-python3)
+
+Development Notes
+-----------------
+As in katydid, I'll follow the branching model found here (http://nvie.com/posts/a-successful-git-branching-model/)
+
+Coding standards will follow PEP8 (http://www.python.org/dev/peps/pep-0008/)
