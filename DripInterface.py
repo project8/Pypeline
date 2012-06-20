@@ -149,14 +149,17 @@ class DripInterface:
                            NOTE: you should probably just take the default unless you have
                            a good reason not to do so.
                 <wait_time> determines if and how long Run() will wait for a changes feed post
-                            [=False], if false then returns None
+                            [=None], if false then returns None
+                            if <0 uses default + durration*10^-3 (ie default after end of run)
         '''
         result = {'_id':uuid4().hex,
             'last_seq':self._cmd_database.changes()['last_seq'],
             'result':{}
         }
+        if wait_time < 0:
+            wait_time = self._timeout + durration * 0.001
         if not filename:
-            filename = uuid4().hex + '.egg'
+            filename = '/data/' + uuid4().hex + '.egg'
         run_doc = {
             '_id':result['_id'],
             'type':'command',
