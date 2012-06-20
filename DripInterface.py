@@ -72,7 +72,7 @@ class DripInterface:
             request['result'] = self._cmd_database[request['_id']]['result']
             if 'timestamp' in self._cmd_database[request['_id']]:
                 request['timestamp'] = self._cmd_database[request['_id']]['timestamp']
-            if 'final' in self._cmd_database[request['_id']]
+            if 'final' in self._cmd_database[request['_id']]:
                 request['final'] = self._cmd_database[request['_id']]['final']
         return request
 
