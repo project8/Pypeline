@@ -149,7 +149,7 @@ class DripInterface:
                            NOTE: you should probably just take the default unless you have
                            a good reason not to do so.
                 <wait_time> determines if and how long Run() will wait for a changes feed post
-                            [=None], if false then returns None
+                            [=None], (ie if not wait_time) returns without waiting for changes
                             if <0 uses default + durration*10^-3 (ie default after end of run)
         '''
         result = {'_id':uuid4().hex,
