@@ -88,10 +88,9 @@ class DripInterface:
         }
         self._cmd_database.save(get_doc)
         if wait_time:
-            change = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
-            if not change:
-                print("wait for changes returned None, doing the same")
-            result['result'] = self._cmd_database[result['_id']]['result']
+            result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
+            result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
+            result['final'] = self._cmd_database[result['_id']]['final']
         return result
 
     def Set(self, channel, value, check=False, wait_time=None):
@@ -168,7 +167,9 @@ class DripInterface:
         }
         self._cmd_database.save(run_doc)
         if wait_time:
-            result = self._wait_for_changes(run_doc['_id'], result['last_seq'], wait_time)
+            result['result'] = self._wait_for_changes(run_doc['_id'], result['last_seq'], wait_time)
+            result['timestamp'] = self._cmd_database[run_doc['_id']]['timestamp']
+            result['final'] = self._cmd_database[run_doc['_id']]['final']
         return result
 
     def SetDefaultTimeout(self, duration):
