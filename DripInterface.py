@@ -62,6 +62,20 @@ class DripInterface:
             print('Change never found, timeout exceeded')
         return result
 
+    def HasAResult(self, request):
+        '''
+            Check for a result from some posted Set(), Get(), or Run().
+        '''
+        result = False
+        if self._cmd_database[request['_id']]['result']:
+            result = True
+            request['result'] = self._cmd_database[request['_id']]['result']
+            if 'timestamp' in self._cmd_database[request['_id']]:
+                request['timestamp'] = self._cmd_database[request['_id']]['timestamp']
+            if 'final' in self._cmd_database[request['_id']]
+                request['final'] = self._cmd_database[request['_id']]['final']
+        return request
+
     def Get(self, channel, wait_time=False):
         '''
             Request and return the current value of some channel.
