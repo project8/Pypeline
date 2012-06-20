@@ -27,7 +27,7 @@ class DripInterface:
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
-        #self.CheckHeartbeat()
+        self.CheckHeartbeat()
 
     def _wait_for_changes(self, document_id, last_seq, timeout=None):
         '''
@@ -175,13 +175,16 @@ class DripInterface:
         '''
             Change how long a get will look for changes before timeout.a
         '''
+        if duration < 0:
+            raise ValueError('timeout must be >= 0')
         self._timeout = duration
 
     def CheckHeartbeat(self):
         '''
             Checks dripline's heartbeat to be sure it is running.
         '''
-        pulse['result'] = self.Get("heartbeat", wait_time=-1)
+        result = self.Get("heartbeat", wait_time=-1)
+        pulse = result['result']
         if not pulse == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return pulse
