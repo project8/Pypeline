@@ -89,8 +89,10 @@ class DripInterface:
         self._cmd_database.save(get_doc)
         if wait_time:
             result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
-            result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
-            result['final'] = self._cmd_database[result['_id']]['final']
+            if 'timestamp' in self._cmd_database[result['_id']]:
+                result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
+            if 'final' in self._cmd_database[result['_id']]:
+                result['final'] = self._cmd_database[result['_id']]['final']
         return result
 
     def Set(self, channel, value, check=False, wait_time=None):
@@ -156,20 +158,22 @@ class DripInterface:
         if not filename:
             filename = uuid4().hex + '.egg'
         run_doc = {
-            '_id':uuid4().hex,
+            '_id':result['_id'],
             'type':'command',
             'command':{
                 "do":"run",
-                "durration":durration,
-                "rate":rate,
+                "durration":str(durration),
+                "rate":str(rate),
                 "output":filename,
             },
         }
         self._cmd_database.save(run_doc)
         if wait_time:
             result['result'] = self._wait_for_changes(run_doc['_id'], result['last_seq'], wait_time)
-            result['timestamp'] = self._cmd_database[run_doc['_id']]['timestamp']
-            result['final'] = self._cmd_database[run_doc['_id']]['final']
+            if 'timestamp' in self._cmd_database[run_doc['_id']]:
+                result['timestamp'] = self._cmd_database[run_doc['_id']]['timestamp']
+            if 'final' in self._cmd_database[run_doc['_id']]:
+                result['final'] = self._cmd_database[run_doc['_id']]['final']
         return result
 
     def SetDefaultTimeout(self, duration):
