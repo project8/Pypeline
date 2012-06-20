@@ -97,6 +97,7 @@ class DripInterface:
         '''
         last_sequence = self._cmd_database.changes()['last_seq']
         set_doc = {
+            '_id':uuid4().hex,
             'type':'command',
             'command':{
                 "do":"set",
@@ -117,14 +118,34 @@ class DripInterface:
                 result = None
         return result
 
-    def Run(self, durration=250, rate=500)
+    def Run(self, durration=250, rate=500, filename=None)
         '''
             Take a digitizer run of fixed time and sample rate.
 
             Inputs:
                 <durration> is the time interval (in ms) that will be digitized
                 <rate> is the sample rate (in MHz) of the digitizer
+                <filename> is the file on disk where the data will be written
+                           [=None] results in a uuid4().hex hash prefix and .egg extension
+                           NOTE: you should probably just take the default unless you have
+                           a good reason not to do so.
         '''
+        if not filename:
+            filename = uuid4().hex + '.egg'
+        last_sequence = self._cmd_database.changes()['last_seq']
+        run_doc = {
+            '_id':uuid4().hex,
+            'type':'command',
+            'command':{
+                "do":"run",
+                "durration":durration,
+                "rate":rate,
+                "output":filename,
+            },
+        }
+        self._cmd_database.save(run_doc)
+        result = self._wait_for_changes(run_doc['_id'], last_sequence)
+        return result
 
     def ChangeTimeout(self, duration):
         '''
