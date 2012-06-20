@@ -8,6 +8,7 @@
 '''
 
 from Pypeline import DripInterface
+import time
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
@@ -20,6 +21,7 @@ while not short_run['result']:
     dum_temp = drip.Get('pump_valve_t')
     print(dum_temp['result'])
     valve_temps.append(dum_temp)
+    time.sleep(3)
 
 print('run doc is: ' + str(short_run['_id']))
 print('final status was: ' + str(short_run['result']))
