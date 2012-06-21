@@ -4,7 +4,7 @@
 
 from time import sleep
 
-class DripResponse:
+class DripResponse(dict):
     '''
         Class which shall be returned by any DripInterface method which involves posting a document to a dripline db and, potentially, waiting for a result.
 
@@ -21,27 +21,18 @@ class DripResponse:
                 <cmd_db> the dripline command database. This is where DripResponse will look
                     for updates do documents
         '''
+        dict.__init__(self)
         self._cmd_db = cmd_db
         self._id = doc_id
         self._delta_t = 0.1 #seconds
         self._max_timeout = 3600 #1 hr (in sec)
-
-    def __getitem__(self, key):
-        '''
-            I may regret using this method name.... what's the worst that could happen
-            (see http://xkcd.com/292)
-
-            Seriously though, returns a key indexed attribute of self.
-        '''
-        return getattr(self, key)
 
     def Waiting(self):
         '''
             Check a document to see if it has a 'result' field
             (ie dipline has responded to it.)
         '''
-        return 'result' in self._cmd_db[self._id]
-
+        return not 'result' in self._cmd_db[self._id]
 
     def Update(self):
         '''
@@ -49,7 +40,7 @@ class DripResponse:
             If they differ, update self to match the document.
         '''
         for key in self._cmd_db[self._id]:
-            setattr(self, key, self._cmd_db[self._id][key])
+            self[key] = self._cmd_db[self._id][key]
 
     def Wait(self, timeout=15):
         '''
