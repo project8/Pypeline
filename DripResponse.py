@@ -1,5 +1,5 @@
 '''
-    File to contain the DripResponse class.
+    File to contain the DripResponse class which inherits from dict.
 '''
 
 from time import sleep
