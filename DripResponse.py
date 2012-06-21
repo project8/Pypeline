@@ -2,6 +2,8 @@
     File to contain the DripResponse class.
 '''
 
+from time import sleep
+
 class DripResponse:
     '''
         Class which shall be returned by any DripInterface method which involves posting a document to a dripline db and, potentially, waiting for a result.
@@ -21,6 +23,17 @@ class DripResponse:
         '''
         self._cmd_db = cmd_db
         self._id = doc_id
+        self._delta_t = 0.1 #seconds
+        self._max_timeout = 3600 #1 hr (in sec)
+
+    def __getitem__(self, key):
+        '''
+            I may regret using this method name.... what's the worst that could happen
+            (see http://xkcd.com/292)
+
+            Seriously though, returns a key indexed attribute of self.
+        '''
+        return getattr(self, key)
 
     def Waiting(self):
         '''
@@ -35,8 +48,21 @@ class DripResponse:
             Checks a doc for updates and updates local attributes if they differ.
             If they differ, update self to match the document.
         '''
+        for key in self._cmd_db[self._id]:
+            setattr(self, key, self._cmd_db[self._id][key])
 
-    def Wait(self):
+    def Wait(self, timeout=15):
         '''
             Actively monitor a document for updates
+
+            Inputs:
+                <timeout>=15 is max wait time in seconds
+                WARNING: if <timeout>==False, the max timeout (3600 sec) will be used
+                         (I'm not putting in an infinite loop)
         '''
+        timer = 0
+        if not timeout:
+            timeout = self._max_timeout
+        while (self.Waiting() and timer < timeout):
+            sleep(self._delta_t)
+            timer = timer + self._delta_t
