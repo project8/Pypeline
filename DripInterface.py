@@ -103,6 +103,8 @@ class DripInterface:
         self._cmd_database.save(get_doc)
         if wait_time:
             result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
+            if 'result' in self._cmd_database[result['_id']]:
+                result['result'] = self._cmd_database[result['_id']]['result']
             if 'timestamp' in self._cmd_database[result['_id']]:
                 result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
             if 'final' in self._cmd_database[result['_id']]:
