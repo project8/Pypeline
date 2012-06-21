@@ -11,7 +11,7 @@ class DripResponse:
         Will be indexable with all of the standard dripline database fields.
     '''
 
-    def __init__(self, cmd_db):
+    def __init__(self, cmd_db, doc_id):
         '''
             Initialization for a DripRespnse instance.
 
@@ -20,19 +20,23 @@ class DripResponse:
                     for updates do documents
         '''
         self._cmd_db = cmd_db
+        self._id = doc_id
 
     def Waiting(self):
         '''
-            Check the status of a document to see if it has been updated.
+            Check a document to see if it has a 'result' field
+            (ie dipline has responded to it.)
         '''
+        return 'result' in self._cmd_db[self._id]
+
 
     def Update(self):
         '''
-            Compares the current state of self with the current state of the document in the db.
+            Checks a doc for updates and updates local attributes if they differ.
             If they differ, update self to match the document.
         '''
 
-    def Wait():
+    def Wait(self):
         '''
             Actively monitor a document for updates
         '''
