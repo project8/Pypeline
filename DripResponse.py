@@ -42,6 +42,7 @@ class DripResponse(dict):
         '''
         for key in self._cmd_db[self['_id']]:
             self[key] = self._cmd_db[self['_id']][key]
+        return self
 
     def Wait(self, timeout=15):
         '''
