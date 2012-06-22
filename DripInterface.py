@@ -77,26 +77,16 @@ class DripInterface:
                 request['final'] = self._cmd_database[request['_id']]['final']
         return request
 
-    def Get(self, channel, wait_time=-1):
+    def Get(self, channel):
         '''
             Request and return the current value of some channel.
 
             Inputs:
                 <channel> must be an active channel in dripline.
-                <wait_time> determines if and how long Get() will wait for a changes feed post
-                            [=False] does not wait for changes
-                            <0 uses default time
         '''
-        ret_val = DripResponse(self._cmd_database, uuid4().hex)
-#        result = {'_id':uuid4().hex,
-#            'last_seq':self._cmd_database.changes()['last_seq'],
-#            'result':{}
-#        }
-        if wait_time < 0:
-            wait_time = self._timeout
+        result = DripResponse(self._cmd_database, uuid4().hex)
         get_doc = {
-            #'_id':result['_id'],
-            '_id':ret_val['_id'],
+            '_id':result['_id'],
             'type':'command',
             'command':{
                 "do":"get",
@@ -104,19 +94,10 @@ class DripInterface:
             },
         }
         self._cmd_database.save(get_doc)
-        ret_val.Update()
-        return ret_val
-#        if wait_time:
-#            result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
-#            if 'result' in self._cmd_database[result['_id']]:
-#                result['result'] = self._cmd_database[result['_id']]['result']
-#            if 'timestamp' in self._cmd_database[result['_id']]:
-#                result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
-#            if 'final' in self._cmd_database[result['_id']]:
-#                result['final'] = self._cmd_database[result['_id']]['final']
-#        return result
+        result.Update()
+        return result
 
-    def Set(self, channel, value, check=False, wait_time=False):
+    def Set(self, channel, value, check=False,):
         '''
             Change the setting of a dripline channel
 
@@ -125,18 +106,10 @@ class DripInterface:
                 <value> value to assign to <channel>
                 <check> uses Get() to check the value,
                         WARNING: this doesn't deal with machine rounding
-                <wait_time> determines if and how long Set() will wait for a changes feed post
-                            [=False] (default) does not wait for changes
-                            <0 uses default time
-
+            
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
-        result = {'_id':uuid4().hex,
-            'last_seq':self._cmd_database.changes()['last_seq'],
-            'result':{}
-        }
-        if wait_time < 0:
-            wait_time = self._timeout
+        result = DripResponse(self._cmd_database, uuid4().hex)
         set_doc = {
             '_id':result['_id'],
             'type':'command',
@@ -147,18 +120,10 @@ class DripInterface:
             },
         }
         self._cmd_database.save(set_doc)
-        if wait_time:
-            result = self._wait_for_changes(result['_id'], result['last_seq'], wait_time)
-        if check:
-            newval = Get(channel, value)
-            if not newval == value:
-                print("Set() seems to have worked but the value is " + str(newval) + 
-                        " not " + str(value) + " as requested!")
-                print("returning None")
-                result = None
+        result.Update()
         return result
 
-    def Run(self, durration=250, rate=500, filename=None, wait_time=False):
+    def Run(self, durration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -169,17 +134,8 @@ class DripInterface:
                            [=None] results in a uuid4().hex hash prefix and .egg extension
                            NOTE: you should probably just take the default unless you have
                            a good reason not to do so.
-                <wait_time> determines if and how long Run() will wait for a changes feed post
-                            [=False], (ie if not wait_time) returns without waiting for changes
-                            if <0 uses default + durration*10^-3 (ie default after end of run)
         '''
-        result = {'_id':uuid4().hex,
-            'last_seq':self._cmd_database.changes()['last_seq'],
-            'result':{}
-        }
-        print('run doc _id is ' + str(result['_id']))
-        if wait_time < 0:
-            wait_time = self._timeout + durration * 0.001
+        result = DripResponse(self._cmd_database, uuid4().hex)
         if not filename:
             filename = '/data/' + uuid4().hex + '.egg'
         run_doc = {
@@ -193,12 +149,7 @@ class DripInterface:
             },
         }
         self._cmd_database.save(run_doc)
-        if wait_time:
-            result['result'] = self._wait_for_changes(run_doc['_id'], result['last_seq'], wait_time)
-            if 'timestamp' in self._cmd_database[run_doc['_id']]:
-                result['timestamp'] = self._cmd_database[run_doc['_id']]['timestamp']
-            if 'final' in self._cmd_database[run_doc['_id']]:
-                result['final'] = self._cmd_database[run_doc['_id']]['final']
+        result.Update()
         return result
 
     def SetDefaultTimeout(self, duration):
@@ -214,7 +165,8 @@ class DripInterface:
             Checks dripline's heartbeat to be sure it is running.
         '''
         result = self.Get("heartbeat", wait_time=-1)
-        pulse = result['result']
+        print('this is broken')
+        pulse = 'thump'
         if not pulse == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return pulse
