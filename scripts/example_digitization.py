@@ -13,12 +13,13 @@ import time
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
 drip.Set('test_6v','0.25V')
-short_run = drip.Run(durration=250, rate=500, filename=None, wait_time=None)
+short_run = drip.Run(durration=250, rate=500, filename=None)
 
 valve_temps = []
-while not short_run['result']:
+while short_run.Waiting():
     print('status check')
     dum_temp = drip.Get('pump_valve_t')
+    dum_temp.Wait()
     print(dum_temp['result'])
     valve_temps.append(dum_temp)
     time.sleep(3)

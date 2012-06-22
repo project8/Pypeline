@@ -32,7 +32,8 @@ class DripResponse(dict):
             Check a document to see if it has a 'result' field
             (ie dipline has responded to it.)
         '''
-        return not 'result' in self._cmd_db[self['_id']]
+        self.Update()
+        return not 'result' in self
 
     def Update(self):
         '''
