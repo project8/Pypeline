@@ -30,53 +30,6 @@ class DripInterface:
             raise UserWarning('The dripline command database was not found!')
         self.CheckHeartbeat()
 
-    def _wait_for_changes(self, document_id, last_seq, timeout=False):
-        '''
-            "Private" method which listens to the changes feed
-            for updates to a particular document. Upon seeing an update,
-            attempts to return the value of the 'results' field.
-
-            Inputs:
-                <document_id> is the value of the '_id' field of the
-                              document in the dripline_cmd database
-                <timeout>=-1 is the time, in seconds, to wait between failed checks
-                               for changes.
-                               [<0] uses the value in self._timeout
-        '''
-        if timeout < 0:
-            timeout = self._timeout
-        result = None
-        timer = 0
-        notfound = True
-        while (timer < timeout and notfound):
-            new_changes = self._cmd_database.changes(since=last_seq)
-            if new_changes['last_seq'] > last_seq:
-                for a_change in new_changes['results']:
-                    if (a_change['id'] == document_id and
-                     'result' in self._cmd_database[document_id]):
-                        result = self._cmd_database[document_id]['result']
-                        notfound = False
-                        break
-            sleep(self._sleep_time)
-            timer = timer + self._sleep_time
-        if notfound:
-            print('Change never found, timeout exceeded')
-        return result
-
-    def HasAResult(self, request):
-        '''
-            Check for a result from some posted Set(), Get(), or Run().
-        '''
-        result = False
-        if self._cmd_database[request['_id']]['result']:
-            result = True
-            request['result'] = self._cmd_database[request['_id']]['result']
-            if 'timestamp' in self._cmd_database[request['_id']]:
-                request['timestamp'] = self._cmd_database[request['_id']]['timestamp']
-            if 'final' in self._cmd_database[request['_id']]:
-                request['final'] = self._cmd_database[request['_id']]['final']
-        return request
-
     def Get(self, channel):
         '''
             Request and return the current value of some channel.
@@ -164,9 +117,8 @@ class DripInterface:
         '''
             Checks dripline's heartbeat to be sure it is running.
         '''
-        result = self.Get("heartbeat", wait_time=-1)
-        print('this is broken')
-        pulse = 'thump'
-        if not pulse == 'thump':
+        status = self.Get("heartbeat")
+        status.Wait()
+        if not status['result'] == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
-        return pulse
+        return status['result']
