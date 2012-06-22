@@ -58,3 +58,5 @@ class DripResponse(dict):
         while (self.Waiting() and timer < timeout):
             sleep(self._delta_t)
             timer = timer + self._delta_t
+        self.Update()
+        return self
