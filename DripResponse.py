@@ -23,24 +23,24 @@ class DripResponse(dict):
         '''
         dict.__init__(self)
         self._cmd_db = cmd_db
-        self._id = doc_id
         self._delta_t = 0.1 #seconds
         self._max_timeout = 3600 #1 hr (in sec)
+        self['_id'] = doc_id
 
     def Waiting(self):
         '''
             Check a document to see if it has a 'result' field
             (ie dipline has responded to it.)
         '''
-        return not 'result' in self._cmd_db[self._id]
+        return not 'result' in self._cmd_db[self['_id']]
 
     def Update(self):
         '''
             Checks a doc for updates and updates local attributes if they differ.
             If they differ, update self to match the document.
         '''
-        for key in self._cmd_db[self._id]:
-            self[key] = self._cmd_db[self._id][key]
+        for key in self._cmd_db[self['_id']]:
+            self[key] = self._cmd_db[self['_id']][key]
 
     def Wait(self, timeout=15):
         '''

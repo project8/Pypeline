@@ -5,6 +5,7 @@
 from time import sleep
 from uuid import uuid4
 from couchdb import Server as CouchServer
+from DripResponse import DripResponse
 
 class DripInterface:
     '''
@@ -21,7 +22,7 @@ class DripInterface:
         '''
         self._server = CouchServer(dripline_url)
         self._timeout = 15 #timeout is 15 seconds...
-        self._sleep_time = 3 #number of seconds to sleep while waiting
+        self._sleep_time = .1 #number of seconds to sleep while waiting
         self._wait_state = {}
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
@@ -76,24 +77,26 @@ class DripInterface:
                 request['final'] = self._cmd_database[request['_id']]['final']
         return request
 
-    def Get(self, channel, wait_time=False):
+    def Get(self, channel, wait_time=-1):
         '''
             Request and return the current value of some channel.
 
             Inputs:
                 <channel> must be an active channel in dripline.
                 <wait_time> determines if and how long Get() will wait for a changes feed post
-                            [=False] (default) does not wait for changes
+                            [=False] does not wait for changes
                             <0 uses default time
         '''
-        result = {'_id':uuid4().hex,
-            'last_seq':self._cmd_database.changes()['last_seq'],
-            'result':{}
-        }
+        ret_val = DripResponse(self._cmd_database, uuid4().hex)
+#        result = {'_id':uuid4().hex,
+#            'last_seq':self._cmd_database.changes()['last_seq'],
+#            'result':{}
+#        }
         if wait_time < 0:
             wait_time = self._timeout
         get_doc = {
-            '_id':result['_id'],
+            #'_id':result['_id'],
+            '_id':ret_val['_id'],
             'type':'command',
             'command':{
                 "do":"get",
@@ -101,15 +104,17 @@ class DripInterface:
             },
         }
         self._cmd_database.save(get_doc)
-        if wait_time:
-            result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
-            if 'result' in self._cmd_database[result['_id']]:
-                result['result'] = self._cmd_database[result['_id']]['result']
-            if 'timestamp' in self._cmd_database[result['_id']]:
-                result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
-            if 'final' in self._cmd_database[result['_id']]:
-                result['final'] = self._cmd_database[result['_id']]['final']
-        return result
+        ret_val.Update()
+        return ret_val
+#        if wait_time:
+#            result['result'] = self._wait_for_changes(get_doc['_id'], result['last_seq'], wait_time)
+#            if 'result' in self._cmd_database[result['_id']]:
+#                result['result'] = self._cmd_database[result['_id']]['result']
+#            if 'timestamp' in self._cmd_database[result['_id']]:
+#                result['timestamp'] = self._cmd_database[result['_id']]['timestamp']
+#            if 'final' in self._cmd_database[result['_id']]:
+#                result['final'] = self._cmd_database[result['_id']]['final']
+#        return result
 
     def Set(self, channel, value, check=False, wait_time=False):
         '''
