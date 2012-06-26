@@ -2,7 +2,7 @@
 
 import Pypeline
 
-pype = Pypeline.Pypeline('http://p8portal.phys.washington.edu:5984')
+pype = Pypeline.DripInterface('http://p8portal.phys.washington.edu:5984')
 
 #set initial values
 pype.Set('hf_sweeper_power',1)######## 1 should be changed to something real
@@ -11,7 +11,13 @@ for lo_cw_freq in range(300, 2001, 50):
     pype.Set('lo_cw_freq',lo_cw_freq)
     for hf_cw_freq in range(lo_cw_freq+5+24500):
         pype.Set('hf_cw_freq',hf_cw_freq)
-        #pype.<something to take a short run> ######## fix this line to do somethingjj
+        runtime = 250
+        arun = pype.Run(durration=runtime, rate=500)#these are just defaults but included so it is clear what to change
+        if arun.Waiting():
+            arun.Wait(timeout = runtime+15)
+        else:
+            print('run may not have worked... should maybe do something here')
+            #maybe check for 'busy' result or similar
 
 #make plots
 values = []
