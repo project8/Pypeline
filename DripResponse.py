@@ -26,6 +26,12 @@ class DripResponse(dict):
         self._delta_t = 0.1 #seconds
         self._max_timeout = 3600 #1 hr (in sec)
         self['_id'] = doc_id
+    
+    def __str__(self):
+        '''
+            Defines the string representation of a DripResponse object.
+        '''
+        
 
     def Waiting(self):
         '''

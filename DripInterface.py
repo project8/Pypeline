@@ -28,29 +28,38 @@ class DripInterface:
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
+        if (self._server.__contains__('dripline_conf')):
+            self._conf_database = self._server['dripline_conf']
+        else:
+            raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def Get(self, channel):
+    def Get(self, channel=None):
         '''
             Request and return the current value of some channel.
 
             Inputs:
                 <channel> must be an active channel in dripline.
+            
+                If <channel> is left blank, this function will print the names of all possible channels to set.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        get_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"get",
-                "channel":channel,
-            },
-        }
-        self._cmd_database.save(get_doc)
-        result.Update()
-        return result
+        if channel==None:
+            self.EligibleChannels()
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            get_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"get",
+                    "channel":channel,
+                },
+            }
+            self._cmd_database.save(get_doc)
+            result.Wait()
+            return result
 
-    def Set(self, channel, value, check=False,):
+    def Set(self, channel=None, value=None, check=False,):
         '''
             Change the setting of a dripline channel
 
@@ -60,21 +69,28 @@ class DripInterface:
                 <check> uses Get() to check the value,
                         WARNING: this doesn't deal with machine rounding
             
+                If <channel> is left blank, this function will print the names of all possible channels to set.
+            
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        set_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"set",
-                "channel":channel,
-                "value":str(value),
-            },
-        }
-        self._cmd_database.save(set_doc)
-        result.Update()
-        return result
+        if channel==None:
+            self.EligibleChannels()
+        elif value==None:
+            print "Please input value to assign to channel"
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            set_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"set",
+                    "channel":channel,
+                    "value":str(value),
+                },
+            }
+            self._cmd_database.save(set_doc)
+            result.Update()
+            return result
 
     def Run(self, durration=250, rate=500, filename=None):
         '''
@@ -122,3 +138,13 @@ class DripInterface:
         if not status['result'] == 'thump':
             raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return status['result']
+
+    def EligibleChannels(self):
+        '''
+            Prints all possible channels to query or set.
+        '''
+        rows = []
+        for row in self._conf_database.view('objects/channels'):
+            rows.append(row)
+        print rows
+        return rows
