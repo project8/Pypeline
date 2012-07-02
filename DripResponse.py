@@ -42,6 +42,7 @@ class DripResponse(dict):
         '''
         for key in self._cmd_db[self['_id']]:
             self[key] = self._cmd_db[self['_id']][key]
+        return self
 
     def Wait(self, timeout=15):
         '''
@@ -58,3 +59,5 @@ class DripResponse(dict):
         while (self.Waiting() and timer < timeout):
             sleep(self._delta_t)
             timer = timer + self._delta_t
+        self.Update()
+        return self
