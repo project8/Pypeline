@@ -56,7 +56,7 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(get_doc)
-            result.Update()
+            result.Wait()
             return result
 
     def Set(self, channel=None, value=None, check=False,):
@@ -143,5 +143,8 @@ class DripInterface:
         '''
             Prints all possible channels to query or set.
         '''
+        rows = []
         for row in self._conf_database.view('objects/channels'):
-            print row.key
+            rows.append(row)
+        print rows
+        return rows
