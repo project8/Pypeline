@@ -17,7 +17,8 @@ class DripInterface:
             Initializes an instance of pypeline by connecting to the server.
     
             Inputs:
-                <dripline_url> is the url to use when connecting to the couchDB server,
+                <dripline_url> is the url to use when connecting to the couchDB
+                server,
                 if none is provided then the default (http://127.0.0.1:5984/).
         '''
         self._server = CouchServer(dripline_url)
@@ -41,10 +42,11 @@ class DripInterface:
             Inputs:
                 <channel> must be an active channel in dripline.
             
-                If <channel> is left blank, this function will print the names of all possible channels to set.
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
         '''
-        if channel==None:
-            self.EligibleChannels()
+        if not channel:
+            print self.EligibleChannels()
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             get_doc = {
@@ -69,13 +71,14 @@ class DripInterface:
                 <check> uses Get() to check the value,
                         WARNING: this doesn't deal with machine rounding
             
-                If <channel> is left blank, this function will print the names of all possible channels to set.
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
             
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
-        if channel==None:
-            self.EligibleChannels()
-        elif value==None:
+        if not channel:
+            print self.EligibleChannels()
+        elif not value:
             print "Please input value to assign to channel"
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
@@ -89,7 +92,7 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(set_doc)
-            result.Update()
+            result.Wait()
             return result
 
     def Run(self, durration=250, rate=500, filename=None):
@@ -100,8 +103,10 @@ class DripInterface:
                 <durration> is the time interval (in ms) that will be digitized
                 <rate> is the sample rate (in MHz) of the digitizer
                 <filename> is the file on disk where the data will be written
-                           [=None] results in a uuid4().hex hash prefix and .egg extension
-                           NOTE: you should probably just take the default unless you have
+                           [=None] results in a uuid4().hex hash prefix and
+                           .egg extension
+                           NOTE: you should probably just take the default
+                           unless you have
                            a good reason not to do so.
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
@@ -141,10 +146,9 @@ class DripInterface:
 
     def EligibleChannels(self):
         '''
-            Prints all possible channels to query or set.
+            Creates a list of all possible channels to query or set.
         '''
         rows = []
         for row in self._conf_database.view('objects/channels'):
-            rows.append(row)
-        print rows
+            rows.append(row.key)
         return rows
