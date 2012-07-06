@@ -15,7 +15,7 @@ class DripResponse(dict):
 
     def __init__(self, cmd_db, doc_id):
         '''
-            Initialization for a DripRespnse instance.
+            Initialization for a DripResponse instance.
 
             Inputs:
                 <cmd_db> the dripline command database. This is where DripResponse will look
