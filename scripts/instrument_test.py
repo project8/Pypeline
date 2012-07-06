@@ -215,14 +215,14 @@ except:
         
 try:
     drip.Set('hf_sweep_time', '1000')
-    if int(drip.Get('hf_sweep_time')['final']) != 1:
+    if float(drip.Get('hf_sweep_time')['final']) != 1:
         print "error setting hf_sweep_time to 1000 ms " + repr(drip.Get('hf_sweep_time'))
     else:
         print "hf_sweep_time ok " + repr(drip.Get('hf_sweep_time'))
 except KeyError:
     try:
         drip.Set('hf_sweep_time', '1000')
-        if int(drip.Get('hf_sweep_time')['final']) != 1:
+        if float(drip.Get('hf_sweep_time')['final']) != 1:
             print "error setting hf_sweep_time to 1000 ms " + repr(drip.Get('hf_sweep_time'))
         else:
             print "hf_sweep_time ok " + repr(drip.Get('hf_sweep_time'))
@@ -235,14 +235,14 @@ except:
     
 try:
     drip.Set('hf_sweeper_power', '-31')
-    if int(drip.Get('hf_sweeper_power')['final']) != -31:
+    if float(drip.Get('hf_sweeper_power')['final']) != -31:
         print "error setting hf_sweeper_power to -31 dB " + repr(drip.Get('hf_sweeper_power'))
     else:
         print "hf_sweeper_power ok " + repr(drip.Get('hf_sweeper_power')['final'])
 except KeyError:
     try:
         drip.Set('hf_sweeper_power', '-31')
-        if int(drip.Get('hf_sweeper_power')['final']) != -31:
+        if float(drip.Get('hf_sweeper_power')['final']) != -31:
             print "error setting hf_sweeper_power to -31 dB " + repr(drip.Get('hf_sweeper_power'))
         else:
             print "hf_sweeper_power ok " + repr(drip.Get('hf_sweeper_power')['final'])
