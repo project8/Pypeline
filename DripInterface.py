@@ -95,7 +95,7 @@ class DripInterface:
             result.Wait()
             return result
 
-    def Run(self, durration=250, rate=500, filename=None):
+    def Run(self, duration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -117,7 +117,7 @@ class DripInterface:
             'type':'command',
             'command':{
                 "do":"run",
-                "durration":str(durration),
+                "duration":str(duration),
                 "rate":str(rate),
                 "output":filename,
             },
@@ -126,6 +126,18 @@ class DripInterface:
         result.Update()
         return result
 
+    def CreatePowerSpectrum(self, filename):
+        run_doc = {
+            '_id':result['_id'],
+            'type':'command',
+            'command':{
+                "do":"run",
+                "subprocess":"powerline",
+                "input":filename,
+            },
+        }
+        self._cmd_database.save(run_doc)
+        
     def SetDefaultTimeout(self, duration):
         '''
             Change how long a get will look for changes before timeout.a
