@@ -100,7 +100,7 @@ class DripInterface:
             Take a digitizer run of fixed time and sample rate.
 
             Inputs:
-                <durration> is the time interval (in ms) that will be digitized
+                <duration> is the time interval (in ms) that will be digitized
                 <rate> is the sample rate (in MHz) of the digitizer
                 <filename> is the file on disk where the data will be written
                            [=None] results in a uuid4().hex hash prefix and
@@ -123,11 +123,12 @@ class DripInterface:
             },
         }
         self._cmd_database.save(run_doc)
-        result.Update()
-        return result
+        result.Wait()
+        return self.CreatePowerSpectrum(filename)
 
     def CreatePowerSpectrum(self, filename):
-        run_doc = {
+        result = DripResponse(self._cmd_database, uuid4().hex)
+        pow_doc = {
             '_id':result['_id'],
             'type':'command',
             'command':{
@@ -136,7 +137,9 @@ class DripInterface:
                 "input":filename,
             },
         }
-        self._cmd_database.save(run_doc)
+        self._cmd_database.save(pow_doc)
+        result.Wait()
+        return result
         
     def SetDefaultTimeout(self, duration):
         '''
@@ -152,9 +155,9 @@ class DripInterface:
         '''
         status = self.Get("heartbeat")
         status.Wait()
-        if not status['result'] == 'thump':
-            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
-        return status['result']
+        if not status['final'] == 'thump':
+           raise UserWarning('Could not find dripline pulse. Make sure it is running.')
+        return status['final']
 
     def EligibleChannels(self):
         '''
