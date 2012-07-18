@@ -15,7 +15,7 @@ class DripResponse(dict):
 
     def __init__(self, cmd_db, doc_id):
         '''
-            Initialization for a DripRespnse instance.
+            Initialization for a DripResponse instance.
 
             Inputs:
                 <cmd_db> the dripline command database. This is where DripResponse will look
@@ -26,11 +26,18 @@ class DripResponse(dict):
         self._delta_t = 0.1 #seconds
         self._max_timeout = 3600 #1 hr (in sec)
         self['_id'] = doc_id
+    
+    def __repr__(self):
+        '''
+            Defines the string representation of a DripResponse object.
+        '''
+        rval = "<" + str(self['final']) + ">"
+        return rval
 
     def Waiting(self):
         '''
             Check a document to see if it has a 'result' field
-            (ie dipline has responded to it.)
+            (ie dripline has responded to it.)
         '''
         self.Update()
         return not 'result' in self
