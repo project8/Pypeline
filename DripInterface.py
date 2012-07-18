@@ -17,7 +17,8 @@ class DripInterface:
             Initializes an instance of pypeline by connecting to the server.
     
             Inputs:
-                <dripline_url> is the url to use when connecting to the couchDB server,
+                <dripline_url> is the url to use when connecting to the couchDB
+                server,
                 if none is provided then the default (http://127.0.0.1:5984/).
         '''
         self._server = CouchServer(dripline_url)
@@ -28,29 +29,39 @@ class DripInterface:
             self._cmd_database = self._server['dripline_cmd']
         else:
             raise UserWarning('The dripline command database was not found!')
+        if (self._server.__contains__('dripline_conf')):
+            self._conf_database = self._server['dripline_conf']
+        else:
+            raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def Get(self, channel):
+    def Get(self, channel=None):
         '''
             Request and return the current value of some channel.
 
             Inputs:
                 <channel> must be an active channel in dripline.
+            
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        get_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"get",
-                "channel":channel,
-            },
-        }
-        self._cmd_database.save(get_doc)
-        result.Update()
-        return result
+        if not channel:
+            print self.EligibleChannels()
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            get_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"get",
+                    "channel":channel,
+                },
+            }
+            self._cmd_database.save(get_doc)
+            result.Wait()
+            return result
 
-    def Set(self, channel, value, check=False,):
+    def Set(self, channel=None, value=None, check=False,):
         '''
             Change the setting of a dripline channel
 
@@ -60,32 +71,42 @@ class DripInterface:
                 <check> uses Get() to check the value,
                         WARNING: this doesn't deal with machine rounding
             
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
+            
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        set_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"set",
-                "channel":channel,
-                "value":str(value),
-            },
-        }
-        self._cmd_database.save(set_doc)
-        result.Update()
-        return result
+        if not channel:
+            print self.EligibleChannels()
+        elif not value:
+            print "Please input value to assign to channel"
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            set_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"set",
+                    "channel":channel,
+                    "value":str(value),
+                },
+            }
+            self._cmd_database.save(set_doc)
+            result.Wait()
+            return result
 
-    def Run(self, durration=250, rate=500, filename=None):
+    def Run(self, duration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
 
             Inputs:
-                <durration> is the time interval (in ms) that will be digitized
+                <duration> is the time interval (in ms) that will be digitized
                 <rate> is the sample rate (in MHz) of the digitizer
                 <filename> is the file on disk where the data will be written
-                           [=None] results in a uuid4().hex hash prefix and .egg extension
-                           NOTE: you should probably just take the default unless you have
+                           [=None] results in a uuid4().hex hash prefix and
+                           .egg extension
+                           NOTE: you should probably just take the default
+                           unless you have
                            a good reason not to do so.
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
@@ -96,15 +117,30 @@ class DripInterface:
             'type':'command',
             'command':{
                 "do":"run",
-                "durration":str(durration),
+                "duration":str(duration),
                 "rate":str(rate),
                 "output":filename,
             },
         }
         self._cmd_database.save(run_doc)
-        result.Update()
-        return result
+        result.Wait()
+        return self.CreatePowerSpectrum(filename)
 
+    def CreatePowerSpectrum(self, filename):
+        result = DripResponse(self._cmd_database, uuid4().hex)
+        pow_doc = {
+            '_id':result['_id'],
+            'type':'command',
+            'command':{
+                "do":"run",
+                "subprocess":"powerline",
+                "input":filename,
+            },
+        }
+        self._cmd_database.save(pow_doc)
+        result.Wait()
+        return result
+        
     def SetDefaultTimeout(self, duration):
         '''
             Change how long a get will look for changes before timeout.a
@@ -119,6 +155,15 @@ class DripInterface:
         '''
         status = self.Get("heartbeat")
         status.Wait()
-        if not status['result'] == 'thump':
-            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
-        return status['result']
+        if not status['final'] == 'thump':
+           raise UserWarning('Could not find dripline pulse. Make sure it is running.')
+        return status['final']
+
+    def EligibleChannels(self):
+        '''
+            Creates a list of all possible channels to query or set.
+        '''
+        rows = []
+        for row in self._conf_database.view('objects/channels'):
+            rows.append(row.key)
+        return rows
