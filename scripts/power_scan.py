@@ -6,21 +6,24 @@ from mpl_toolkits.mplot3d import Axes3D
 import sys
 import math
 import time
+from datetime import datetime
+from uuid import uuid4
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
-fname = str(time.time())
+fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
+tempf = '/data/' + uuid4().hex + '.egg'
 busycount = 0
 busylim = 10
 syncount = 0
 synlim = 3
 keycount = 0
 keylim = 2
-istart = 20
-istop = 35
+istart = 5
+istop = 100
 istep = 5
-jstart = 300
-jstop = 450
+jstart = 200
+jstop = 1900
 jstep = 50
 transferx = []
 transfery = []
@@ -38,7 +41,7 @@ while j < jstop:
         drip.Set('hf_cw_freq',str(24500+j+i))
         print str(i) + " MHz"
         try:
-            run = eval(repr(drip.Run())[1:-1])
+            run = eval(repr(drip.Run(filename=tempf))[1:-1])
             i = i + istep
             keycount = 0
             syncount = 0
