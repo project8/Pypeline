@@ -95,7 +95,7 @@ class DripInterface:
             result.Wait()
             return result
 
-    def Run(self, duration=250, rate=500, filename=None):
+    def Run(self, duration=250, rate=500, filename=None, subprocess="powerline"):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -124,16 +124,16 @@ class DripInterface:
         }
         self._cmd_database.save(run_doc)
         result.Wait()
-        return self.CreatePowerSpectrum(filename)
+        return self.CreatePowerSpectrum(filename,subprocess)
 
-    def CreatePowerSpectrum(self, filename):
+    def CreatePowerSpectrum(self, filename, sp):
         result = DripResponse(self._cmd_database, uuid4().hex)
         pow_doc = {
             '_id':result['_id'],
             'type':'command',
             'command':{
                 "do":"run",
-                "subprocess":"powerline",
+                "subprocess":sp,
                 "input":filename,
             },
         }
