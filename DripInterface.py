@@ -123,7 +123,7 @@ class DripInterface:
         self._cmd_database.save(run_doc)
         return result
 
-    def CreatePowerSpectrum(self, filename, sp):
+    def CreatePowerSpectrum(self, dripresponse, sp):
         result = DripResponse(self._cmd_database, uuid4().hex)
         pow_doc = {
             '_id':result['_id'],
@@ -131,7 +131,7 @@ class DripInterface:
             'command':{
                 "do":"run",
                 "subprocess":sp,
-                "input":filename,
+                "input":dripresponse["filename"],
             },
         }
         self._cmd_database.save(pow_doc)
