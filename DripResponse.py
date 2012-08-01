@@ -27,13 +27,6 @@ class DripResponse(dict):
         self._max_timeout = 3600 #1 hr (in sec)
         self['_id'] = doc_id
     
-    def __repr__(self):
-        '''
-            Defines the string representation of a DripResponse object.
-        '''
-        rval = "<" + str(self['final']) + ">"
-        return rval
-
     def Waiting(self):
         '''
             Check a document to see if it has a 'result' field
