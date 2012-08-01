@@ -35,7 +35,7 @@ class DripInterface:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def Get(self, channel=None):
+    def Get(self, channel=None, wait=False):
         '''
             Request and return the current value of some channel.
 
@@ -58,9 +58,11 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(get_doc)
+            if wait:
+                result.Wait()
             return result
 
-    def Set(self, channel=None, value=None, check=False,):
+    def Set(self, channel=None, value=None, wait=False):
         '''
             Change the setting of a dripline channel
 
@@ -91,9 +93,11 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(set_doc)
+            if wait:
+                result.Wait()
             return result
 
-    def Run(self, duration=250, rate=500, filename=None, subprocess="powerline"):
+    def Run(self, duration=250, rate=500, filename=None, wait=False):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -123,7 +127,7 @@ class DripInterface:
         self._cmd_database.save(run_doc)
         return result
 
-    def CreatePowerSpectrum(self, dripresponse, sp):
+    def CreatePowerSpectrum(self, dripresponse, sp, wait=False):
         result = DripResponse(self._cmd_database, uuid4().hex)
         pow_doc = {
             '_id':result['_id'],
@@ -135,6 +139,8 @@ class DripInterface:
             },
         }
         self._cmd_database.save(pow_doc)
+        if wait:
+            result.Wait()
         return result
         
     def SetDefaultTimeout(self, duration):
