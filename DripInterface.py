@@ -58,7 +58,6 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(get_doc)
-            result.Wait()
             return result
 
     def Set(self, channel=None, value=None, check=False,):
@@ -92,7 +91,6 @@ class DripInterface:
                 },
             }
             self._cmd_database.save(set_doc)
-            result.Wait()
             return result
 
     def Run(self, duration=250, rate=500, filename=None, subprocess="powerline"):
@@ -123,8 +121,7 @@ class DripInterface:
             },
         }
         self._cmd_database.save(run_doc)
-        result.Wait()
-        return self.CreatePowerSpectrum(filename,subprocess)
+        return result
 
     def CreatePowerSpectrum(self, filename, sp):
         result = DripResponse(self._cmd_database, uuid4().hex)
@@ -138,7 +135,6 @@ class DripInterface:
             },
         }
         self._cmd_database.save(pow_doc)
-        result.Wait()
         return result
         
     def SetDefaultTimeout(self, duration):
