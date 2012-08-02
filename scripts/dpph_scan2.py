@@ -34,6 +34,7 @@ guess = round((hguess+cguess)/2,4)
 #Find precise field with DPPH
 DPPH = 28042.9 #MHz/T
 Li = 27992.5*2.0004/2 #MHz/T
+
 target = int(round(guess*DPPH))
 if target < 24590:
     sys.exit("Field strength too low, (must be at least .877 T)")
