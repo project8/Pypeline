@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from couchdb import Server as CouchServer
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 class LoggedDataHandler:
     '''
@@ -48,10 +47,19 @@ class LoggedDataHandler:
     def Plot(self, sensors=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
             Creates a plot of logged data.
+
+            Inputs:
+                <sensors> is either a string or a list of strings. These are
+                          the names of the sensors to plot. If this is left
+                          blank, a list of all sensors for which there exists
+                          data will be printed.
+                <start> is either a datetime object or a string formatted the
+                        same as a CouchDB timestamp. This is the start of the
+                        plotting window.
+                <stop> is either a datetime object or a string formatted the
+                       same as a CouchDB timestamp. This is the end of the
+                       plotting window.
         '''
-        hours = mdates.HourLocator()
-        minutes = mdates.MinuteLocator()
-        hoursFmt = mdates.DateFormatter('%H')
 
         if not sensors:
             self.EligibleSensors()
