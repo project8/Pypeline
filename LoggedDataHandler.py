@@ -1,3 +1,4 @@
+from warnings import warn
 from datetime import datetime, timedelta
 from couchdb import Server as CouchServer
 import numpy as np
@@ -38,7 +39,11 @@ class LoggedDataHandler:
         valuelist = []
         unitlist = []
         for row in self._logged_data.view('log_access/all_logged_data'):
-            timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
+            try:
+                timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                warn('Some timestamps not formatted properly. Check CouchDB.')
+                continue
             if row.value['sensor_name'] == sensor:
                 if timestamp >= start and timestamp <= stop:
                     timelist.append(timestamp)
@@ -66,7 +71,6 @@ class LoggedDataHandler:
                        same as a CouchDB timestamp. This is the end of the
                        plotting window.
         '''
-
         if not sensors:
             self.EligibleSensors()
         else:    
@@ -83,16 +87,19 @@ class LoggedDataHandler:
             if isinstance(sensors,list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    ax.plot(data[-1][0],data[-1][1],label=sensor)
+                    ax.plot(data[0][-1],data[1][-1],label=sensor)
                     fig.autofmt_xdate()
 
             plt.xlabel('Time (Hours)')
-            plt.ylabel('Value (' + data[-1][2][0] + ')')
+            plt.ylabel('Value (' + data[2][-1][0] + ')')
             plt.title('Sensor Readout')
             plt.legend()
             plt.show()
 
     def Save(self, filename):
+        '''
+            Saves all data that has been stored in object in specified file.
+        '''
         f = open(filename, 'w')
         f.write(str([self.times, self.values, self.units]))
         f.close()
