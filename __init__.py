@@ -5,3 +5,4 @@
 from DripInterface import DripInterface
 from DripResponse import DripResponse
 from peakdet import peakdet
+from LoggedDataHandler import LoggedDataHandler
