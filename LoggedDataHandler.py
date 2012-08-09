@@ -38,17 +38,12 @@ class LoggedDataHandler:
         timelist = []
         valuelist = []
         unitlist = []
-        for row in self._logged_data.view('log_access/all_logged_data'):
-            try:
-                timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                warn('Some timestamps not formatted properly. Check CouchDB.')
-                continue
+        for row in self._logged_data.view('log_access/all_logged_data', startkey=start, endkey=stop):
+            timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
             if row.value['sensor_name'] == sensor:
-                if timestamp >= start and timestamp <= stop:
-                    timelist.append(timestamp)
-                    valuelist.append(float(row.value['calibrated_value'].split()[0]))
-                    unitlist.append(str(row.value['calibrated_value'].split()[1]))
+                timelist.append(timestamp)
+                valuelist.append(float(row.value['calibrated_value'].split()[0]))
+                unitlist.append(str(row.value['calibrated_value'].split()[1]))
         self.times.append(timelist)
         self.values.append(valuelist)
         self.units.append(unitlist)
@@ -74,10 +69,10 @@ class LoggedDataHandler:
         if not sensors:
             self.EligibleSensors()
         else:    
-            if isinstance(start,str):
-                start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
-            if isinstance(stop,str):
-                stop = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S")
+            if isinstance(start,datetime):
+                start = start.strftime("%Y-%m-%d %H:%M:%S")
+            if isinstance(stop,datetime):
+                stop = start.strftime("%Y-%m-%d %H:%M:%S")
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
