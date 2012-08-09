@@ -13,6 +13,9 @@ class LoggedDataHandler:
             Connects to data server and looks for logged data.
         '''
         self._server = CouchServer(dripline_url)
+        self.times = []
+        self.values = []
+        self.units = []
         if (self._server.__contains__('dripline_logged_data')):
             self._logged_data = self._server['dripline_logged_data']
         else:
@@ -41,7 +44,10 @@ class LoggedDataHandler:
                     timelist.append(timestamp)
                     valuelist.append(float(row.value['calibrated_value'].split()[0]))
                     unitlist.append(str(row.value['calibrated_value'].split()[1]))
-        result = [timelist,valuelist,unitlist]
+        self.times.append(timelist)
+        self.values.append(valuelist)
+        self.units.append(unitlist)
+        result = [self.times,self.values,self.units]
         return result
 
     def Plot(self, sensors=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
@@ -77,14 +83,19 @@ class LoggedDataHandler:
             if isinstance(sensors,list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    ax.plot(data[0],data[1],label=sensor)
+                    ax.plot(data[-1][0],data[-1][1],label=sensor)
                     fig.autofmt_xdate()
 
             plt.xlabel('Time (Hours)')
-            plt.ylabel('Value (' + data[2][0] + ')')
+            plt.ylabel('Value (' + data[-1][2][0] + ')')
             plt.title('Sensor Readout')
             plt.legend()
             plt.show()
+
+    def Save(self, filename):
+        f = open(filename, 'w')
+        f.write(str([self.times, self.values, self.units]))
+        f.close()
 
     def EligibleSensors(self):
         '''
