@@ -2,6 +2,7 @@ from warnings import warn
 from datetime import datetime, timedelta
 from couchdb import Server as CouchServer
 import numpy as np
+from scipy import optimize
 import matplotlib.pyplot as plt
 
 class LoggedDataHandler:
@@ -98,6 +99,26 @@ class LoggedDataHandler:
         f = open(filename, 'w')
         f.write(str([self.times, self.values, self.units]))
         f.close()
+
+    def Fit(self, x, y, fitfunc, p0):
+        '''
+            Fits data pulled from CouchDB to an arbitrary function using least-
+            squares regression.
+
+            Inputs:
+            <x> A Python list of x-values
+            <y> A Python list of y-values
+            <fitfunc> A fitting function of the form (does not have to be linear):
+                      fitfunc = lambda p, x: p[0] + p[1]*x
+            <p0> A python list of guess values for the fit parameters
+        '''
+        errfunc = lambda p,x,y: fitfunc(p,x) - y
+        x = np.array(x)
+        y = np.array(y)
+        p1, success = optimize.leastsq(errfunc, p0[:], args=(x,y))
+        plt.plot(x, y, "bo", x, fitfunc(p1,x), "b-")
+        plt.show()
+        return p1
 
     def EligibleSensors(self):
         '''
