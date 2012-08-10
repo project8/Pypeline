@@ -127,7 +127,7 @@ class LoggedDataHandler:
         if fitfunc == 'exponential':
             fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
             print 'fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)'
-            p0 = [0,1,1]
+            p0 = [1,-1,-1]
         errfunc = lambda p,x,y: fitfunc(p,x) - y
         x = []
         temp = self.times[sensor]
