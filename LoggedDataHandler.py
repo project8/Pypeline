@@ -10,11 +10,14 @@ class LoggedDataHandler:
         Class to plot data logged on CouchDB.
     '''
 
-    def __init__(self, dripline_url="http://127.0.0.1:5984"):
+    def __init__(self, couch_url="http://127.0.0.1:5984"):
         '''
             Connects to data server and looks for logged data.
+
+            Inputs:
+            <couch_url> (string) URL of CouchDB server
         '''
-        self._server = CouchServer(dripline_url)
+        self._server = CouchServer(couch_url)
         self.times = {}
         self.values = {}
         self.units = {}
@@ -29,12 +32,12 @@ class LoggedDataHandler:
             as a numpy array.
 
             Inputs:
-                <sensor> is the sensor whose logged data you would like to
-                         retrieve
-                <start> is the timestamp of the beginning of the log you would
-                        like to retrieve
-                <stop> is the timestamp of the end of the log you would like to
-                       retrieve
+                <sensor> (string) is the sensor whose logged data you would
+                         like to retrieve
+                <start> (string) is the timestamp of the beginning of the log
+                        you would like to retrieve
+                <stop> (string) is the timestamp of the end of the log you
+                       would like to retrieve
         '''
         timelist = []
         valuelist = []
@@ -56,16 +59,16 @@ class LoggedDataHandler:
             Creates a plot of logged data.
 
             Inputs:
-                <sensors> is either a string or a list of strings. These are
+                <sensors> (string or list of strings) These are
                           the names of the sensors to plot. If this is left
                           blank, a list of all sensors for which there exists
                           data will be printed.
-                <start> is either a datetime object or a string formatted the
-                        same as a CouchDB timestamp. This is the start of the
-                        plotting window.
-                <stop> is either a datetime object or a string formatted the
-                       same as a CouchDB timestamp. This is the end of the
-                       plotting window.
+                <start> (datetime object or string formatted the same as a
+                        CouchDB timestamp) This is the start of the plotting
+                        window.
+                <stop> (datetime object or string formatted the same as a
+                       CouchDB timestamp) This is the end of the plotting
+                       window.
         '''
         if not sensors:
             self.EligibleSensors()
@@ -95,6 +98,9 @@ class LoggedDataHandler:
     def Save(self, filename):
         '''
             Saves all data that has been stored in object in specified file.
+
+            Inputs:
+            <filename> (string) Complete name of file where data will be saved.
         '''
         f = open(filename, 'w')
         f.write(str([self.times, self.values, self.units]))
