@@ -15,9 +15,9 @@ class LoggedDataHandler:
             Connects to data server and looks for logged data.
         '''
         self._server = CouchServer(dripline_url)
-        self.times = []
-        self.values = []
-        self.units = []
+        self.times = {}
+        self.values = {}
+        self.units = {}
         if (self._server.__contains__('dripline_logged_data')):
             self._logged_data = self._server['dripline_logged_data']
         else:
@@ -45,9 +45,9 @@ class LoggedDataHandler:
                 timelist.append(timestamp)
                 valuelist.append(float(row.value['calibrated_value'].split()[0]))
                 unitlist.append(str(row.value['calibrated_value'].split()[1]))
-        self.times.append(timelist)
-        self.values.append(valuelist)
-        self.units.append(unitlist)
+        self.times[sensor] = timelist
+        self.values[sensor] = valuelist
+        self.units[sensor] = unitlist
         result = [self.times,self.values,self.units]
         return result
 
@@ -69,11 +69,11 @@ class LoggedDataHandler:
         '''
         if not sensors:
             self.EligibleSensors()
-        else:    
+        else:
             if isinstance(start,datetime):
                 start = start.strftime("%Y-%m-%d %H:%M:%S")
             if isinstance(stop,datetime):
-                stop = start.strftime("%Y-%m-%d %H:%M:%S")
+                stop = stop.strftime("%Y-%m-%d %H:%M:%S")
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
@@ -83,11 +83,11 @@ class LoggedDataHandler:
             if isinstance(sensors,list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    ax.plot(data[0][-1],data[1][-1],label=sensor)
+                    ax.plot(data[0][sensor],data[1][sensor],label=sensor)
                     fig.autofmt_xdate()
 
             plt.xlabel('Time (Hours)')
-            plt.ylabel('Value (' + data[2][-1][0] + ')')
+            plt.ylabel('Value (' + data[2][sensor][0] + ')')
             plt.title('Sensor Readout')
             plt.legend()
             plt.show()
@@ -100,25 +100,39 @@ class LoggedDataHandler:
         f.write(str([self.times, self.values, self.units]))
         f.close()
 
-    def Fit(self, x, y, fitfunc, p0):
+    def Fit(self, sensor, fitfunc=False, p0=[0,1]):
         '''
             Fits data pulled from CouchDB to an arbitrary function using least-
             squares regression.
 
             Inputs:
-            <x> A Python list of x-values
-            <y> A Python list of y-values
-            <fitfunc> A fitting function of the form (does not have to be linear):
+            <sensor> (string) The sensor with data to be fitted.
+            <fitfunc> (callable or string) A fitting function of the form (does
+            not have to be linear):
                       fitfunc = lambda p, x: p[0] + p[1]*x
-            <p0> A python list of guess values for the fit parameters
+                      This variable also accept the keywords 'linear' and
+                      'exponential'
+            <p0> (list) A list of guess values for the fit parameters
         '''
+        if not fitfunc or fitfunc == 'linear':
+            fitfunc = lambda p,x: p[0]+p[1]*x
+            print 'fitfunc = lambda p,x: p[0]+p[1]*x'
+            p0 = [0,1]
+        if fitfunc == 'exponential':
+            fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
+            print 'fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)'
+            p0 = [0,1,1]
         errfunc = lambda p,x,y: fitfunc(p,x) - y
+        x = []
+        temp = self.times[sensor]
+        for i in range(len(self.times[sensor])):
+            x.append(temp[i].hour + temp[i].minute/60.0 + temp[i].second/3600.0)
         x = np.array(x)
-        y = np.array(y)
+        y = np.array(self.values[sensor])
         p1, success = optimize.leastsq(errfunc, p0[:], args=(x,y))
-        plt.plot(x, y, "bo", x, fitfunc(p1,x), "b-")
+        plt.plot(x, y, "bo", x, fitfunc(p1,x), "r-")
+        print p1
         plt.show()
-        return p1
 
     def EligibleSensors(self):
         '''
