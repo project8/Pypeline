@@ -35,12 +35,13 @@ class DripInterface:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def StartLoggers(self, instruments, wait=False):
+    def StartLoggers(self, instruments=False, wait=False):
         '''
             Tells the dripline logger to start following one or more instruments
         '''
         if not instruments:
-            print self.EligibleChannels()
+            for row in self._conf_database.view('objects/loggers'):
+                print row.key
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             if type(instruments) == type(''):
@@ -58,6 +59,50 @@ class DripInterface:
             if wait:
                 result.Wait()
             return result
+
+    def StopLoggers(self, instruments=False, wait=False):
+        '''
+            Tells the dripline logger to stop following one or more instruments
+        '''
+        if not instruments:
+            for row in self._conf_database.view('objects/loggers'):
+                print row.key
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            if type(instruments) == type(''):
+                instruments = [instruments]
+            stop_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"syscmd",
+                    "action":"stop_loggers",
+                    "args":instruments,
+                },
+            }
+            self._cmd_database.save(stop_doc)
+            if wait:
+                result.Wait()
+            return result
+
+    def CurrentLoggers(self, wait=False):
+        '''
+            Tells the dripline logger to list which instruments are currently
+            being logged.
+        '''
+        result = DripResponse(self._cmd_database, uuid4().hex)
+        start_doc = {
+            '_id':result['_id'],
+            'type':'command',
+            'command':{
+                "do":"syscmd",
+                "action":"current_loggers",
+            },
+        }
+        self._cmd_database.save(start_doc)
+        if wait:
+            result.Wait()
+        return result
 
     def Get(self, channel=None, wait=False):
         '''
