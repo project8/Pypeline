@@ -35,6 +35,30 @@ class DripInterface:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
+    def StartLoggers(self, instruments, wait=False):
+        '''
+            Tells the dripline logger to start following one or more instruments
+        '''
+        if not instruments:
+            print self.EligibleChannels()
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            if type(instruments) == type(''):
+                instruments = [instruments]
+            start_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"syscmd",
+                    "action":"start_loggers",
+                    "args":instruments,
+                },
+            }
+            self._cmd_database.save(start_doc)
+            if wait:
+                result.Wait()
+            return result
+
     def Get(self, channel=None, wait=False):
         '''
             Request and return the current value of some channel.
