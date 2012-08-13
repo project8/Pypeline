@@ -1,174 +1,113 @@
-from Pypeline import DripInterface, peakdet
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
 import sys
 import math
-import time
-from datetime import datetime
 from uuid import uuid4
+from datetime import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import special
+from DripInterface import DripInterface
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
-
-fname1 = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second) + '.1'
-fname2 = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second) + '.2'
 tempf = '/data/' + uuid4().hex + '.egg'
-busycount = 0
-busylim = 10
-syncount = 0
-synlim = 3
-keycount = 0
-keylim = 2
-hfstart = 30
-hfstop = 100
-hfstep = 10
-lo = 1000
-sumx1 = []
-sumy1 = []
-sumx2 = []
-sumy2 = []
-drip.Set('hf_sweeper_power', '-90')
-print "First run:"
-hf = hfstart
-drip.Set('lo_cw_freq',str(lo))
-print "LO set for " + str(lo) + " MHz"
-while hf <= hfstop:
-    drip.Set('hf_cw_freq',str(24500+lo+hf))
-    print str(hf) + " MHz"
-    try:
-        time.sleep(10)
-        run = eval(repr(drip.Run(filename=tempf))[1:-1])
-        hf = hf + hfstep
-        keycount = 0
-        syncount = 0
-        busycount = 0
-    except KeyError:
-        if keycount == keylim:
-            print "KeyError at " + str(hf) + " MHz"
-            sumx1.append(hf)
-            sumy1.append(0)
-            hf = hf + hfstep
-            keycount = 0
-        else:
-            keycount = keycount + 1
-            print "KeyError " + str(keycount) + " of " + str(keylim)
-            time.sleep(20)
-        continue
-    except SyntaxError:
-        if syncount == synlim:
-            print "SyntaxError at " + str(hf) + " MHz"
-            sumx1.append(hf)
-            sumy1.append(0)
-            hf = hf + hfstep
-            syncount = 0
-        else:
-            syncount = syncount + 1
-            print "SyntaxError " + str(syncount) + " of " + str(synlim)
-        continue
-    except NameError:
-        time.sleep(30)
-        if busycount == busylim:
-            print "Timeout occurred at " + str(hf) + " MHz"
-            raise
-        else:
-            busycount = busycount + 1
-            print "NameError " + str(busycount) + " of " + str(busylim)
-        continue
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        raise
-    power = run['data']
-    freq = np.linspace(0,run['sampling_rate']/2,len(power))
-    power = power[1:-1]
-    freq = freq[1:-1]
-    logpower = [10*math.log(a,10) for a in power]
-    #plt.plot(x,logy)
-    peaks = peakdet(logpower,2,freq)
-    #print peaks[0]
-    for k in peaks[0]:
-        #print j
-        #print i-step
-        if math.floor(k[0]) == (hf-hfstep):
-            sumx1.append(k[0])
-            sumy1.append(k[1])
-            f = open('/Users/Micah/project8/Pypeline/scripts/dpph_data/' + fname1 + '.txt', 'a')
-            f.write(repr([k[0],k[1]]))
-            f.close()
+fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
+conflevel = .005
 
-# Pause to set new magnetic field value
-raw_input("Set new magnetic field, then press enter.")
+#Calibration Data
+hallconst = 118 #T/V
+coilconst = .35 #T/A
+coiloffset = .084 #T
 
-print "Second run:"
-hf = hfstart
-while hf <= hfstop:
-    drip.Set('hf_cw_freq',str(24500+lo+hf))
-    print str(hf) + " MHz"
-    try:
-        time.sleep(10)
-        run = eval(repr(drip.Run(filename=tempf))[1:-1])
-        hf = hf + hfstep
-        keycount = 0
-        syncount = 0
-        busycount = 0
-    except KeyError:
-        if keycount == keylim:
-            print "KeyError at " + str(hf) + " MHz"
-            sumx2.append(hf)
-            sumy2.append(0)
-            hf = hf + hfstep
-            keycount = 0
-        else:
-            keycount = keycount + 1
-            print "KeyError " + str(keycount) + " of " + str(keylim)
-            time.sleep(20)
-        continue
-    except SyntaxError:
-        if syncount == synlim:
-            print "SyntaxError at " + str(hf) + " MHz"
-            sumx2.append(hf)
-            sumy2.append(0)
-            hf = hf + hfstep
-            syncount = 0
-        else:
-            syncount = syncount + 1
-            print "SyntaxError " + str(syncount) + " of " + str(synlim)
-        continue
-    except NameError:
-        time.sleep(30)
-        if busycount == busylim:
-            print "Timeout occurred at " + str(hf) + " MHz"
-            raise
-        else:
-            busycount = busycount + 1
-            print "NameError " + str(busycount) + " of " + str(busylim)
-        continue
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        raise
-    power = run['data']
-    freq = np.linspace(0,run['sampling_rate']/2,len(power))
-    power = power[1:-1]
-    freq = freq[1:-1]
-    logpower = [10*math.log(a,10) for a in power]
-    #plt.plot(x,logy)
-    peaks = peakdet(logpower,2,freq)
-    #print peaks[0]
-    for k in peaks[0]:
-        #print j
-        #print i-step
-        if math.floor(k[0]) == (hf-hfstep):
-            sumx2.append(k[0])
-            sumy2.append(k[1])
-            f = open('/Users/Micah/project8/Pypeline/scripts/dpph_data/' + fname2 + '.txt', 'a')
-            f.write(repr([k[0],k[1]]))
-            f.close()
+#Estimate field with Hall Probe
+hguess = round(abs(float(drip.Get('hall_probe_voltage').Wait()['final'][1:16]))*hallconst,3)
+print "Hall Probe Estimated Field: " + str(hguess) + " T"
 
-sumx = sumx1
-sumy = [sumy1[i] - sumy2[i] for i in range(len(sumy1))]
-plt.plot(sumx, sumy, 'o')
-plt.xlabel("Output Frequency (hf_cw_freq - 24.5 GHz - lo_cw_freq) (MHz)")
-plt.ylabel("Peak Height (dBm)")
-plt.title("DPPH Resonance")
-plt.savefig('/Users/Micah/project8/Pypeline/scripts/dpph_images/' + fname1 + '.jpg')
+#Estimate field with coil constant
+cguess = round(float(raw_input("Enter magnet current in Amps: "))*coilconst + coiloffset,3)
+print "Coil constant estimated field: " + str(cguess) + " T"
+
+#Check for reasonable agreement
+#if int(1000*abs(hguess-cguess)) > 10:
+#    sys.exit('Hall Probe and coil constant do not agree. Try again or check calibration.')
+
+guess = round((hguess+cguess)/2,4)
+
+#Find precise field with DPPH
+DPPH = 28042.9 #MHz/T
+Li = 27992.5*2.0004/2 #MHz/T
+
+target = int(round(guess*DPPH))
+if target < 24590:
+    sys.exit("Field strength too low, (must be at least .877 T)")
+
+sigpow = []
+bgpow = []
+freq = []
+scanwin = 80 #MHz
+runlim = int(round(abs(hguess-cguess)*DPPH/scanwin)) + 3
+scantime = 2000 #ms
+runnum = 0
+dummy = list(np.linspace(0,250,513))
+for i in dummy:
+    if i > (100-scanwin)/2:
+        lb = dummy.index(i)
+        break
+    
+for i in reversed(dummy):
+    if i < (100+scanwin)/2:
+        ub = dummy.index(i)
+        break
+    
+drip.Set('pancake_coil_current','enable')
+drip.Set('hf_sweeper_power','-40')
+while runnum < runlim:
+    drip.Set('pancake_coil_current','0A')
+    drip.Set('hf_sweep_start', target-(scanwin*(runlim-1)+100)/2+scanwin*runnum)
+    drip.Set('hf_sweep_stop', target-(scanwin*(runlim-1)+100)/2+scanwin*runnum+100)
+    drip.Set('hf_sweep_time', 10)
+    drip.Set('lo_cw_freq', target-24500-(scanwin*(runlim-1)+100)/2+scanwin*runnum)
+    sigrun = eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime),sp="sweepline"))[1:-1])
+    sigtp = sigrun['data']
+    tf = list(np.linspace(target-(scanwin*(runlim-1)+100)/2+scanwin*runnum,sigrun['sampling_rate']/2+target-(scanwin*(runlim-1)+100)/2+scanwin*runnum,len(sigtp)))
+    sigpow = sigpow + sigtp[lb:ub]
+    freq = freq + tf[lb:ub]
+    drip.Set('pancake_coil_current','4A')
+    bgrun = eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime)),sp="sweepline")[1:-1])
+    bgtp = bgrun['data']
+    bgpow = bgpow + bgtp[lb:ub]
+    runnum = runnum + 1
+
+drip.Set('pancake_coil_current','0A')
+WINDOW = 5
+weightings = np.repeat(1.0, WINDOW) / WINDOW
+sigavg = np.convolve(sigpow, weightings)[WINDOW-1:-(WINDOW-1)]
+bgavg = np.convolve(bgpow, weightings)[WINDOW-1:-(WINDOW-1)]
+diffavg = [sigavg[i] - bgavg[i] for i in range(len(sigavg))]
+b = [a / 28042.9 for a in freq[2:-2]]
+plt.plot(b, [5*a for a in diffavg], label='difference*5')
+plt.plot(b, sigavg, label='signal')
+plt.plot(b, bgavg, label='background')
+plt.legend(loc='best')
+plt.xlabel('Magnetic Field (T)')
+plt.ylabel('Power (mW)')
+plt.title('DPPH Resonance Signal')
+field = freq[diffavg.index(min(diffavg))] / 28042.9
+zscore = (min(diffavg)-np.mean(diffavg))/np.std(diffavg)
+pvalue = special.ndtr(zscore)
+if pvalue < conflevel:
+    rval = {
+        "field":round(field,4),
+        "error":0.0003,
+        "pvalue":pvalue
+        }
+    print rval
+
+if pvalue >= conflevel:
+    rval = {
+        "field":round(field,4),
+        "error":0.0003,
+        "pvalue":pvalue
+        }
+    print rval
+
+plt.savefig('/Users/Micah/project8/Pypeline/scripts/dpph_images/' + fname + '.jpg')
 plt.show()
