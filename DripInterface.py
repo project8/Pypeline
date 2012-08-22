@@ -40,14 +40,6 @@ class DripInterface:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def SetDefaultTimeout(self, duration):
-        '''
-            Change how long a get will look for changes before timeout.a
-        '''
-        if duration < 0:
-            raise ValueError('timeout must be >= 0')
-        self._timeout = duration
-
     def EligibleChannels(self):
         '''
             Creates a list of all possible channels to query or set.
