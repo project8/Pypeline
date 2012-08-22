@@ -1,8 +1,10 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+import sys
+
 def plot_transfer_data(filename):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    from matplotlib import cm
-    from mpl_toolkits.mplot3d import Axes3D
     
     f = open(filename,'r')
     data = eval(f.read())
@@ -26,3 +28,6 @@ def plot_transfer_data(filename):
     plt.title('Transfer Function of Receiver Chain')
     surf = ax.plot_surface(x,y,z,rstride=5,cstride=25,cmap=cm.jet)
     plt.show()
+
+if __name__ == "__main__":
+    plot_transfer_data(sys.argv[1])
