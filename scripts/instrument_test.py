@@ -33,282 +33,331 @@ import sys
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
 
-# ============== Check bypass valve temp =================
-try:
-    if drip.Get('bypass_valve_t')['final'][0] == '-':
-        print "bypass_valve_t reading negative temperature " + repr(drip.Get('bypass_valve_t'))
-    elif drip.Get('bypass_valve_t')['final'][0] == '+':
-        print "bypass_valve_t ok " + repr(drip.Get('bypass_valve_t'))
-    else:
-        print "bypass_valve_t reading unexpected value " + repr(drip.Get('bypass_valve_t'))
-except KeyError:
+# ================ Check Bore Pressure ===================
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('bypass_valve_t')['final'][0] == '-':
-            print "bypass_valve_t reading negative temperature " + repr(drip.Get('bypass_valve_t'))
-        elif drip.Get('bypass_valve_t')['final'][0] == '+':
-            print "bypass_valve_t ok " + repr(drip.Get('bypass_valve_t'))
+        bore_p = drip.Get('bore_pressure').Wait()['final']
+        val = True
+        if bore_p[0].isdigit():
+            if float(bore_p.split()[0]) < 1000:
+                print "bore_pressure ok " + str(bore_p)
+            else:
+                print "bore_pressure malfunction " + str(bore_p)
         else:
-            print "bypass_valve_t reading unexpected value " + repr(drip.Get('bypass_valve_t'))
+            print "bore_pressure reading unexpected value " + str(bore_p)
     except KeyError:
-        print "bypass_valve_t not responding"
+        tries += 1
+        continue
     except:
+        val = True
+        print "bore_pressure unexpected error", sys.exc_info()[0]
+if not val:
+    print "bore_pressure not responding"
+        
+# ============== Check bypass valve temp =================
+val = False
+tries = 0
+while not val and tries < 2:
+    try:
+        bypass = drip.Get('bypass_valve_t').Wait()['final']
+        val = True
+        if bypass[0] == '-':
+            print "bypass_valve_t reading negative temperature " + str(bypass)
+        elif bypass[0] == '+':
+            print "bypass_valve_t ok " + str(bypass)
+        else:
+            print "bypass_valve_t reading unexpected value " + str(bypass)
+    except KeyError:
+        tries += 1
+        continue
+    except:
+        val = True
         print "bypass_valve_t unexpected error:", sys.exc_info()[0]
-except:
-    print "bypass_valve_t unexpected error:", sys.exc_info()[0]
+if not val:
+    print "bypass_valve_t not responding"
             
 # =========== Check cernox temperature sensors on cable A ================
-try:
-    if drip.Get('cernox_a_t1')['final'][0].isdigit():
-        print "cernox_a_t1 ok " + repr(drip.Get('cernox_a_t1'))
-    else:
-        print "cernox_a_t1 reading unexpected value " + repr(drip.Get('cernox_a_t1'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('cernox_a_t1')['final'][0].isdigit():
-            print "cernox_a_t1 ok " + repr(drip.Get('cernox_a_t1'))
+        cernox1 = drip.Get('cernox_a_t1').Wait()['final']
+        val = True
+        if cernox1[0].isdigit():
+            print "cernox_a_t1 ok " + str(cernox1)
         else:
-            print "cernox_a_t1 reading unexpected value " + repr(drip.Get('cernox_a_t1'))
+            print "cernox_a_t1 reading unexpected value " + str(cernox1)
     except KeyError:
-        print "cernox_a_t1 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "cernox_a_t1 unexpected error:", sys.exc_info()[0]
-except:
-    print "cernox_a_t1 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('cernox_a_t2')['final'][0].isdigit():
-        print "cernox_a_t2 ok " + repr(drip.Get('cernox_a_t2'))
-    else:
-        print "cernox_a_t2 reading unexpected value " + repr(drip.Get('cernox_a_t2'))
-except KeyError:
+if not val:
+    print "cernox_a_t1 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('cernox_a_t2')['final'][0].isdigit():
-            print "cernox_a_t2 ok " + repr(drip.Get('cernox_a_t2'))
+        cernox2 = drip.Get('cernox_a_t2').Wait()['final']
+        val = True
+        if cernox2[0].isdigit():
+            print "cernox_a_t2 ok " + str(cernox2)
         else:
-            print "cernox_a_t2 reading unexpected value " + repr(drip.Get('cernox_a_t2'))
+            print "cernox_a_t2 reading unexpected value " + str(cernox2)
     except KeyError:
-        print "cernox_a_t2 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "cernox_a_t2 unexpected error:", sys.exc_info()[0]
-except:
-    print "cernox_a_t2 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('cernox_a_t3')['final'][0].isdigit():
-        print "cernox_a_t3 ok " + repr(drip.Get('cernox_a_t3'))
-    else:
-        print "cernox_a_t3 reading unexpected value " + repr(drip.Get('cernox_a_t3'))
-except KeyError:
+if not val:
+    print "cernox_a_t2 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('cernox_a_t3')['final'][0].isdigit():
-            print "cernox_a_t3 ok " + repr(drip.Get('cernox_a_t3'))
+        cernox3 = drip.Get('cernox_a_t3').Wait()['final']
+        val = True
+        if cernox3[0].isdigit():
+            print "cernox_a_t3 ok " + str(cernox3)
         else:
-            print "cernox_a_t3 reading unexpected value " + repr(drip.Get('cernox_a_t3'))
+            print "cernox_a_t3 reading unexpected value " + str(cernox3)
     except KeyError:
-        print "cernox_a_t3 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "cernox_a_t3 unexpected error:", sys.exc_info()[0]
-except:
-    print "cernox_a_t3 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('cernox_a_t4')['final'][0].isdigit():
-        print "cernox_a_t4 ok " + repr(drip.Get('cernox_a_t4'))
-    else:
-        print "cernox_a_t4 reading unexpected value " + repr(drip.Get('cernox_a_t4'))
-except KeyError:
+if not val:
+    print "cernox_a_t3 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('cernox_a_t4')['final'][0].isdigit():
-            print "cernox_a_t4 ok " + repr(drip.Get('cernox_a_t4'))
+        cernox4 = drip.Get('cernox_a_t4').Wait()['final']
+        val = True
+        if cernox4[0].isdigit():
+            print "cernox_a_t4 ok " + str(cernox4)
         else:
-            print "cernox_a_t4 reading unexpected value " + repr(drip.Get('cernox_a_t4'))
+            print "cernox_a_t4 reading unexpected value " + str(cernox4)
     except KeyError:
-        print "cernox_a_t4 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "cernox_a_t4 unexpected error:", sys.exc_info()[0]
-except:
-    print "cernox_a_t4 unexpected error:", sys.exc_info()[0]
+if not val:
+    print "cernox_a_t4 not responding"
 
 # ============== Check getter valve temp =================
-try:
-    if drip.Get('getter_valve_t')['final'][0] == '-':
-        print "getter_valve_t reading negative temperature " + repr(drip.Get('getter_valve_t'))
-    elif drip.Get('getter_valve_t')['final'][0] == '+':
-        print "getter_valve_t ok " + repr(drip.Get('getter_valve_t'))
-    else:
-        print "getter_valve_t reading unexpected value " + repr(drip.Get('getter_valve_t'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('getter_valve_t')['final'][0] == '-':
-            print "getter_valve_t reading negative temperature " + repr(drip.Get('getter_valve_t'))
-        elif drip.Get('getter_valve_t')['final'][0] == '+':
-            print "getter_valve_t ok " + repr(drip.Get('getter_valve_t'))
+        getter = drip.Get('getter_valve_t').Wait()['final']
+        val = True
+        if getter[0] == '-':
+            print "getter_valve_t reading negative temperature " + str(getter)
+        elif getter[0] == '+':
+            print "getter_valve_t ok " + str(getter)
         else:
-            print "getter_valve_t reading unexpected value " + repr(drip.Get('getter_valve_t'))
+            print "getter_valve_t reading unexpected value " + str(getter)
     except KeyError:
-        print "getter_valve_t not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "getter_valve_t unexpected error:", sys.exc_info()[0]
-except:
-    print "getter_valve_t unexpected error:", sys.exc_info()[0]
+if not val:
+    print "getter_valve_t not responding"
 
-# =============== Check high frequency ===================
-try:
-    drip.Set('hf_cw_freq', '25000')
-    if int(drip.Get('hf_cw_freq')['final']) != 25000000000:
-        print "error setting hf_cw_freq to 25 GHz " + repr(drip.Get('hf_cw_freq'))
-    else:
-        print "hf_cw_freq ok " + repr(drip.Get('hf_cw_freq'))
-except KeyError:
+# =========================== Check Hall Probe ================================
+val = False
+tries = 0
+while not val and tries < 2:
+    try:
+        hall = drip.Get('hall_probe_voltage').Wait()['final']
+        val = True
+        if hall[0] == '-':
+            print "hall_probe_voltage reading negative voltage " + str(hall)
+        elif hall[0] == '+':
+            print "hall_valve_t ok " + str(hall)
+        else:
+            print "hall_probe_voltage reading unexpected value " + str(hall)
+    except KeyError:
+        tries += 1
+        continue
+    except:
+        val = True
+        print "hall_probe_voltage unexpected error:", sys.exc_info()[0]
+if not val:
+    print "hall_probe_voltage not responding"
+        
+# ========================= Check high frequency ==============================
+val = False
+tries = 0
+while not val and tries < 2:
     try:
         drip.Set('hf_cw_freq', '25000')
-        if int(drip.Get('hf_cw_freq')['final']) != 25000000000:
-            print "error setting hf_cw_freq to 25 GHz " + repr(drip.Get('hf_cw_freq'))
+        hf_cw = int(drip.Get('hf_cw_freq').Wait()['final'])
+        val = True
+        if hf_cw != 25000000000:
+            print "error setting hf_cw_freq to 25 GHz " + str(hf_cw)
         else:
-            print "hf_cw_freq ok " + repr(drip.Get('hf_cw_freq'))
+            print "hf_cw_freq ok " + str(hf_cw)
     except KeyError:
-        print "hf_cw_freq not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "hf_cw_freq unexpected error:", sys.exc_info()[0]
-except:
-    print "hf_cw_freq unexpected error:", sys.exc_info()[0]
-    
-try:
-    drip.Set('hf_sweep_start', '24000')
-    if int(drip.Get('hf_sweep_start')['final']) != 24000000000:
-        print "error setting hf_sweep_start to 24 GHz " + repr(drip.Get('hf_sweep_start'))
-    else:
-        print "hf_sweep_start ok " + repr(drip.Get('hf_sweep_start'))
-except KeyError:
+if not val:
+    print "hf_cw_freq not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
         drip.Set('hf_sweep_start', '24000')
-        if int(drip.Get('hf_sweep_start')['final']) != 24000000000:
-            print "error setting hf_sweep_start to 24 GHz " + repr(drip.Get('hf_sweep_start'))
+        hf_sweep_start = int(drip.Get('hf_sweep_start').Wait()['final'])
+        val = True
+        if hf_sweep_start != 24000000000:
+            print "error setting hf_sweep_start to 24 GHz " + str(hf_sweep_start)
         else:
-            print "hf_sweep_start ok " + repr(drip.Get('hf_sweep_start'))
+            print "hf_sweep_start ok " + str(hf_sweep_start)
     except KeyError:
-        print "hf_sweep_start not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "hf_sweep start unexpected error:", sys.exc_info()[0]
-except:
-    print "hf_sweet_start unexpected error:", sys.exc_info()[0]
-    
-try:
-    drip.Set('hf_sweep_stop', '25000')
-    if int(drip.Get('hf_sweep_stop')['final']) != 25000000000:
-        print "error setting hf_sweep_stop to 25 GHz " + repr(drip.Get('hf_sweep_stop'))
-    else:
-        print "hf_sweep_stop ok " + repr(drip.Get('hf_sweep_stop'))
-except KeyError:
+if not val:
+    print "hf_sweep_start not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
         drip.Set('hf_sweep_stop', '25000')
-        if int(drip.Get('hf_sweep_stop')['final']) != 25000000000:
-            print "error setting hf_sweep_stop to 25 GHz " + repr(drip.Get('hf_sweep_stop'))
+        hf_sweep_stop = int(drip.Get('hf_sweep_stop').Wait()['final'])
+        val = True
+        if hf_sweep_stop != 25000000000:
+            print "error setting hf_sweep_stop to 25 GHz " + str(hf_sweep_stop)
         else:
-            print "hf_sweep_stop ok " + repr(drip.Get('hf_sweep_stop'))
+            print "hf_sweep_stop ok " + str(hf_sweep_stop)
     except KeyError:
-        print "hf_sweep_stop not responding"
+       tries += 1
+       continue
     except:
+        val = True
         print "hf_sweep_stop unexpected error:", sys.exc_info()[0]
-except:
-    print "hf_sweep_Stop unexpected error:", sys.exc_info()[0]
-        
-try:
-    drip.Set('hf_sweep_time', '1000')
-    if float(drip.Get('hf_sweep_time')['final']) != 1:
-        print "error setting hf_sweep_time to 1000 ms " + repr(drip.Get('hf_sweep_time'))
-    else:
-        print "hf_sweep_time ok " + repr(drip.Get('hf_sweep_time'))
-except KeyError:
+if not val:
+    print "hf_sweep_stop not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
         drip.Set('hf_sweep_time', '1000')
-        if float(drip.Get('hf_sweep_time')['final']) != 1:
-            print "error setting hf_sweep_time to 1000 ms " + repr(drip.Get('hf_sweep_time'))
+        hf_sweep_time = float(drip.Get('hf_sweep_time').Wait()['final'])
+        val = True
+        if hf_sweep_time != 1:
+            print "error setting hf_sweep_time to 1000 ms " + str(hf_sweep_time)
         else:
-            print "hf_sweep_time ok " + repr(drip.Get('hf_sweep_time'))
+            print "hf_sweep_time ok " + str(hf_sweep_time)
     except KeyError:
-        print "hf_sweep_time not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "hf_sweep_time unexpected error:", sys.exc_info()[0]
-except:
-    print "hf_sweep_time unexpected error:", sys.exc_info()[0]
-    
-try:
-    drip.Set('hf_sweeper_power', '-31')
-    if float(drip.Get('hf_sweeper_power')['final']) != -31:
-        print "error setting hf_sweeper_power to -31 dB " + repr(drip.Get('hf_sweeper_power'))
-    else:
-        print "hf_sweeper_power ok " + repr(drip.Get('hf_sweeper_power')['final'])
-except KeyError:
+if not val:
+    print "hf_sweep_time not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        drip.Set('hf_sweeper_power', '-31')
-        if float(drip.Get('hf_sweeper_power')['final']) != -31:
-            print "error setting hf_sweeper_power to -31 dB " + repr(drip.Get('hf_sweeper_power'))
+        drip.Set('hf_sweeper_power', '-40')
+        hf_sweeper_power = float(drip.Get('hf_sweeper_power').Wait()['final'])
+        val = True
+        if hf_sweeper_power != -40:
+            print "error setting hf_sweeper_power to -40 dB " + str(hf_sweeper_power)
         else:
-            print "hf_sweeper_power ok " + repr(drip.Get('hf_sweeper_power')['final'])
+            print "hf_sweeper_power ok " + str(hf_sweeper_power)
     except KeyError:
-        print "hr_sweeper_power not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "hf_sweeper_power unexpected error:", sys.exc_info()[0]
-except:
-    print "hf_sweeper_power unexpected error:", sys.exc_info()[0]
+if not val:
+    print "hf_sweeper_power not responding"
 
 # ======================== Check Ignatius Data Disk =======================
-try:
-    print "ignatius_data_disk ok " + '\n' + drip.Get('ignatius_data_disk')['final']
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        print "ignatius_data_disk ok " + '\n' + drip.Get('ignatius_data_disk')['final']
+        data = drip.Get('ignatius_data_disk').Wait()['final']
+        print "ignatius_data_disk ok " + '\n' + str(data)
     except KeyError:
-        print "ignatius_data_disk not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "ignatius_data_disk unexpected error", sys.exc_info()[0]
-except:
-    print "ignatius_data_disk unexpected error", sys.exc_info()[0]
+if not val:
+    print "ignatius_data_disk not responding"
     
 # ========================= Check Inlet Pressure ==========================
-try:
-    if drip.Get('inlet_pressure')['final'][0].isdigit():
-        if float(drip.Get('inlet_pressure')['final'].split()[0]) < 1000:
-            print "inlet_pressure ok " + repr(drip.Get('inlet_pressure'))
-        else:
-            print "inlet_pressure malfunction " + repr(drip.Get('inlet_pressure'))
-    else:
-        print "inlet_pressure reading unexpected value " + repr(drip.Get('inlet_pressure'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('inlet_pressure')['final'][0].isdigit():
-            if float(drip.Get('inlet_pressure')['final'].split()[0]) > 1000:
-                print "inlet_pressure ok " + repr(drip.Get('inlet_pressure'))
+        inlet_p = drip.Get('inlet_pressure').Wait()['final']
+        val = True
+        if inlet_p[0].isdigit():
+            if float(inlet_p.split()[0]) < 1000:
+                print "inlet_pressure ok " + str(inlet_p)
             else:
-                print "inlet_pressure malfunction " + repr(drip.Get('inlet_pressure'))
+                print "inlet_pressure malfunction " + str(inlet_p)
         else:
-            print "inlet_pressure reading unexpected value " + repr(drip.Get('inlet_pressure'))
+            print "inlet_pressure reading unexpected value " + str(inlet_p)
     except KeyError:
-        print "inlet_pressure not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "inlet_pressure unexpected error", sys.exc_info()[0]
-except:
-    print "inlet_pressure unexpected error", sys.exc_info()[0]
+if not val:
+    print "inlet_pressure not responding"
 
 # ========================= Check Linear Encoder ==========================
-try:
-    if drip.Get('linear_encoder')['final'][0].isdigit():
-        print "linear_encoder ok " + repr(drip.Get('linear_encoder'))
-    else:
-        print "linear_encoder reading unexpected value " + repr(drip.Get('linear_encoder'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('linear_encoder')['final'][0].isdigit():
-            print "linear_encoder ok " + repr(drip.Get('linear_encoder'))
+        linenc = drip.Get('linear_encoder').Wait()['final']
+        val = True
+        if linenc[0].isdigit():
+            print "linear_encoder ok " + str(linenc)
         else:
-            print "linear_encoder reading unexpected value " + repr(drip.Get('linear_encoder'))
+            print "linear_encoder reading unexpected value " + str(linenc)
     except KeyError:
-        print "linear_encoder not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "linear_encoder unexpected error:", sys.exc_info()[0]
-except:
-    print "linear_encoder unexpected error:", sys.exc_info()[0]
+if not val:
+    print "linear_encoder not responding"
 
 # ========================= Check Local Oscilltor =========================
 try:
@@ -328,174 +377,169 @@ except:
     "lo_power_level not responding", sys.exc_info()[0]
     
 # ========================= Check Outlet Pressure =========================
-try:
-    if drip.Get('outlet_pressure')['final'][0].isdigit():
-        if float(drip.Get('outlet_pressure')['final'].split()[0]) < 1000:
-            print "outlet_pressure ok " + repr(drip.Get('outlet_pressure'))
-        else:
-            print "outlet_pressure malfunction " + repr(drip.Get('outlet_pressure'))
-    else:
-        print "outlet_pressure reading unexpected value " + repr(drip.Get('outlet_pressure'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('outlet_pressure')['final'][0].isdigit():
-            if float(drip.Get('outlet_pressure')['final'].split()[0]) > 1000:
-                print "outlet_pressure ok " + repr(drip.Get('outlet_pressure'))
+        outlet_p = drip.Get('outlet_pressure').Wait()['final']
+        val = True
+        if outlet_p[0].isdigit():
+            if float(outlet_p.split()[0]) < 1000:
+                print "outlet_pressure ok " + str(outlet_p)
             else:
-                print "outlet_pressure malfunction " + repr(drip.Get('outlet_pressure'))
+                print "outlet_pressure malfunction " + str(outlet_p)
         else:
-            print "outlet_pressure reading unexpected value " + repr(drip.Get('outlet_pressure'))
+            print "outlet_pressure reading unexpected value " + str(outlet_p)
     except KeyError:
-        print "outlet_pressure not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "outlet_pressure unexpected error", sys.exc_info()[0]
-except:
-    print "outlet_pressure unexpected error", sys.exc_info()[0]
+if not val:
+    print "outlet_pressure not responding"
 
 # ======================== Check p8portal Root Disk =======================
-try:
-    print "p8portal ok " + '\n' + drip.Get('p8portal_root_disk')['final']
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        print "p8portal ok " + '\n' + drip.Get('p8portal_root_disk')['final']
+        root = drip.Get('p8portal_root_disk').Wait()['final']
+        print "p8portal ok " + '\n' + str(root)
     except KeyError:
-        print "p9portal_root_disk not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "p8portal_root_disk unexpected error", sys.exc_info()[0]
-except:
-    print "p8portal_root_disk unexpected error", sys.exc_info()[0]
+if not val:
+    print "p8portal_root_disk not responding"
     
 # ============== Check Pt temperature sensors on cable C ==================
-try:
-    if drip.Get('platinum_rtd_c_t1')['final'][0] == '-':
-        print "platinum_rtd_c_t1 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t1'))
-    elif drip.Get('platinum_rtd_c_t1')['final'][0] == '+':
-        print "platinum_rtd_c_t1 ok " + repr(drip.Get('platinum_rtd_c_t1'))
-    else:
-        print "platinum_rtd_c_t1 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t1'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('platinum_rtd_c_t1')['final'][0] == '-':
-            print "platinum_rtd_c_t1 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t1'))
-        elif drip.Get('platinum_rtd_c_t1')['final'][0] == '+':
-            print "platinum_rtd_c_t1 ok " + repr(drip.Get('platinum_rtd_c_t1'))
+        pt1 = drip.Get('platinum_rtd_c_t1').Wait()['final']
+        val = True
+        if pt1[0] == '-':
+            print "platinum_rtd_c_t1 reading negative temperature " + str(pt1)
+        elif pt1[0] == '+':
+            print "platinum_rtd_c_t1 ok " + str(pt1)
         else:
-            print "platinum_rtd_c_t1 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t1'))
+            print "platinum_rtd_c_t1 reading unexpected value " + str(pt1)
     except KeyError:
-        print "platinum_rtd_c_t1 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "platinum_rtd_c_t1 unexpected error:", sys.exc_info()[0]
-except:
-    print "platinum_rtd_c_t1 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('platinum_rtd_c_t2')['final'][0] == '-':
-        print "platinum_rtd_c_t2 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t2'))
-    elif drip.Get('platinum_rtd_c_t2')['final'][0] == '+':
-        print "platinum_rtd_c_t2 ok " + repr(drip.Get('platinum_rtd_c_t2'))
-    else:
-        print "platinum_rtd_c_t2 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t2'))
-except KeyError:
+if not val:
+    print "platinum_rtd_c_t1 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('platinum_rtd_c_t2')['final'][0] == '-':
-            print "platinum_rtd_c_t2 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t2'))
-        elif drip.Get('platinum_rtd_c_t2')['final'][0] == '+':
-            print "platinum_rtd_c_t2 ok " + repr(drip.Get('platinum_rtd_c_t2'))
+        pt2 = drip.Get('platinum_rtd_c_t2').Wait()['final']
+        val = True
+        if pt2[0] == '-':
+            print "platinum_rtd_c_t2 reading negative temperature " + str(pt2)
+        elif pt2[0] == '+':
+            print "platinum_rtd_c_t2 ok " + str(pt2)
         else:
-            print "platinum_rtd_c_t2 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t2'))
+            print "platinum_rtd_c_t2 reading unexpected value " + str(pt2)
     except KeyError:
-        print "platinum_rtd_c_t2 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "platinum_rtd_c_t2 unexpected error:", sys.exc_info()[0]
-except:
-    print "platinum_rtd_c_t2 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('platinum_rtd_c_t3')['final'][0] == '-':
-        print "platinum_rtd_c_t3 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t3'))
-    elif drip.Get('platinum_rtd_c_t3')['final'][0] == '+':
-        print "platinum_rtd_c_t3 ok " + repr(drip.Get('platinum_rtd_c_t3'))
-    else:
-        print "platinum_rtd_c_t3 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t3'))
-except KeyError:
+if not val:
+    print "platinum_rtd_c_t2 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('platinum_rtd_c_t3')['final'][0] == '-':
-            print "platinum_rtd_c_t3 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t3'))
-        elif drip.Get('platinum_rtd_c_t3')['final'][0] == '+':
-            print "platinum_rtd_c_t3 ok " + repr(drip.Get('platinum_rtd_c_t3'))
+        pt3 = drip.Get('platinum_rtd_c_t3').Wait()['final']
+        val = True
+        if pt3[0] == '-':
+            print "platinum_rtd_c_t3 reading negative temperature " + str(pt3)
+        elif pt3[0] == '+':
+            print "platinum_rtd_c_t3 ok " + str(pt3)
         else:
-            print "platinum_rtd_c_t3 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t3'))
+            print "platinum_rtd_c_t3 reading unexpected value " + str(pt3)
     except KeyError:
-        print "platinum_rtd_c_t3 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "platinum_rtd_c_t3 unexpected error:", sys.exc_info()[0]
-except:
-    print "platinum_rtd_c_t3 unexpected error:", sys.exc_info()[0]
-        
-try:
-    if drip.Get('platinum_rtd_c_t4')['final'][0] == '-':
-        print "platinum_rtd_c_t4 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t4'))
-    elif drip.Get('platinum_rtd_c_t4')['final'][0] == '+':
-        print "platinum_rtd_c_t4 ok " + repr(drip.Get('platinum_rtd_c_t4'))
-    else:
-        print "platinum_rtd_c_t4 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t4'))
-except KeyError:
+if not val:
+    print "platinum_rtd_c_t3 not responding"
+
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('platinum_rtd_c_t4')['final'][0] == '-':
-            print "platinum_rtd_c_t4 reading negative temperature " + repr(drip.Get('platinum_rtd_c_t4'))
-        elif drip.Get('platinum_rtd_c_t4')['final'][0] == '+':
-            print "platinum_rtd_c_t4 ok " + repr(drip.Get('platinum_rtd_c_t4'))
+        pt4 = drip.Get('platinum_rtd_c_t4').Wait()['final']
+        val = True
+        if pt4[0] == '-':
+            print "platinum_rtd_c_t4 reading negative temperature " + str(pt4)
+        elif pt4[0] == '+':
+            print "platinum_rtd_c_t4 ok " + str(pt4)
         else:
-            print "platinum_rtd_c_t4 reading unexpected value " + repr(drip.Get('platinum_rtd_c_t4'))
+            print "platinum_rtd_c_t4 reading unexpected value " + str(pt4)
     except KeyError:
-        print "platinum_rtd_c_t4 not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "platinum_rtd_c_t4 unexpected error:", sys.exc_info()[0]
-except:
-    print "platinum_rtd_c_t4 unexpected error:", sys.exc_info()[0]
+if not val:
+    print "platinum_rtd_c_t4 not responding"
     
 # ====================== Check Pump Valve Temperature =====================
-try:
-    if drip.Get('pump_valve_t')['final'][0] == '-':
-        print "pump_valve_t reading negative temperature " + repr(drip.Get('pump_valve_t'))
-    elif drip.Get('pump_valve_t')['final'][0] == '+':
-        print "pump_valve_t ok " + repr(drip.Get('pump_valve_t'))
-    else:
-        print "pump_valve_t reading unexpected value " + repr(drip.Get('pump_valve_t'))
-except KeyError:
+val = True
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('pump_valve_t')['final'][0] == '-':
-            print "pump_valve_t reading negative temperature " + repr(drip.Get('pump_valve_t'))
-        elif drip.Get('pump_valve_t')['final'][0] == '+':
-            print "pump_valve_t ok " + repr(drip.Get('pump_valve_t'))
+        pvt = drip.Get('pump_valve_t').Wait()['final']
+        val = True
+        if pvt[0] == '-':
+            print "pump_valve_t reading negative temperature " + str(pvt)
+        elif pvt[0] == '+':
+            print "pump_valve_t ok " + str(pvt)
         else:
-            print "pump_valve_t reading unexpected value " + repr(drip.Get('pump_valve_t'))
+            print "pump_valve_t reading unexpected value " + str(pvt)
     except KeyError:
-        print "pump_valve_t not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "pump_valve_t unexpected error:", sys.exc_info()[0]
-except:
-    print "pump_valve_t unexpected error:", sys.exc_info()[0]
+if not val:
+    print "pump_valve_t not responding"
 
 # ====================== Check Vent Valve Temperature =====================
-try:
-    if drip.Get('vent_valve_t')['final'][0] == '-':
-        print "vent_valve_t reading negative temperature " + repr(drip.Get('vent_valve_t'))
-    elif drip.Get('vent_valve_t')['final'][0] == '+':
-        print "vent_valve_t ok " + repr(drip.Get('vent_valve_t'))
-    else:
-        print "vent_valve_t reading unexpected value " + repr(drip.Get('vent_valve_t'))
-except KeyError:
+val = False
+tries = 0
+while not val and tries < 2:
     try:
-        if drip.Get('vent_valve_t')['final'][0] == '-':
-            print "vent_valve_t reading negative temperature " + repr(drip.Get('vent_valve_t'))
-        elif drip.Get('vent_valve_t')['final'][0] == '+':
-            print "vent_valve_t ok " + repr(drip.Get('vent_valve_t'))
+        vvt = drip.Get('vent_valve_t').Wait()['final']
+        val = True
+        if vvt[0] == '-':
+            print "vent_valve_t reading negative temperature " + str(vvt)
+        elif vvt[0] == '+':
+            print "vent_valve_t ok " + str(vvt)
         else:
-            print "vent_valve_t reading unexpected value " + repr(drip.Get('vent_valve_t'))
+            print "vent_valve_t reading unexpected value " + str(vvt)
     except KeyError:
-        print "vent_valve_t not responding"
+        tries += 1
+        continue
     except:
+        val = True
         print "vent_valve_t unexpected error:", sys.exc_info()[0]
-except:
-    print "vent_valve_t unexpected error:", sys.exc_info()[0]
+if not val:
+    print "vent_valve_t not responding"
