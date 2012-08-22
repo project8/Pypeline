@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from couchdb import Server as CouchServer
 import numpy as np
 from scipy import optimize
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 class LoggedDataHandler:
     '''
