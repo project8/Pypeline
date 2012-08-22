@@ -1,7 +1,16 @@
+'''
+    A class for plotting and other interactions with logged data.
+
+    This module/class has many more dependencies than the rest of Pypeline.
+'''
+
+#Standard libs
 from warnings import warn
 from datetime import datetime, timedelta
+
+#3rd party libs
 from couchdb import Server as CouchServer
-import numpy as np
+from numpy import exp, array
 from scipy import optimize
 from matplotlib import pyplot as plt
 
