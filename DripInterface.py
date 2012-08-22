@@ -2,9 +2,14 @@
     File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
 '''
 
+#standard imports
 from time import sleep
 from uuid import uuid4
+
+#3rd party imports
 from couchdb import Server as CouchServer
+
+#local imports
 from DripResponse import DripResponse
 
 class DripInterface:
@@ -34,6 +39,85 @@ class DripInterface:
         else:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
+
+    def SetDefaultTimeout(self, duration):
+        '''
+            Change how long a get will look for changes before timeout.a
+        '''
+        if duration < 0:
+            raise ValueError('timeout must be >= 0')
+        self._timeout = duration
+
+    def EligibleChannels(self):
+        '''
+            Creates a list of all possible channels to query or set.
+        '''
+        rows = []
+        for row in self._conf_database.view('objects/channels'):
+            rows.append(row.key)
+        return rows
+
+    def Get(self, channel=None, wait=False):
+        '''
+            Request and return the current value of some channel.
+
+            Inputs:
+                <channel> must be an active channel in dripline.
+            
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
+        '''
+        if not channel:
+            print self.EligibleChannels()
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            get_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"get",
+                    "channel":channel,
+                },
+            }
+            self._cmd_database.save(get_doc)
+            if wait:
+                result.Wait()
+            return result
+
+    def Set(self, channel=None, value=None, wait=False):
+        '''
+            Change the setting of a dripline channel
+
+            Inputs:
+                <channel> must be an active channel in dripline
+                <value> value to assign to <channel>
+                <check> uses Get() to check the value,
+                        WARNING: this doesn't deal with machine rounding
+            
+                If <channel> is left blank, this method will print the names
+                of all possible channels to set.
+            
+            WARNING! I do not yet check to ensure setting of the correct type.
+        '''
+        if not channel:
+            print self.EligibleChannels()
+        elif not value:
+            print "Please input value to assign to channel"
+        else:
+            result = DripResponse(self._cmd_database, uuid4().hex)
+            set_doc = {
+                '_id':result['_id'],
+                'type':'command',
+                'command':{
+                    "do":"set",
+                    "channel":channel,
+                    "value":str(value),
+                },
+            }
+            self._cmd_database.save(set_doc)
+            if wait:
+                result.Wait()
+            return result
 
     def StartLoggers(self, instruments=False, wait=False):
         '''
@@ -104,68 +188,6 @@ class DripInterface:
             result.Wait()
         return result
 
-    def Get(self, channel=None, wait=False):
-        '''
-            Request and return the current value of some channel.
-
-            Inputs:
-                <channel> must be an active channel in dripline.
-            
-                If <channel> is left blank, this method will print the names
-                of all possible channels to set.
-        '''
-        if not channel:
-            print self.EligibleChannels()
-        else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            get_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"get",
-                    "channel":channel,
-                },
-            }
-            self._cmd_database.save(get_doc)
-            if wait:
-                result.Wait()
-            return result
-
-    def Set(self, channel=None, value=None, wait=False):
-        '''
-            Change the setting of a dripline channel
-
-            Inputs:
-                <channel> must be an active channel in dripline
-                <value> value to assign to <channel>
-                <check> uses Get() to check the value,
-                        WARNING: this doesn't deal with machine rounding
-            
-                If <channel> is left blank, this method will print the names
-                of all possible channels to set.
-            
-            WARNING! I do not yet check to ensure setting of the correct type.
-        '''
-        if not channel:
-            print self.EligibleChannels()
-        elif not value:
-            print "Please input value to assign to channel"
-        else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            set_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"set",
-                    "channel":channel,
-                    "value":str(value),
-                },
-            }
-            self._cmd_database.save(set_doc)
-            if wait:
-                result.Wait()
-            return result
-
     def Run(self, duration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
@@ -210,14 +232,6 @@ class DripInterface:
         self._cmd_database.save(pow_doc)
         return result
         
-    def SetDefaultTimeout(self, duration):
-        '''
-            Change how long a get will look for changes before timeout.a
-        '''
-        if duration < 0:
-            raise ValueError('timeout must be >= 0')
-        self._timeout = duration
-
     def CheckHeartbeat(self):
         '''
             Checks dripline's heartbeat to be sure it is running.
@@ -227,12 +241,3 @@ class DripInterface:
         if not status['final'] == 'thump':
            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return status['final']
-
-    def EligibleChannels(self):
-        '''
-            Creates a list of all possible channels to query or set.
-        '''
-        rows = []
-        for row in self._conf_database.view('objects/channels'):
-            rows.append(row.key)
-        return rows
