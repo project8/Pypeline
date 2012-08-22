@@ -2,6 +2,7 @@
     File to contain the DripResponse class which inherits from dict.
 '''
 
+#import standard libraries
 from time import sleep
 
 class DripResponse(dict):
@@ -27,14 +28,6 @@ class DripResponse(dict):
         self._max_timeout = 3600 #1 hr (in sec)
         self['_id'] = doc_id
     
-    def Waiting(self):
-        '''
-            Check a document to see if it has a 'result' field
-            (ie dripline has responded to it.)
-        '''
-        self.Update()
-        return not 'result' in self
-
     def Update(self):
         '''
             Checks a doc for updates and updates local attributes if they differ.
@@ -43,6 +36,14 @@ class DripResponse(dict):
         for key in self._cmd_db[self['_id']]:
             self[key] = self._cmd_db[self['_id']][key]
         return self
+
+    def Waiting(self):
+        '''
+            Check a document to see if it has a 'result' field
+            (ie dripline has responded to it.)
+        '''
+        self.Update()
+        return not 'result' in self
 
     def Wait(self, timeout=15):
         '''
