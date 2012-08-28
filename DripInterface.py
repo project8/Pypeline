@@ -180,14 +180,16 @@ class DripInterface:
             result.Wait()
         return result
     
-    def AddLoggers(self, instruments=False, interval=False):
+    def AddLoggers(self, instruments=False, intervals=False):
         if not instruments:
             self.EligibleChannels()
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]
-            if not interval:
-                interval = ['10' for a in range(len(instruments))]
+            if not intervals:
+                intervals = ['10' for a in range(len(instruments))]
+            elif type(intervals) == type(''):
+                intervals = [intervals]
             for i in range(len(instruments)):
                 match = False
                 for row in self._conf_database.view('objects/loggers'):
@@ -202,8 +204,20 @@ class DripInterface:
                     'interval':intervals[i],
                     'type':'logger',
                 }
-                self._cmd_database.save(add_doc)
-        
+                self._conf_database.save(add_doc)
+
+    def RemoveLoggers(self, instruments=False):
+        if not instruments:
+            for row in self._conf_database.view('objects/loggers'):
+                print row.key
+        else:
+            if type(instruments) == type(''):
+                instruments = [instruments]
+            for inst in instruments:
+                for row in self._conf_database.view('objects/loggers'):
+                    if row.key == inst:
+                        self._conf_database.delete(self._conf_database.get(row.id))
+            
     def Run(self, duration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
