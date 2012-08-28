@@ -180,7 +180,7 @@ class DripInterface:
             result.Wait()
         return result
     
-    def AddLoggers(self, instruments=False, interval=False)
+    def AddLoggers(self, instruments=False, interval=False):
         if not instruments:
             self.EligibleChannels()
         else:
@@ -189,15 +189,20 @@ class DripInterface:
             if not interval:
                 interval = ['10' for a in range(len(instruments))]
             for i in range(len(instruments)):
-                result = DripResponse(self._cmd_database, uuid4().hex)
+                match = False
+                for row in self._conf_database.view('objects/loggers'):
+                    if instruments[i] == row.key:
+                        match = True
+                if match:
+                    print instruments[i] + " already added"
+                    continue
                 add_doc = {
-                    '_id':result['_id'],
+                    '_id':uuid4().hex,
                     'channel':instruments[i],
                     'interval':intervals[i],
                     'type':'logger',
                 }
                 self._cmd_database.save(add_doc)
-            return result
         
     def Run(self, duration=250, rate=500, filename=None):
         '''
