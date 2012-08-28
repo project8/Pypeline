@@ -179,7 +179,26 @@ class DripInterface:
         if wait:
             result.Wait()
         return result
-
+    
+    def AddLoggers(self, instruments=False, interval=False)
+        if not instruments:
+            self.EligibleChannels()
+        else:
+            if type(instruments) == type(''):
+                instruments = [instruments]
+            if not interval:
+                interval = ['10' for a in range(len(instruments))]
+            for i in range(len(instruments)):
+                result = DripResponse(self._cmd_database, uuid4().hex)
+                add_doc = {
+                    '_id':result['_id'],
+                    'channel':instruments[i],
+                    'interval':intervals[i],
+                    'type':'logger',
+                }
+                self._cmd_database.save(add_doc)
+            return result
+        
     def Run(self, duration=250, rate=500, filename=None):
         '''
             Take a digitizer run of fixed time and sample rate.
