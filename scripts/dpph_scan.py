@@ -109,5 +109,5 @@ if pvalue >= conflevel:
         }
     print rval
 
-plt.savefig('/Users/Micah/project8/Pypeline/scripts/dpph_images/' + fname + '.jpg')
+plt.savefig('/Users/Micah/project8/pypeline/scripts/dpph_images/' + fname + '.jpg')
 plt.show()

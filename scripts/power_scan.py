@@ -1,4 +1,4 @@
-from Pypeline import DripInterface, peakdet
+from pypeline import DripInterface, peakdet
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -119,7 +119,7 @@ while j < jstop:
                 dumx.append(k[0])
                 dumy.append(j)
                 dumz.append(k[1])
-        f = open('/Users/Micah/project8/Pypeline/scripts/run_data/' + fname + '.txt', 'a')
+        f = open('/Users/Micah/project8/pypeline/scripts/run_data/' + fname + '.txt', 'a')
         f.write(repr([dumx,dumy,dumz]))
         f.close()
         #print transferx
@@ -139,5 +139,5 @@ surf = ax.plot_surface(transferx,transfery,transferz,rstride=istep,cstride=jstep
 #plt.xlabel("Output Frequency (hf_cw_freq - 24.5 GHz - lo_cw_freq) (MHz)")
 #plt.ylabel("Peak Height (dBm)")
 #plt.title("Transfer Function")
-plt.savefig('/Users/Micah/project8/Pypeline/scripts/run_images/' + fname + '.jpg')
+plt.savefig('/Users/Micah/project8/pypeline/scripts/run_images/' + fname + '.jpg')
 plt.show()
