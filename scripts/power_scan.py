@@ -28,7 +28,7 @@ jstep = 50
 transferx = []
 transfery = []
 transferz = []
-drip.Set('hf_sweeper_power', '-90')
+drip.Set('hf_sweeper_power', '-80')
 j = jstart
 while j < jstop:
     i = istart
@@ -41,7 +41,7 @@ while j < jstop:
         drip.Set('hf_cw_freq',str(24500+j+i))
         print str(i) + " MHz"
         try:
-            run = eval(repr(drip.Run(filename=tempf))[1:-1])
+            run = eval(repr(drip.CreatePowerSpectrum(drip.Run(filename=tempf), sp="powerline"))[1:-1])
             i = i + istep
             keycount = 0
             syncount = 0
