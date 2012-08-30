@@ -146,11 +146,11 @@ class LoggedDataHandler:
         '''
         if not fitfunc or fitfunc == 'linear':
             fitfunc = lambda p,x: p[0]+p[1]*x
-            print 'fitfunc = lambda p,x: p[0]+p[1]*x'
+            print('fitfunc = lambda p,x: p[0]+p[1]*x')
             p0 = [0,1]
         if fitfunc == 'exponential':
             fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
-            print 'fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)'
+            print('fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)')
             p0 = [1,-1,-1]
         errfunc = lambda p,x,y: fitfunc(p,x) - y
         x = []
@@ -172,4 +172,4 @@ class LoggedDataHandler:
         for row in self._logged_data.view('log_access/all_logged_data'):
             if row.value['sensor_name'] not in sensors:
                 sensors.append(row.value['sensor_name'])
-        print sensors
+        print(sensors)
