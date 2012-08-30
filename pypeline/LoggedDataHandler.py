@@ -63,7 +63,7 @@ class LoggedDataHandler:
         result = [self.times,self.values,self.units]
         return result
 
-    def Plot(self, sensors=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
             Creates a plot of logged data.
 
@@ -95,14 +95,29 @@ class LoggedDataHandler:
             if isinstance(sensors,list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                    line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
                     fig.autofmt_xdate()
 
-            plt.xlabel('Time (Hours)')
-            plt.ylabel('Value (' + data[2][sensor][0] + ')')
-            plt.title('Sensor Readout')
-            plt.legend()
-            plt.show()
+            while dynamupdate:
+                try:
+                    for sensor in sensors:
+                        ax.clear()
+                        data = self.Get(sensor, start, stop)
+                        line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                        fig.autofmt_xdate()
+                        plt.xlabel('Time (Hours)')
+                        plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                        plt.title('Sensor Readout')
+                        plt.legend()
+                        fig.canvas.draw()
+                except KeyboardInterrupt:
+                    break
+            if not dynamupdate:
+                plt.xlabel('Time (Hours)')
+                plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                plt.title('Sensor Readout')
+                plt.legend()
+                plt.show()
 
     def Save(self, filename):
         '''
