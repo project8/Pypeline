@@ -10,7 +10,10 @@ from uuid import uuid4
 from couchdb import Server as CouchServer
 
 #local imports
-from DripResponse import DripResponse
+try:
+    from .DripResponse import DripResponse
+except ImportError:
+    from DripResponse import DripResponse
 
 class DripInterface:
     '''
@@ -60,7 +63,7 @@ class DripInterface:
                 of all possible channels to set.
         '''
         if not channel:
-            print self.EligibleChannels()
+            print(self.EligibleChannels())
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             get_doc = {
@@ -92,9 +95,9 @@ class DripInterface:
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
         if not channel:
-            print self.EligibleChannels()
+            print(self.EligibleChannels())
         elif not value:
-            print "Please input value to assign to channel"
+            print("Please input value to assign to channel")
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             set_doc = {
@@ -117,7 +120,7 @@ class DripInterface:
         '''
         if not instruments:
             for row in self._conf_database.view('objects/loggers'):
-                print row.key
+                print(row.key)
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             if type(instruments) == type(''):
@@ -142,7 +145,7 @@ class DripInterface:
         '''
         if not instruments:
             for row in self._conf_database.view('objects/loggers'):
-                print row.key
+                print(row.key)
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             if type(instruments) == type(''):
@@ -196,7 +199,7 @@ class DripInterface:
                     if instruments[i] == row.key:
                         match = True
                 if match:
-                    print instruments[i] + " already added"
+                    print(instruments[i] + " already added")
                     continue
                 add_doc = {
                     '_id':uuid4().hex,
@@ -209,7 +212,7 @@ class DripInterface:
     def RemoveLoggers(self, instruments=False):
         if not instruments:
             for row in self._conf_database.view('objects/loggers'):
-                print row.key
+                print(row.key)
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]

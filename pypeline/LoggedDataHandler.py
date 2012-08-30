@@ -1,7 +1,7 @@
 '''
     A class for plotting and other interactions with logged data.
 
-    This module/class has many more dependencies than the rest of Pypeline.
+    This module/class has many more dependencies than the rest of pypeline.
 '''
 
 #Standard libs

@@ -1,4 +1,4 @@
-from Pypeline import DripInterface, peakdet
+from pypeline import DripInterface, peakdet
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -39,5 +39,5 @@ plt.plot(powx,powy)
 plt.xlabel('Input Power (dBm)')
 plt.ylabel('Output Power (dBm)')
 plt.title('Compression at LO = ' + lo + ', and HF = ' + hf)
-plt.savefig('/Users/Micah/project8/Pypeline/scripts/compression_images/' + fname + '.jpg')
+plt.savefig('/Users/Micah/project8/pypeline/scripts/compression_images/' + fname + '.jpg')
 plt.show()

@@ -1,5 +1,5 @@
 '''
-    This script checks the functionality of all channels in Pypeline:
+    This script checks the functionality of all channels in pypeline:
 
     bypass_valve_t
     cernox_a_t1
@@ -27,7 +27,7 @@
     vent_valve_t
 '''
 
-from Pypeline import DripInterface
+from pypeline import DripInterface
 import sys
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
