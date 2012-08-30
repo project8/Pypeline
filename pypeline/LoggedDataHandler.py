@@ -63,7 +63,7 @@ class LoggedDataHandler:
         result = [self.times,self.values,self.units]
         return result
 
-    def Plot(self, sensors=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
             Creates a plot of logged data.
 
@@ -95,14 +95,29 @@ class LoggedDataHandler:
             if isinstance(sensors,list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                    line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
                     fig.autofmt_xdate()
 
-            plt.xlabel('Time (Hours)')
-            plt.ylabel('Value (' + data[2][sensor][0] + ')')
-            plt.title('Sensor Readout')
-            plt.legend()
-            plt.show()
+            while dynamupdate:
+                try:
+                    for sensor in sensors:
+                        ax.clear()
+                        data = self.Get(sensor, start, stop)
+                        line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                        fig.autofmt_xdate()
+                        plt.xlabel('Time (Hours)')
+                        plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                        plt.title('Sensor Readout')
+                        plt.legend()
+                        fig.canvas.draw()
+                except KeyboardInterrupt:
+                    break
+            if not dynamupdate:
+                plt.xlabel('Time (Hours)')
+                plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                plt.title('Sensor Readout')
+                plt.legend()
+                plt.show()
 
     def Save(self, filename):
         '''
@@ -131,11 +146,11 @@ class LoggedDataHandler:
         '''
         if not fitfunc or fitfunc == 'linear':
             fitfunc = lambda p,x: p[0]+p[1]*x
-            print 'fitfunc = lambda p,x: p[0]+p[1]*x'
+            print('fitfunc = lambda p,x: p[0]+p[1]*x')
             p0 = [0,1]
         if fitfunc == 'exponential':
             fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
-            print 'fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)'
+            print('fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)')
             p0 = [1,-1,-1]
         errfunc = lambda p,x,y: fitfunc(p,x) - y
         x = []
@@ -157,4 +172,4 @@ class LoggedDataHandler:
         for row in self._logged_data.view('log_access/all_logged_data'):
             if row.value['sensor_name'] not in sensors:
                 sensors.append(row.value['sensor_name'])
-        print sensors
+        print(sensors)

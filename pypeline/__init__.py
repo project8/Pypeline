@@ -12,7 +12,7 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 if "DISPLAY" in environ:
-    if environ["Display"]:
+    if environ["DISPLAY"]:
         try:
             from . import peakdet
         except ImportError:

@@ -144,8 +144,7 @@ class DripInterface:
             Tells the dripline logger to stop following one or more instruments
         '''
         if not instruments:
-            for row in self._conf_database.view('objects/loggers'):
-                print(row.key)
+            print(self.CurrentLoggers().Wait())
         else:
             result = DripResponse(self._cmd_database, uuid4().hex)
             if type(instruments) == type(''):
