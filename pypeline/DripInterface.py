@@ -14,6 +14,14 @@ try:
     from .DripResponse import DripResponse
 except ImportError:
     from DripResponse import DripResponse
+try:
+    from .CmdInterface import _CmdInterface
+except ImportError:
+    from CmdInterface import _CmdInterface
+try:
+    from .ConfInterface import _ConfInterface
+except ImportError:
+    from ConfInterface import _ConfInterface
 
 class DripInterface:
     '''
@@ -35,22 +43,15 @@ class DripInterface:
         self._wait_state = {}
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
+            self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         else:
             raise UserWarning('The dripline command database was not found!')
         if (self._server.__contains__('dripline_conf')):
             self._conf_database = self._server['dripline_conf']
+            self._conf_interface = _ConfInterface(self._server['dripline_conf'])
         else:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
-
-    def EligibleChannels(self):
-        '''
-            Creates a list of all possible channels to query or set.
-        '''
-        rows = []
-        for row in self._conf_database.view('objects/channels'):
-            rows.append(row.key)
-        return rows
 
     def Get(self, channel=None, wait=False):
         '''
@@ -63,18 +64,9 @@ class DripInterface:
                 of all possible channels to set.
         '''
         if not channel:
-            print(self.EligibleChannels())
+            print(self._conf_interface.EligibleChannels())
         else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            get_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"get",
-                    "channel":channel,
-                },
-            }
-            self._cmd_database.save(get_doc)
+            result = self._cmd_interface.Get(channel)
             if wait:
                 result.Wait()
             return result
@@ -99,17 +91,7 @@ class DripInterface:
         elif not value:
             print("Please input value to assign to channel")
         else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            set_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"set",
-                    "channel":channel,
-                    "value":str(value),
-                },
-            }
-            self._cmd_database.save(set_doc)
+            result = self._cmd_interface.Set(channel, value)
             if wait:
                 result.Wait()
             return result
@@ -119,22 +101,9 @@ class DripInterface:
             Tells the dripline logger to start following one or more instruments
         '''
         if not instruments:
-            for row in self._conf_database.view('objects/loggers'):
-                print(row.key)
+            print(self.EligibleLoggers())
         else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            if type(instruments) == type(''):
-                instruments = [instruments]
-            start_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"syscmd",
-                    "action":"start_loggers",
-                    "args":instruments,
-                },
-            }
-            self._cmd_database.save(start_doc)
+            result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
             return result
@@ -144,21 +113,9 @@ class DripInterface:
             Tells the dripline logger to stop following one or more instruments
         '''
         if not instruments:
-            print(self.CurrentLoggers().Wait())
+            print(self.EligibleLoggers())
         else:
-            result = DripResponse(self._cmd_database, uuid4().hex)
-            if type(instruments) == type(''):
-                instruments = [instruments]
-            stop_doc = {
-                '_id':result['_id'],
-                'type':'command',
-                'command':{
-                    "do":"syscmd",
-                    "action":"stop_loggers",
-                    "args":instruments,
-                },
-            }
-            self._cmd_database.save(stop_doc)
+            result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
             return result
@@ -168,23 +125,14 @@ class DripInterface:
             Tells the dripline logger to list which instruments are currently
             being logged.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        start_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"syscmd",
-                "action":"current_loggers",
-            },
-        }
-        self._cmd_database.save(start_doc)
+        result = self._cmd_interface.CurrentLoggers()
         if wait:
             result.Wait()
         return result
     
     def AddLoggers(self, instruments=False, intervals=False):
         if not instruments:
-            self.EligibleChannels()
+            self._conf_interface.EligibleChannels()
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]
@@ -234,35 +182,15 @@ class DripInterface:
                            unless you have
                            a good reason not to do so.
         '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
         if not filename:
             filename = '/data/' + uuid4().hex + '.egg'
-        run_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"run",
-                "duration":str(duration),
-                "rate":str(rate),
-                "output":filename,
-            },
-        }
-        self._cmd_database.save(run_doc)
+        result = self._cmd_interface.Run(duration, rate, filename)
         return result
 
     def CreatePowerSpectrum(self, dripresponse, sp):
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        pow_doc = {
-            '_id':result['_id'],
-            'type':'command',
-            'command':{
-                "do":"run",
-                "subprocess":sp,
-                "input":dripresponse['command']['output'],
-            },
-        }
-        self._cmd_database.save(pow_doc)
-        return result
+        '''
+        '''
+        return self._cmd_interface.CreatePowerSpectrum(dripresponse, sp)
         
     def CheckHeartbeat(self):
         '''
