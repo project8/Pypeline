@@ -161,7 +161,7 @@ class LoggedDataHandler:
         y = np.array(self.values[sensor])
         p1, success = optimize.leastsq(errfunc, p0[:], args=(x,y))
         plt.plot(x, y, "bo", x, fitfunc(p1,x), "r-")
-        print p1
+        print(p1)
         plt.show()
 
     def EligibleSensors(self):
