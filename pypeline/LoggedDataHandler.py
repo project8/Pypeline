@@ -60,7 +60,7 @@ class LoggedDataHandler:
         self.times[sensor] = timelist
         self.values[sensor] = valuelist
         self.units[sensor] = unitlist
-        result = [self.times,self.values,self.units]
+        result = [self.times, self.values, self.units]
         return result
 
     def Plot(self, sensors=False, dynamupdate=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
@@ -82,20 +82,20 @@ class LoggedDataHandler:
         if not sensors:
             self.EligibleSensors()
         else:
-            if isinstance(start,datetime):
+            if isinstance(start, datetime):
                 start = start.strftime("%Y-%m-%d %H:%M:%S")
-            if isinstance(stop,datetime):
+            if isinstance(stop, datetime):
                 stop = stop.strftime("%Y-%m-%d %H:%M:%S")
             fig = plt.figure()
             ax = fig.add_subplot(111)
 
-            if isinstance(sensors,str):
+            if isinstance(sensors, str):
                 sensors = [sensors]
 
-            if isinstance(sensors,list):
+            if isinstance(sensors, list):
                 for sensor in sensors:
                     data = self.Get(sensor, start, stop)
-                    line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                    line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
                     fig.autofmt_xdate()
 
             while dynamupdate:
@@ -103,7 +103,7 @@ class LoggedDataHandler:
                     for sensor in sensors:
                         ax.clear()
                         data = self.Get(sensor, start, stop)
-                        line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
+                        line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
                         fig.autofmt_xdate()
                         plt.xlabel('Time (Hours)')
                         plt.ylabel('Value (' + data[2][sensor][0] + ')')
@@ -130,7 +130,7 @@ class LoggedDataHandler:
         f.write(str([self.times, self.values, self.units]))
         f.close()
 
-    def Fit(self, sensor, fitfunc=False, p0=[0,1]):
+    def Fit(self, sensor, fitfunc=False, p0=[0, 1]):
         '''
             Fits data pulled from CouchDB to an arbitrary function using least-
             squares regression.
@@ -151,16 +151,16 @@ class LoggedDataHandler:
         if fitfunc == 'exponential':
             fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
             print('fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)')
-            p0 = [1,-1,-1]
-        errfunc = lambda p,x,y: fitfunc(p,x) - y
+            p0 = [1, -1, -1]
+        errfunc = lambda p,x,y: fitfunc(p, x) - y
         x = []
         temp = self.times[sensor]
         for i in range(len(self.times[sensor])):
             x.append(temp[i].hour + temp[i].minute/60.0 + temp[i].second/3600.0)
         x = np.array(x)
         y = np.array(self.values[sensor])
-        p1, success = optimize.leastsq(errfunc, p0[:], args=(x,y))
-        plt.plot(x, y, "bo", x, fitfunc(p1,x), "r-")
+        p1, success = optimize.leastsq(errfunc, p0[:], args=(x, y))
+        plt.plot(x, y, "bo", x, fitfunc(p1, x), "r-")
         print(p1)
         plt.show()
 
