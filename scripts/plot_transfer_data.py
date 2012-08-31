@@ -1,8 +1,10 @@
+#system
+import sys
+#3rd party
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
-import sys
 
 def plot_transfer_data(filename):
     

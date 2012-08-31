@@ -1,13 +1,16 @@
-from pypeline import DripInterface, peakdet
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
+#system
 import sys
 import math
 import time
 from datetime import datetime
 from uuid import uuid4
+#custom
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+#custom
+from pypeline import DripInterface, peakdet
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 

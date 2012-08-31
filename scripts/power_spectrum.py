@@ -1,7 +1,10 @@
-from pypeline import DripInterface, peakdet
+#system
+import sys
+#3rd party
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
+#custom
+from pypeline import DripInterface, peakdet
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 

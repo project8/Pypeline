@@ -26,9 +26,10 @@
     pump_valve_t
     vent_valve_t
 '''
-
-from pypeline import DripInterface
+#system
 import sys
+#custom
+from pypeline import DripInterface
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 

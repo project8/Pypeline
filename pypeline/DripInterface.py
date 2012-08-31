@@ -64,12 +64,12 @@ class DripInterface:
                 of all possible channels to set.
         '''
         if not channel:
-            print(self._conf_interface.EligibleChannels())
+            result = self._conf_interface.EligibleChannels()
         else:
             result = self._cmd_interface.Get(channel)
             if wait:
                 result.Wait()
-            return result
+        return result
 
     def Set(self, channel=None, value=None, wait=False):
         '''
@@ -87,38 +87,39 @@ class DripInterface:
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
         if not channel:
-            print(self.EligibleChannels())
+            result = self.EligibleChannels()
         elif not value:
             print("Please input value to assign to channel")
+            result = False
         else:
             result = self._cmd_interface.Set(channel, value)
             if wait:
                 result.Wait()
-            return result
+        return result
 
     def StartLoggers(self, instruments=False, wait=False):
         '''
             Tells the dripline logger to start following one or more instruments
         '''
         if not instruments:
-            print(self.EligibleLoggers())
+            result = self.EligibleLoggers()
         else:
             result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
-            return result
+        return result
 
     def StopLoggers(self, instruments=False, wait=False):
         '''
             Tells the dripline logger to stop following one or more instruments
         '''
         if not instruments:
-            print(self.EligibleLoggers())
+            result = self.EligibleLoggers()
         else:
             result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
-            return result
+        return result
 
     def CurrentLoggers(self, wait=False):
         '''
@@ -158,8 +159,7 @@ class DripInterface:
 
     def RemoveLoggers(self, instruments=False):
         if not instruments:
-            for row in self._conf_database.view('objects/loggers'):
-                print(row.key)
+            self._conf_interface.EligibleLoggers()
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]
