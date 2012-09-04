@@ -23,7 +23,7 @@ if "DISPLAY" in environ:
             except ImportError:
                 print('import of peakdet failed, some dependency must be missing')
         try:
-            from . import LoggedDataHandler
+            from .LoggedDataHandler import LoggedDataHandler
         except ImportError:
             try:
                 from LoggedDataHandler import LoggedDataHandler
