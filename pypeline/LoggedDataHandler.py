@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 #3rd party libs
 from couchdb import Server as CouchServer
-from numpy import exp, array
+import numpy as np
 from scipy import optimize
 from matplotlib import pyplot as plt
 
@@ -94,11 +94,10 @@ class LoggedDataHandler:
             if isinstance(sensors, str):
                 sensors = [sensors]
 
-            if isinstance(sensors, list):
-                for sensor in sensors:
-                    data = self.Get(sensor, start, stop)
-                    line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
-                    fig.autofmt_xdate()
+            for sensor in sensors:
+                data = self.Get(sensor, start, stop)
+                line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
+                fig.autofmt_xdate()
 
             while dynamupdate:
                 try:
@@ -110,15 +109,35 @@ class LoggedDataHandler:
                     plt.xlabel('Time (Hours)')
                     plt.ylabel('Value (' + data[2][sensor][0] + ')')
                     plt.title('Sensor Readout')
-                    plt.legend()
+                    box = ax.get_position()
+                    ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                                     box.width, box.height * 0.9])
+                    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2),
+                              fancybox=True, shadow=True, ncol=2)
                     fig.canvas.draw()
                 except KeyboardInterrupt:
+                    ax.clear()
+                    for sensor in sensors:
+                        data = self.Get(sensor, start, stop)
+                        line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
+                    fig.autofmt_xdate()
+                    plt.xlabel('Time (Hours)')
+                    plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                    plt.title('Sensor Readout')
+                    box = ax.get_position()
+                    ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                                     box.width, box.height * 0.9])
+                    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2),
+                              fancybox=True, shadow=True, ncol=2)
+                    fig.canvas.draw()
                     break
             if not dynamupdate:
                 plt.xlabel('Time (Hours)')
                 plt.ylabel('Value (' + data[2][sensor][0] + ')')
                 plt.title('Sensor Readout')
-                plt.legend()
+                box = ax.get_position()
+                ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+                ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 plt.show()
 
     def Save(self, filename):
