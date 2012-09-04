@@ -98,6 +98,8 @@ class LoggedDataHandler:
                     line1 = ax.plot(data[0][sensor],data[1][sensor],label=sensor)
                     fig.autofmt_xdate()
 
+            if dynamupdate:
+                plt.ion()
             while dynamupdate:
                 try:
                     for sensor in sensors:
