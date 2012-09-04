@@ -87,7 +87,7 @@ class DripInterface:
             WARNING! I do not yet check to ensure setting of the correct type.
         '''
         if not channel:
-            result = self.EligibleChannels()
+            result = self._conf_interface.EligibleChannels()
         elif not value:
             print("Please input value to assign to channel")
             result = False
@@ -102,7 +102,7 @@ class DripInterface:
             Tells the dripline logger to start following one or more instruments
         '''
         if not instruments:
-            result = self.EligibleLoggers()
+            result = self._conf_interface.EligibleLoggers()
         else:
             result = self._cmd_interface.StartLoggers(instruments)
             if wait:
@@ -114,9 +114,9 @@ class DripInterface:
             Tells the dripline logger to stop following one or more instruments
         '''
         if not instruments:
-            result = self.EligibleLoggers()
+            result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StartLoggers(instruments)
+            result = self._cmd_interface.StopLoggers(instruments)
             if wait:
                 result.Wait()
         return result
