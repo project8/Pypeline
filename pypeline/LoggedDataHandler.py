@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 #3rd party libs
 from couchdb import Server as CouchServer
-from numpy import exp, array
+import numpy as np
 from scipy import optimize
 from matplotlib import pyplot as plt
 
@@ -63,7 +63,7 @@ class LoggedDataHandler:
         result = [self.times, self.values, self.units]
         return result
 
-    def Plot(self, sensors=False, dynamupdate=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
             Creates a plot of logged data.
 
@@ -82,6 +82,8 @@ class LoggedDataHandler:
         if not sensors:
             self.EligibleSensors()
         else:
+            if dynamupdate:
+                plt.ion()
             if isinstance(start, datetime):
                 start = start.strftime("%Y-%m-%d %H:%M:%S")
             if isinstance(stop, datetime):
@@ -92,31 +94,30 @@ class LoggedDataHandler:
             if isinstance(sensors, str):
                 sensors = [sensors]
 
-            if isinstance(sensors, list):
-                for sensor in sensors:
-                    data = self.Get(sensor, start, stop)
-                    line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
-                    fig.autofmt_xdate()
+            for sensor in sensors:
+                data = self.Get(sensor, start, stop)
+                line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
 
             while dynamupdate:
                 try:
+                    ax.clear()
                     for sensor in sensors:
-                        ax.clear()
                         data = self.Get(sensor, start, stop)
-                        line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
-                        fig.autofmt_xdate()
-                        plt.xlabel('Time (Hours)')
-                        plt.ylabel('Value (' + data[2][sensor][0] + ')')
-                        plt.title('Sensor Readout')
-                        plt.legend()
-                        fig.canvas.draw()
+                        line1 = ax.plot(data[0][sensor], data[1][sensor],
+                                        label=sensor)
+                    self.FormatPlots(sensor,fig,ax)
+                    fig.canvas.draw()
                 except KeyboardInterrupt:
+                    ax.clear()
+                    for sensor in sensors:
+                        data = self.Get(sensor, start, stop)
+                        line1 = ax.plot(data[0][sensor], data[1][sensor],
+                                        label=sensor)
+                    self.FormatPlots(sensor,fig,ax)
+                    fig.canvas.draw()
                     break
             if not dynamupdate:
-                plt.xlabel('Time (Hours)')
-                plt.ylabel('Value (' + data[2][sensor][0] + ')')
-                plt.title('Sensor Readout')
-                plt.legend()
+                self.FormatPlots(sensor,fig,ax)
                 plt.show()
 
     def Save(self, filename):
@@ -160,7 +161,11 @@ class LoggedDataHandler:
         x = np.array(x)
         y = np.array(self.values[sensor])
         p1, success = optimize.leastsq(errfunc, p0[:], args=(x, y))
-        plt.plot(x, y, "bo", x, fitfunc(p1, x), "r-")
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        points = plt.plot(x, y, "bo", label=sensor)
+        fit = plt.plot(x, fitfunc(p1, x), "r-", label='fit')
+        self.FormatPlots(sensor,fig,ax)
         print(p1)
         plt.show()
 
@@ -173,3 +178,17 @@ class LoggedDataHandler:
             if row.value['sensor_name'] not in sensors:
                 sensors.append(row.value['sensor_name'])
         print(sensors)
+
+    def FormatPlots(self,sensor,fig,ax):
+        '''
+            Internal
+        '''
+        fig.autofmt_xdate()
+        plt.xlabel('Time (Hours)')
+        plt.ylabel('Value (' + self.units[sensor][0] + ')')
+        plt.title('Sensor Readout')
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                         box.width, box.height * 0.9])
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2),
+                  fancybox=True, shadow=True, ncol=2)
