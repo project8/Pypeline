@@ -63,7 +63,7 @@ class LoggedDataHandler:
         result = [self.times,self.values,self.units]
         return result
 
-    def Plot(self, sensors=False, dynamupdate=False, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
             Creates a plot of logged data.
 
