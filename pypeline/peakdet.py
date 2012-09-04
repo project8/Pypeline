@@ -74,4 +74,4 @@ def peakdet(v, delta, x = None):
 
 if __name__=="__main__":
     series = [0,0,0,2,0,0,0,-2,0,0,0,2,0,0,0,-2,0]
-    print peakdet(series,1)
+    print(peakdet(series,1))

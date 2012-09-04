@@ -1,5 +1,7 @@
 '''
-    Package init for pypeline. For now pypeline.py containing the pypeline class is all there is so not much here.
+    pypeline is the user scripting and interactive interface for the dripline slow control system.
+
+    There is currently support for use with both python 2.7 and python 3.2 (earlier probably works also).
 '''
 from os import environ
 

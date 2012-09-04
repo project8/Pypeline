@@ -1,11 +1,14 @@
+#system
 import sys
 import math
 from uuid import uuid4
 from datetime import datetime
+#3rd party
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import special
-from DripInterface import DripInterface
+#custom
+from pypeline import DripInterface
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 tempf = '/data/' + uuid4().hex + '.egg'
