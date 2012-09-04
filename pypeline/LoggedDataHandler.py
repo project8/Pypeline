@@ -82,6 +82,8 @@ class LoggedDataHandler:
         if not sensors:
             self.EligibleSensors()
         else:
+            if dynamupdate:
+                plt.ion()
             if isinstance(start, datetime):
                 start = start.strftime("%Y-%m-%d %H:%M:%S")
             if isinstance(stop, datetime):
@@ -98,20 +100,18 @@ class LoggedDataHandler:
                     line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
                     fig.autofmt_xdate()
 
-            if dynamupdate:
-                plt.ion()
             while dynamupdate:
                 try:
+                    ax.clear()
                     for sensor in sensors:
-                        ax.clear()
                         data = self.Get(sensor, start, stop)
                         line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
-                        fig.autofmt_xdate()
-                        plt.xlabel('Time (Hours)')
-                        plt.ylabel('Value (' + data[2][sensor][0] + ')')
-                        plt.title('Sensor Readout')
-                        plt.legend()
-                        fig.canvas.draw()
+                    fig.autofmt_xdate()
+                    plt.xlabel('Time (Hours)')
+                    plt.ylabel('Value (' + data[2][sensor][0] + ')')
+                    plt.title('Sensor Readout')
+                    plt.legend()
+                    fig.canvas.draw()
                 except KeyboardInterrupt:
                     break
             if not dynamupdate:
