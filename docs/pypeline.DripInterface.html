@@ -9,29 +9,72 @@
 <font color="#000000" face="helvetica, arial"><strong>pypeline.DripInterface</strong> = <a name="pypeline.DripInterface">class DripInterface</a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Class&nbsp;to&nbsp;interact&nbsp;with&nbsp;Dripline&nbsp;via&nbsp;couchDB.<br>&nbsp;</tt></td></tr>
+<td colspan=2><tt>Class&nbsp;to&nbsp;facilitate&nbsp;user&nbsp;interact&nbsp;with&nbsp;Dripline&nbsp;via&nbsp;couchDB.&nbsp;The&nbsp;<br>
+actual&nbsp;database&nbsp;manipulations&nbsp;are&nbsp;contained&nbsp;in&nbsp;_CmdInterface&nbsp;and&nbsp;<br>
+_ConfInterface.&nbsp;Scripting&nbsp;tasts&nbsp;will&nbsp;involve&nbsp;primarily&nbsp;an&nbsp;<br>
+instance&nbsp;of&nbsp;this&nbsp;class&nbsp;and&nbsp;those&nbsp;python.DripResponse&nbsp;instances&nbsp;<br>
+which&nbsp;it&nbsp;creates.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="DripInterface-AddLoggers"><strong>AddLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, intervals<font color="#909090">=False</font>)</dt></dl>
-
-<dl><dt><a name="DripInterface-CheckHeartbeat"><strong>CheckHeartbeat</strong></a>(self)</dt><dd><tt>Checks&nbsp;dripline's&nbsp;heartbeat&nbsp;to&nbsp;be&nbsp;sure&nbsp;it&nbsp;is&nbsp;running.</tt></dd></dl>
-
-<dl><dt><a name="DripInterface-CreatePowerSpectrum"><strong>CreatePowerSpectrum</strong></a>(self, dripresponse, sp)</dt></dl>
-
-<dl><dt><a name="DripInterface-CurrentLoggers"><strong>CurrentLoggers</strong></a>(self, wait<font color="#909090">=False</font>)</dt><dd><tt>Tells&nbsp;the&nbsp;dripline&nbsp;logger&nbsp;to&nbsp;list&nbsp;which&nbsp;instruments&nbsp;are&nbsp;currently<br>
-being&nbsp;logged.</tt></dd></dl>
-
-<dl><dt><a name="DripInterface-Get"><strong>Get</strong></a>(self, channel<font color="#909090">=None</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Request&nbsp;and&nbsp;return&nbsp;the&nbsp;current&nbsp;value&nbsp;of&nbsp;some&nbsp;channel.<br>
+<dl><dt><a name="DripInterface-AddLoggers"><strong>AddLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, intervals<font color="#909090">=False</font>)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;configuration&nbsp;database&nbsp;making&nbsp;an&nbsp;instrument&nbsp;into&nbsp;a&nbsp;potential&nbsp;logger.<br>
 &nbsp;<br>
 Inputs:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;channel&gt;&nbsp;must&nbsp;be&nbsp;an&nbsp;active&nbsp;channel&nbsp;in&nbsp;dripline.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;instruments&gt;&nbsp;an&nbsp;instrument&nbsp;name&nbsp;or&nbsp;list&nbsp;of&nbsp;names&nbsp;for&nbsp;which&nbsp;logging&nbsp;capabilities&nbsp;are&nbsp;to&nbsp;be&nbsp;established<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;intervals&gt;&nbsp;matched&nbsp;set&nbsp;of&nbsp;values,&nbsp;giving&nbsp;the&nbsp;logging&nbsp;interval<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;&lt;channel&gt;&nbsp;is&nbsp;left&nbsp;blank,&nbsp;this&nbsp;method&nbsp;will&nbsp;print&nbsp;the&nbsp;names<br>
-&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;all&nbsp;possible&nbsp;channels&nbsp;to&nbsp;set.</tt></dd></dl>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nothing&nbsp;is&nbsp;returned</tt></dd></dl>
 
-<dl><dt><a name="DripInterface-RemoveLoggers"><strong>RemoveLoggers</strong></a>(self, instruments<font color="#909090">=False</font>)</dt></dl>
+<dl><dt><a name="DripInterface-CheckHeartbeat"><strong>CheckHeartbeat</strong></a>(self)</dt><dd><tt>Checks&nbsp;to&nbsp;see&nbsp;if&nbsp;dripline&nbsp;is&nbsp;listing&nbsp;and&nbsp;responding&nbsp;to&nbsp;the&nbsp;command&nbsp;database.<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;no&nbsp;inputs<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;'final'&nbsp;field&nbsp;fron&nbsp;the&nbsp;couch&nbsp;document&nbsp;produced&nbsp;by&nbsp;calling&nbsp;pypeline.DripInterface.<a href="#pypeline.DripInterface-Get">Get</a>("heartbeat")</tt></dd></dl>
 
-<dl><dt><a name="DripInterface-Run"><strong>Run</strong></a>(self, duration<font color="#909090">=250</font>, rate<font color="#909090">=500</font>, filename<font color="#909090">=None</font>)</dt><dd><tt>Take&nbsp;a&nbsp;digitizer&nbsp;run&nbsp;of&nbsp;fixed&nbsp;time&nbsp;and&nbsp;sample&nbsp;rate.<br>
+<dl><dt><a name="DripInterface-CreatePowerSpectrum"><strong>CreatePowerSpectrum</strong></a>(self, dripresponse, sp)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;requesting&nbsp;a&nbsp;power&nbsp;spectrum&nbsp;be&nbsp;created&nbsp;for&nbsp;a&nbsp;given&nbsp;run.<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;dripresponse&gt;&nbsp;a&nbsp;pypeline.DripResposne&nbsp;object&nbsp;which&nbsp;instigated&nbsp;the&nbsp;relavent&nbsp;mantis&nbsp;run<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;sp&gt;&nbsp;the&nbsp;executable&nbsp;to&nbsp;be&nbsp;used&nbsp;(powerline&nbsp;or&nbsp;any&nbsp;other&nbsp;which&nbsp;may&nbsp;be&nbsp;added)<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pypeline.DripResponse&nbsp;instance.</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-CurrentLoggers"><strong>CurrentLoggers</strong></a>(self, wait<font color="#909090">=False</font>)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;which&nbsp;requests&nbsp;the&nbsp;list&nbsp;of&nbsp;channels&nbsp;currently&nbsp;being&nbsp;logged.<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;wait&gt;&nbsp;If&nbsp;wait&nbsp;evaluates&nbsp;as&nbsp;True,&nbsp;wait&nbsp;for&nbsp;either&nbsp;a&nbsp;timeout&nbsp;or&nbsp;a&nbsp;response&nbsp;from&nbsp;dripline&nbsp;before&nbsp;returning<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;pypeline.DripResponse&nbsp;instance<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;Dripline&nbsp;seems&nbsp;to&nbsp;have&nbsp;a&nbsp;bug,&nbsp;these&nbsp;documents&nbsp;are&nbsp;posting&nbsp;but&nbsp;receive&nbsp;no&nbsp;response.</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-Get"><strong>Get</strong></a>(self, channel<font color="#909090">=''</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Post&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;using&nbsp;the&nbsp;get&nbsp;verb&nbsp;for&nbsp;a&nbsp;specific&nbsp;channel.<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;channel&gt;&nbsp;is&nbsp;any&nbsp;configured&nbsp;channel&nbsp;in&nbsp;dripline.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;no&nbsp;channel&nbsp;is&nbsp;given,&nbsp;or&nbsp;the&nbsp;value&nbsp;passed&nbsp;evaluates&nbsp;as&nbsp;False,&nbsp;gives&nbsp;the&nbsp;available&nbsp;channels<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IF&nbsp;a&nbsp;channel&nbsp;was&nbsp;given:&nbsp;returns&nbsp;a&nbsp;pypeline.DripResponse&nbsp;instance.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERWISE:&nbsp;returns&nbsp;a&nbsp;list&nbsp;of&nbsp;strings&nbsp;of&nbsp;the&nbsp;available&nbsp;channel&nbsp;names.<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;The&nbsp;channel&nbsp;name&nbsp;is&nbsp;not&nbsp;validated,&nbsp;invalid&nbsp;channel&nbsp;names&nbsp;will&nbsp;still&nbsp;be&nbsp;posted.</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-RemoveLoggers"><strong>RemoveLoggers</strong></a>(self, instruments<font color="#909090">=False</font>)</dt><dd><tt>Removes&nbsp;the&nbsp;docuemnt(s)&nbsp;from&nbsp;the&nbsp;configuration&nbsp;database&nbsp;which&nbsp;makes&nbsp;&lt;instruments&gt;&nbsp;(a)&nbsp;potential&nbsp;logger(s)<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;instruments&gt;&nbsp;an&nbsp;instrument&nbsp;name&nbsp;or&nbsp;list&nbsp;of&nbsp;names&nbsp;for&nbsp;which&nbsp;logging&nbsp;capabilities&nbsp;are&nbsp;to&nbsp;be&nbsp;removed.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;nothing&nbsp;is&nbsp;returned</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-Run"><strong>Run</strong></a>(self, duration<font color="#909090">=250</font>, rate<font color="#909090">=500</font>, filename<font color="#909090">=None</font>)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;instructing&nbsp;dripline&nbsp;to&nbsp;start&nbsp;a&nbsp;mantis&nbsp;run.<br>
 &nbsp;<br>
 Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;duration&gt;&nbsp;is&nbsp;the&nbsp;time&nbsp;interval&nbsp;(in&nbsp;ms)&nbsp;that&nbsp;will&nbsp;be&nbsp;digitized<br>
@@ -40,32 +83,65 @@ Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[=None]&nbsp;results&nbsp;in&nbsp;a&nbsp;uuid4().hex&nbsp;hash&nbsp;prefix&nbsp;and<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.egg&nbsp;extension<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOTE:&nbsp;you&nbsp;should&nbsp;probably&nbsp;just&nbsp;take&nbsp;the&nbsp;default<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unless&nbsp;you&nbsp;have<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;good&nbsp;reason&nbsp;not&nbsp;to&nbsp;do&nbsp;so.</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unless&nbsp;you&nbsp;have&nbsp;a&nbsp;good&nbsp;reason&nbsp;not&nbsp;to&nbsp;do&nbsp;so.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;instance&nbsp;of&nbsp;pypeline.DripResponse</tt></dd></dl>
 
-<dl><dt><a name="DripInterface-Set"><strong>Set</strong></a>(self, channel<font color="#909090">=None</font>, value<font color="#909090">=None</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Change&nbsp;the&nbsp;setting&nbsp;of&nbsp;a&nbsp;dripline&nbsp;channel<br>
+<dl><dt><a name="DripInterface-Set"><strong>Set</strong></a>(self, channel<font color="#909090">=None</font>, value<font color="#909090">=None</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Post&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;using&nbsp;the&nbsp;set&nbsp;verb&nbsp;for&nbsp;a&nbsp;specific&nbsp;channel.<br>
 &nbsp;<br>
 Inputs:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;channel&gt;&nbsp;must&nbsp;be&nbsp;an&nbsp;active&nbsp;channel&nbsp;in&nbsp;dripline<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;channel&gt;&nbsp;is&nbsp;any&nbsp;dripline&nbsp;channel<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;no&nbsp;channel&nbsp;is&nbsp;given,&nbsp;or&nbsp;the&nbsp;the&nbsp;value&nbsp;passed&nbsp;evaluates&nbsp;as&nbsp;False,&nbsp;gives&nbsp;the&nbsp;available&nbsp;channels<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;value&gt;&nbsp;value&nbsp;to&nbsp;assign&nbsp;to&nbsp;&lt;channel&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;check&gt;&nbsp;uses&nbsp;<a href="#pypeline.DripInterface-Get">Get</a>()&nbsp;to&nbsp;check&nbsp;the&nbsp;value,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WARNING:&nbsp;this&nbsp;doesn't&nbsp;deal&nbsp;with&nbsp;machine&nbsp;rounding<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;wait&gt;&nbsp;If&nbsp;wait&nbsp;evaluates&nbsp;as&nbsp;True,&nbsp;wait&nbsp;for&nbsp;either&nbsp;a&nbsp;timeout&nbsp;or&nbsp;a&nbsp;response&nbsp;from&nbsp;dripline&nbsp;before&nbsp;returning<br>
 &nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;&lt;channel&gt;&nbsp;is&nbsp;left&nbsp;blank,&nbsp;this&nbsp;method&nbsp;will&nbsp;print&nbsp;the&nbsp;names<br>
-&nbsp;&nbsp;&nbsp;&nbsp;of&nbsp;all&nbsp;possible&nbsp;channels&nbsp;to&nbsp;set.<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IF:&nbsp;a&nbsp;channel&nbsp;was&nbsp;given,&nbsp;returns&nbsp;a&nbsp;pypeline.DripResponse&nbsp;instance.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERWISE:&nbsp;returns&nbsp;a&nbsp;list&nbsp;of&nbsp;strings&nbsp;of&nbsp;the&nbsp;available&nbsp;channel&nbsp;names.<br>
 &nbsp;<br>
-WARNING!&nbsp;I&nbsp;do&nbsp;not&nbsp;yet&nbsp;check&nbsp;to&nbsp;ensure&nbsp;setting&nbsp;of&nbsp;the&nbsp;correct&nbsp;type.</tt></dd></dl>
+Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;The&nbsp;channel&nbsp;name&nbsp;is&nbsp;not&nbsp;validated&nbsp;as&nbsp;an&nbsp;existing&nbsp;channel,&nbsp;or&nbsp;as&nbsp;one&nbsp;which&nbsp;admits&nbsp;the&nbsp;set&nbsp;verb.</tt></dd></dl>
 
-<dl><dt><a name="DripInterface-StartLoggers"><strong>StartLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Tells&nbsp;the&nbsp;dripline&nbsp;logger&nbsp;to&nbsp;start&nbsp;following&nbsp;one&nbsp;or&nbsp;more&nbsp;instruments</tt></dd></dl>
-
-<dl><dt><a name="DripInterface-StopLoggers"><strong>StopLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Tells&nbsp;the&nbsp;dripline&nbsp;logger&nbsp;to&nbsp;stop&nbsp;following&nbsp;one&nbsp;or&nbsp;more&nbsp;instruments</tt></dd></dl>
-
-<dl><dt><a name="DripInterface-__init__"><strong>__init__</strong></a>(self, dripline_url<font color="#909090">='http://127.0.0.1:5984'</font>)</dt><dd><tt>Initializes&nbsp;an&nbsp;instance&nbsp;of&nbsp;pypeline&nbsp;by&nbsp;connecting&nbsp;to&nbsp;the&nbsp;server.<br>
+<dl><dt><a name="DripInterface-StartLoggers"><strong>StartLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;to&nbsp;start&nbsp;the&nbsp;logging&nbsp;one&nbsp;or&nbsp;more&nbsp;instruments.<br>
 &nbsp;<br>
 Inputs:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;dripline_url&gt;&nbsp;is&nbsp;the&nbsp;url&nbsp;to&nbsp;use&nbsp;when&nbsp;connecting&nbsp;to&nbsp;the&nbsp;couchDB<br>
-&nbsp;&nbsp;&nbsp;&nbsp;server,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;none&nbsp;is&nbsp;provided&nbsp;then&nbsp;the&nbsp;default&nbsp;(<a href="http://127.0.0.1:5984/">http://127.0.0.1:5984/</a>).</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;instruments&gt;&nbsp;is&nbsp;either&nbsp;the&nbsp;name&nbsp;of&nbsp;a&nbsp;channel&nbsp;or&nbsp;a&nbsp;list&nbsp;of&nbsp;channel&nbsp;names&nbsp;for&nbsp;which&nbsp;logging&nbsp;should&nbsp;start<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;no&nbsp;instrument&nbsp;is&nbsp;given,&nbsp;or&nbsp;the&nbsp;the&nbsp;value&nbsp;passed&nbsp;evaluates&nbsp;as&nbsp;False,&nbsp;gives&nbsp;the&nbsp;available&nbsp;instruments<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;determined&nbsp;by&nbsp;the&nbsp;loggers&nbsp;view&nbsp;of&nbsp;the&nbsp;configuration&nbsp;database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;wait&gt;&nbsp;If&nbsp;wait&nbsp;evaluates&nbsp;as&nbsp;True,&nbsp;wait&nbsp;for&nbsp;either&nbsp;a&nbsp;timeout&nbsp;or&nbsp;a&nbsp;response&nbsp;from&nbsp;dripline&nbsp;before&nbsp;returning<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IF:&nbsp;a&nbsp;channel&nbsp;was&nbsp;given,&nbsp;returns&nbsp;a&nbsp;pypeline.DripResponse&nbsp;instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERWISE:&nbsp;returns&nbsp;a&nbsp;list&nbsp;of&nbsp;eligible&nbsp;loggers</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-StopLoggers"><strong>StopLoggers</strong></a>(self, instruments<font color="#909090">=False</font>, wait<font color="#909090">=False</font>)</dt><dd><tt>Posts&nbsp;a&nbsp;document&nbsp;to&nbsp;the&nbsp;command&nbsp;database&nbsp;to&nbsp;stop&nbsp;the&nbsp;logging&nbsp;one&nbsp;or&nbsp;more&nbsp;instruments.<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;instruments&gt;&nbsp;is&nbsp;either&nbsp;the&nbsp;name&nbsp;of&nbsp;a&nbsp;channel&nbsp;or&nbsp;a&nbsp;list&nbsp;of&nbsp;channel&nbsp;names&nbsp;for&nbsp;which&nbsp;logging&nbsp;should&nbsp;stop<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;no&nbsp;instrument&nbsp;is&nbsp;given,&nbsp;or&nbsp;the&nbsp;the&nbsp;value&nbsp;passed&nbsp;evaluates&nbsp;as&nbsp;False,&nbsp;gives&nbsp;the&nbsp;available&nbsp;instruments<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;as&nbsp;determined&nbsp;by&nbsp;the&nbsp;loggers&nbsp;view&nbsp;of&nbsp;the&nbsp;configuration&nbsp;database.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;wait&gt;&nbsp;If&nbsp;wait&nbsp;evaluates&nbsp;as&nbsp;True,&nbsp;wait&nbsp;for&nbsp;either&nbsp;a&nbsp;timeout&nbsp;or&nbsp;a&nbsp;response&nbsp;from&nbsp;dripline&nbsp;before&nbsp;returning<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;IF:&nbsp;a&nbsp;channel&nbsp;was&nbsp;given,&nbsp;returns&nbsp;a&nbsp;pypeline.DripResponse&nbsp;instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;OTHERWISE:&nbsp;returns&nbsp;a&nbsp;list&nbsp;of&nbsp;eligible&nbsp;loggers<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;Dripline&nbsp;seems&nbsp;to&nbsp;have&nbsp;a&nbsp;bug,&nbsp;these&nbsp;documents&nbsp;are&nbsp;posting&nbsp;and&nbsp;being&nbsp;responded&nbsp;to,&nbsp;but&nbsp;logging&nbsp;does&nbsp;not&nbsp;stop.</tt></dd></dl>
+
+<dl><dt><a name="DripInterface-__init__"><strong>__init__</strong></a>(self, dripline_url<font color="#909090">='http://127.0.0.1:5984'</font>)</dt><dd><tt>Internal:&nbsp;Initializes&nbsp;each&nbsp;instance&nbsp;by&nbsp;doing&nbsp;the&nbsp;following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;1)&nbsp;connecting&nbsp;to&nbsp;the&nbsp;provided&nbsp;dripline&nbsp;couchdb&nbsp;(default&nbsp;is&nbsp;localhost)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;2)&nbsp;sets&nbsp;initial/default&nbsp;value&nbsp;for&nbsp;attributes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;3)&nbsp;finds&nbsp;the&nbsp;command&nbsp;and&nbsp;configuration&nbsp;databases&nbsp;within&nbsp;the&nbsp;server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;4)&nbsp;checks&nbsp;the&nbsp;status&nbsp;of&nbsp;dripline&nbsp;for&nbsp;checking&nbsp;for&nbsp;a&nbsp;heartbeat<br>
+&nbsp;<br>
+Inputs:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;dripline_url&gt;&nbsp;is&nbsp;the&nbsp;url&nbsp;to&nbsp;use&nbsp;when&nbsp;connecting&nbsp;to&nbsp;the&nbsp;couch.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(default&nbsp;is&nbsp;<a href="http://127.0.0.1:5984">http://127.0.0.1:5984</a>&nbsp;ie.&nbsp;localhost).<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;no&nbsp;return</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

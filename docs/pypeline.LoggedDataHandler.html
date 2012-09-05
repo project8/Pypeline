@@ -19,9 +19,10 @@ This&nbsp;module/class&nbsp;has&nbsp;many&nbsp;more&nbsp;dependencies&nbsp;than&
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="scipy.optimize.html">scipy.optimize</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="scipy.optimize.html">scipy.optimize</a><br>
 </td><td width="25%" valign=top><a href="matplotlib.pyplot.html">matplotlib.pyplot</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -60,6 +61,8 @@ not&nbsp;have&nbsp;to&nbsp;be&nbsp;linear):<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'exponential'<br>
 &lt;p0&gt;&nbsp;(list)&nbsp;A&nbsp;list&nbsp;of&nbsp;guess&nbsp;values&nbsp;for&nbsp;the&nbsp;fit&nbsp;parameters</tt></dd></dl>
 
+<dl><dt><a name="LoggedDataHandler-FormatPlots"><strong>FormatPlots</strong></a>(self, sensor, fig, ax)</dt><dd><tt>Internal</tt></dd></dl>
+
 <dl><dt><a name="LoggedDataHandler-Get"><strong>Get</strong></a>(self, sensor, start, stop)</dt><dd><tt>Retrieve&nbsp;data&nbsp;logged&nbsp;on&nbsp;CouchDB&nbsp;in&nbsp;a&nbsp;specified&nbsp;window&nbsp;and&nbsp;return&nbsp;it<br>
 as&nbsp;a&nbsp;numpy&nbsp;array.<br>
 &nbsp;<br>
@@ -71,7 +74,7 @@ Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;stop&gt;&nbsp;(string)&nbsp;is&nbsp;the&nbsp;timestamp&nbsp;of&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;log&nbsp;you<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;would&nbsp;like&nbsp;to&nbsp;retrieve</tt></dd></dl>
 
-<dl><dt><a name="LoggedDataHandler-Plot"><strong>Plot</strong></a>(self, sensors<font color="#909090">=False</font>, dynamupdate<font color="#909090">=False</font>, start<font color="#909090">=datetime.datetime(2012, 8, 31, 8, 4, 8, 317811)</font>, stop<font color="#909090">=datetime.datetime(2012, 8, 31, 11, 4, 8, 317900)</font>)</dt><dd><tt>Creates&nbsp;a&nbsp;plot&nbsp;of&nbsp;logged&nbsp;data.<br>
+<dl><dt><a name="LoggedDataHandler-Plot"><strong>Plot</strong></a>(self, sensors<font color="#909090">=False</font>, dynamupdate<font color="#909090">=True</font>, start<font color="#909090">=datetime.datetime(2012, 9, 5, 11, 29, 30, 424785)</font>, stop<font color="#909090">=datetime.datetime(2012, 9, 5, 14, 29, 30, 424870)</font>)</dt><dd><tt>Creates&nbsp;a&nbsp;plot&nbsp;of&nbsp;logged&nbsp;data.<br>
 &nbsp;<br>
 Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;sensors&gt;&nbsp;(string&nbsp;or&nbsp;list&nbsp;of&nbsp;strings)&nbsp;These&nbsp;are<br>
@@ -110,100 +113,6 @@ Data descriptors defined here:<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-array"><strong>array</strong></a>(...)</dt><dd><tt><a href="#-array">array</a>(<a href="builtins.html#object">object</a>,&nbsp;dtype=None,&nbsp;copy=True,&nbsp;order=None,&nbsp;subok=False,&nbsp;ndmin=0)<br>
-&nbsp;<br>
-Create&nbsp;an&nbsp;array.<br>
-&nbsp;<br>
-Parameters<br>
-----------<br>
-<a href="builtins.html#object">object</a>&nbsp;:&nbsp;array_like<br>
-&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array,&nbsp;any&nbsp;<a href="builtins.html#object">object</a>&nbsp;exposing&nbsp;the&nbsp;array&nbsp;interface,&nbsp;an<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="builtins.html#object">object</a>&nbsp;whose&nbsp;__array__&nbsp;method&nbsp;returns&nbsp;an&nbsp;array,&nbsp;or&nbsp;any<br>
-&nbsp;&nbsp;&nbsp;&nbsp;(nested)&nbsp;sequence.<br>
-dtype&nbsp;:&nbsp;data-type,&nbsp;optional<br>
-&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;desired&nbsp;data-type&nbsp;for&nbsp;the&nbsp;array.&nbsp;&nbsp;If&nbsp;not&nbsp;given,&nbsp;then<br>
-&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;type&nbsp;will&nbsp;be&nbsp;determined&nbsp;as&nbsp;the&nbsp;minimum&nbsp;type&nbsp;required<br>
-&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;hold&nbsp;the&nbsp;objects&nbsp;in&nbsp;the&nbsp;sequence.&nbsp;&nbsp;This&nbsp;argument&nbsp;can&nbsp;only<br>
-&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;used&nbsp;to&nbsp;'upcast'&nbsp;the&nbsp;array.&nbsp;&nbsp;For&nbsp;downcasting,&nbsp;use&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;.astype(t)&nbsp;method.<br>
-copy&nbsp;:&nbsp;bool,&nbsp;optional<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;true&nbsp;(default),&nbsp;then&nbsp;the&nbsp;<a href="builtins.html#object">object</a>&nbsp;is&nbsp;copied.&nbsp;&nbsp;Otherwise,&nbsp;a&nbsp;copy<br>
-&nbsp;&nbsp;&nbsp;&nbsp;will&nbsp;only&nbsp;be&nbsp;made&nbsp;if&nbsp;__array__&nbsp;returns&nbsp;a&nbsp;copy,&nbsp;if&nbsp;obj&nbsp;is&nbsp;a<br>
-&nbsp;&nbsp;&nbsp;&nbsp;nested&nbsp;sequence,&nbsp;or&nbsp;if&nbsp;a&nbsp;copy&nbsp;is&nbsp;needed&nbsp;to&nbsp;satisfy&nbsp;any&nbsp;of&nbsp;the&nbsp;other<br>
-&nbsp;&nbsp;&nbsp;&nbsp;requirements&nbsp;(`dtype`,&nbsp;`order`,&nbsp;etc.).<br>
-order&nbsp;:&nbsp;{'C',&nbsp;'F',&nbsp;'A'},&nbsp;optional<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Specify&nbsp;the&nbsp;order&nbsp;of&nbsp;the&nbsp;array.&nbsp;&nbsp;If&nbsp;order&nbsp;is&nbsp;'C'&nbsp;(default),&nbsp;then&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;array&nbsp;will&nbsp;be&nbsp;in&nbsp;C-contiguous&nbsp;order&nbsp;(last-index&nbsp;varies&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fastest).&nbsp;&nbsp;If&nbsp;order&nbsp;is&nbsp;'F',&nbsp;then&nbsp;the&nbsp;returned&nbsp;array<br>
-&nbsp;&nbsp;&nbsp;&nbsp;will&nbsp;be&nbsp;in&nbsp;Fortran-contiguous&nbsp;order&nbsp;(first-index&nbsp;varies&nbsp;the<br>
-&nbsp;&nbsp;&nbsp;&nbsp;fastest).&nbsp;&nbsp;If&nbsp;order&nbsp;is&nbsp;'A',&nbsp;then&nbsp;the&nbsp;returned&nbsp;array&nbsp;may<br>
-&nbsp;&nbsp;&nbsp;&nbsp;be&nbsp;in&nbsp;any&nbsp;order&nbsp;(either&nbsp;C-,&nbsp;Fortran-contiguous,&nbsp;or&nbsp;even<br>
-&nbsp;&nbsp;&nbsp;&nbsp;discontiguous).<br>
-subok&nbsp;:&nbsp;bool,&nbsp;optional<br>
-&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;True,&nbsp;then&nbsp;sub-classes&nbsp;will&nbsp;be&nbsp;passed-through,&nbsp;otherwise<br>
-&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;returned&nbsp;array&nbsp;will&nbsp;be&nbsp;forced&nbsp;to&nbsp;be&nbsp;a&nbsp;base-class&nbsp;array&nbsp;(default).<br>
-ndmin&nbsp;:&nbsp;int,&nbsp;optional<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Specifies&nbsp;the&nbsp;minimum&nbsp;number&nbsp;of&nbsp;dimensions&nbsp;that&nbsp;the&nbsp;resulting<br>
-&nbsp;&nbsp;&nbsp;&nbsp;array&nbsp;should&nbsp;have.&nbsp;&nbsp;Ones&nbsp;will&nbsp;be&nbsp;pre-pended&nbsp;to&nbsp;the&nbsp;shape&nbsp;as<br>
-&nbsp;&nbsp;&nbsp;&nbsp;needed&nbsp;to&nbsp;meet&nbsp;this&nbsp;requirement.<br>
-&nbsp;<br>
-Returns<br>
--------<br>
-out&nbsp;:&nbsp;ndarray<br>
-&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;array&nbsp;<a href="builtins.html#object">object</a>&nbsp;satisfying&nbsp;the&nbsp;specified&nbsp;requirements.<br>
-&nbsp;<br>
-See&nbsp;Also<br>
---------<br>
-empty,&nbsp;empty_like,&nbsp;zeros,&nbsp;zeros_like,&nbsp;ones,&nbsp;ones_like,&nbsp;fill<br>
-&nbsp;<br>
-Examples<br>
---------<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>([1,&nbsp;2,&nbsp;3])<br>
-<a href="#-array">array</a>([1,&nbsp;2,&nbsp;3])<br>
-&nbsp;<br>
-Upcasting:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>([1,&nbsp;2,&nbsp;3.0])<br>
-<a href="#-array">array</a>([&nbsp;1.,&nbsp;&nbsp;2.,&nbsp;&nbsp;3.])<br>
-&nbsp;<br>
-More&nbsp;than&nbsp;one&nbsp;dimension:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>([[1,&nbsp;2],&nbsp;[3,&nbsp;4]])<br>
-<a href="#-array">array</a>([[1,&nbsp;2],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3,&nbsp;4]])<br>
-&nbsp;<br>
-Minimum&nbsp;dimensions&nbsp;2:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>([1,&nbsp;2,&nbsp;3],&nbsp;ndmin=2)<br>
-<a href="#-array">array</a>([[1,&nbsp;2,&nbsp;3]])<br>
-&nbsp;<br>
-Type&nbsp;provided:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>([1,&nbsp;2,&nbsp;3],&nbsp;dtype=complex)<br>
-<a href="#-array">array</a>([&nbsp;1.+0.j,&nbsp;&nbsp;2.+0.j,&nbsp;&nbsp;3.+0.j])<br>
-&nbsp;<br>
-Data-type&nbsp;consisting&nbsp;of&nbsp;more&nbsp;than&nbsp;one&nbsp;element:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;x&nbsp;=&nbsp;np.<a href="#-array">array</a>([(1,2),(3,4)],dtype=[('a','&lt;i4'),('b','&lt;i4')])<br>
-&gt;&gt;&gt;&nbsp;x['a']<br>
-<a href="#-array">array</a>([1,&nbsp;3])<br>
-&nbsp;<br>
-Creating&nbsp;an&nbsp;array&nbsp;from&nbsp;sub-classes:<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>(np.mat('1&nbsp;2;&nbsp;3&nbsp;4'))<br>
-<a href="#-array">array</a>([[1,&nbsp;2],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3,&nbsp;4]])<br>
-&nbsp;<br>
-&gt;&gt;&gt;&nbsp;np.<a href="#-array">array</a>(np.mat('1&nbsp;2;&nbsp;3&nbsp;4'),&nbsp;subok=True)<br>
-matrix([[1,&nbsp;2],<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3,&nbsp;4]])</tt></dd></dl>
- <dl><dt><a name="-warn"><strong>warn</strong></a>(...)</dt><dd><tt>Issue&nbsp;a&nbsp;warning,&nbsp;or&nbsp;maybe&nbsp;ignore&nbsp;it&nbsp;or&nbsp;raise&nbsp;an&nbsp;exception.</tt></dd></dl>
-</td></tr></table><p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#55aa55">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
-    
-<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>exp</strong> = &lt;ufunc 'exp'&gt;</td></tr></table>
+<td width="100%"><dl><dt><a name="-warn"><strong>warn</strong></a>(...)</dt><dd><tt>Issue&nbsp;a&nbsp;warning,&nbsp;or&nbsp;maybe&nbsp;ignore&nbsp;it&nbsp;or&nbsp;raise&nbsp;an&nbsp;exception.</tt></dd></dl>
+</td></tr></table>
 </body></html>

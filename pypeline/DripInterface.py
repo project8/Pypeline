@@ -9,7 +9,7 @@ from uuid import uuid4
 #3rd party imports
 from couchdb import Server as CouchServer
 
-#local imports
+#local imports (the try is python 3 syntax, the cought exceptions try python 2 syntax)
 try:
     from .DripResponse import DripResponse
 except ImportError:
@@ -25,17 +25,27 @@ except ImportError:
 
 class DripInterface:
     '''
-        Class to interact with Dripline via couchDB.
+        Class to facilitate user interact with Dripline via couchDB. The 
+        actual database manipulations are contained in _CmdInterface and 
+        _ConfInterface. Scripting tasts will involve primarily an 
+        instance of this class and those python.DripResponse instances 
+        which it creates.
     '''
 
     def __init__(self, dripline_url="http://127.0.0.1:5984"):
         '''
-            Initializes an instance of pypeline by connecting to the server.
+            Internal: Initializes each instance by doing the following:
+                1) connecting to the provided dripline couchdb (default is localhost)
+                2) sets initial/default value for attributes
+                3) finds the command and configuration databases within the server
+                4) checks the status of dripline for checking for a heartbeat
     
             Inputs:
-                <dripline_url> is the url to use when connecting to the couchDB
-                server,
-                if none is provided then the default (http://127.0.0.1:5984/).
+                <dripline_url> is the url to use when connecting to the couch.
+                    (default is http://127.0.0.1:5984 ie. localhost).
+
+            Returns:
+                no return
         '''
         self._server = CouchServer(dripline_url)
         self._timeout = 15 #timeout is 15 seconds...
@@ -53,15 +63,20 @@ class DripInterface:
             raise UserWarning('The dripline conf database was not found!')
         self.CheckHeartbeat()
 
-    def Get(self, channel=None, wait=False):
+    def Get(self, channel='', wait=False):
         '''
-            Request and return the current value of some channel.
+            Post a document to the command database using the get verb for a specific channel.
 
             Inputs:
-                <channel> must be an active channel in dripline.
-            
-                If <channel> is left blank, this method will print the names
-                of all possible channels to set.
+                <channel> is any configured channel in dripline.
+                    If no channel is given, or the value passed evaluates as False, gives the available channels
+
+            Returns:
+                IF a channel was given: returns a pypeline.DripResponse instance.
+                OTHERWISE: returns a list of strings of the available channel names.
+
+            Notes:
+                1) The channel name is not validated, invalid channel names will still be posted.
         '''
         if not channel:
             result = self._conf_interface.EligibleChannels()
@@ -73,18 +88,20 @@ class DripInterface:
 
     def Set(self, channel=None, value=None, wait=False):
         '''
-            Change the setting of a dripline channel
+            Post a document to the command database using the set verb for a specific channel.
 
             Inputs:
-                <channel> must be an active channel in dripline
+                <channel> is any dripline channel
+                    If no channel is given, or the the value passed evaluates as False, gives the available channels
                 <value> value to assign to <channel>
-                <check> uses Get() to check the value,
-                        WARNING: this doesn't deal with machine rounding
-            
-                If <channel> is left blank, this method will print the names
-                of all possible channels to set.
-            
-            WARNING! I do not yet check to ensure setting of the correct type.
+                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+
+            Returns:
+                IF: a channel was given, returns a pypeline.DripResponse instance.
+                OTHERWISE: returns a list of strings of the available channel names.
+
+            Notes:
+                1) The channel name is not validated as an existing channel, or as one which admits the set verb.
         '''
         if not channel:
             result = self._conf_interface.EligibleChannels()
@@ -99,7 +116,17 @@ class DripInterface:
 
     def StartLoggers(self, instruments=False, wait=False):
         '''
-            Tells the dripline logger to start following one or more instruments
+            Posts a document to the command database to start the logging one or more instruments.
+
+            Inputs:
+                <instruments> is either the name of a channel or a list of channel names for which logging should start
+                    If no instrument is given, or the the value passed evaluates as False, gives the available instruments
+                    as determined by the loggers view of the configuration database.
+                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+
+            Returns:
+                IF: a channel was given, returns a pypeline.DripResponse instance
+                OTHERWISE: returns a list of eligible loggers
         '''
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
@@ -110,8 +137,21 @@ class DripInterface:
         return result
 
     def StopLoggers(self, instruments=False, wait=False):
-        '''
-            Tells the dripline logger to stop following one or more instruments
+        ''' 
+            Posts a document to the command database to stop the logging one or more instruments.
+
+            Inputs:
+                <instruments> is either the name of a channel or a list of channel names for which logging should stop
+                    If no instrument is given, or the the value passed evaluates as False, gives the available instruments
+                    as determined by the loggers view of the configuration database.
+                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+
+            Returns:
+                IF: a channel was given, returns a pypeline.DripResponse instance
+                OTHERWISE: returns a list of eligible loggers
+
+            Notes:
+                1) Dripline seems to have a bug, these documents are posting and being responded to, but logging does not stop.
         '''
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
@@ -123,8 +163,16 @@ class DripInterface:
 
     def CurrentLoggers(self, wait=False):
         '''
-            Tells the dripline logger to list which instruments are currently
-            being logged.
+            Posts a document to the command database which requests the list of channels currently being logged.
+
+            Inputs:
+                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+
+            Returns:
+                A pypeline.DripResponse instance
+
+            Notes:
+                1) Dripline seems to have a bug, these documents are posting but receive no response.
         '''
         result = self._cmd_interface.CurrentLoggers()
         if wait:
@@ -132,8 +180,20 @@ class DripInterface:
         return result
     
     def AddLoggers(self, instruments=False, intervals=False):
+        '''
+            Posts a document to the configuration database making an instrument into a potential logger.
+
+            Inputs:
+                <instruments> an instrument name or list of names for which logging capabilities are to be established
+                <intervals> matched set of values, giving the logging interval
+
+            Returns:
+                nothing is returned
+        '''
         if not instruments:
             self._conf_interface.EligibleChannels()
+        #######################
+        # This stuff needs to be moved to the _ConfInterface!!!!!!!!!!!
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]
@@ -158,8 +218,19 @@ class DripInterface:
                 self._conf_database.save(add_doc)
 
     def RemoveLoggers(self, instruments=False):
+        '''
+            Removes the docuemnt(s) from the configuration database which makes <instruments> (a) potential logger(s)
+
+            Inputs:
+                <instruments> an instrument name or list of names for which logging capabilities are to be removed.
+
+            Returns:
+                nothing is returned
+        '''
         if not instruments:
             self._conf_interface.EligibleLoggers()
+        #######################
+        # This stuff needs to be moved to the _ConfInterface!!!!!!!!!!!
         else:
             if type(instruments) == type(''):
                 instruments = [instruments]
@@ -170,7 +241,7 @@ class DripInterface:
             
     def Run(self, duration=250, rate=500, filename=None):
         '''
-            Take a digitizer run of fixed time and sample rate.
+            Posts a document to the command database instructing dripline to start a mantis run.
 
             Inputs:
                 <duration> is the time interval (in ms) that will be digitized
@@ -179,8 +250,10 @@ class DripInterface:
                            [=None] results in a uuid4().hex hash prefix and
                            .egg extension
                            NOTE: you should probably just take the default
-                           unless you have
-                           a good reason not to do so.
+                           unless you have a good reason not to do so.
+
+            Returns:
+                An instance of pypeline.DripResponse
         '''
         if not filename:
             filename = '/data/' + uuid4().hex + '.egg'
@@ -189,12 +262,26 @@ class DripInterface:
 
     def CreatePowerSpectrum(self, dripresponse, sp):
         '''
+            Posts a document to the command database requesting a power spectrum be created for a given run.
+
+            Inputs:
+                <dripresponse> a pypeline.DripResposne object which instigated the relavent mantis run
+                <sp> the executable to be used (powerline or any other which may be added)
+
+            Returns:
+                A pypeline.DripResponse instance.
         '''
         return self._cmd_interface.CreatePowerSpectrum(dripresponse, sp)
         
     def CheckHeartbeat(self):
         '''
-            Checks dripline's heartbeat to be sure it is running.
+            Checks to see if dripline is listing and responding to the command database.
+
+            Inputs:
+                no inputs
+
+            Returns:
+                The 'final' field fron the couch document produced by calling pypeline.DripInterface.Get("heartbeat")
         '''
         status = self.Get("heartbeat")
         status.Wait()
