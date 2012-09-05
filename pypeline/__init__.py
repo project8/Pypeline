@@ -16,7 +16,7 @@ except ImportError:
 if "DISPLAY" in environ:
     if environ["DISPLAY"]:
         try:
-            from . import peakdet
+            from .peakdet import peakdet
         except ImportError:
             try:
                 from peakdet import peakdet

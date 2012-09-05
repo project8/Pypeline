@@ -22,29 +22,29 @@ syncount = 0
 synlim = 3
 keycount = 0
 keylim = 2
-istart = 5
-istop = 100
+istart = 20
+istop = 30
 istep = 5
-jstart = 200
-jstop = 1900
-jstep = 50
+jstart = 700
+jstop = 900
+jstep = 100
 transferx = []
 transfery = []
 transferz = []
-drip.Set('hf_sweeper_power', '-90')
+drip.Set('hf_sweeper_power', '-75')
 j = jstart
-while j < jstop:
+while j <= jstop:
     i = istart
     drip.Set('lo_cw_freq',str(j))
     print "LO set for " + str(j) + " MHz"
     dumx = []
     dumy = []
     dumz = []
-    while i < istop:
+    while i <= istop:
         drip.Set('hf_cw_freq',str(24500+j+i))
         print str(i) + " MHz"
         try:
-            run = eval(repr(drip.Run(filename=tempf))[1:-1])
+            run = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(filename=tempf).Wait(), sp="powerline").Wait()))['result'])
             i = i + istep
             keycount = 0
             syncount = 0
@@ -118,7 +118,7 @@ while j < jstop:
         for k in peaks[0]:
             #print j
             #print i-step
-            if math.floor(k[0]) == (i-istep):
+            if round(k[0]) == (i-istep):
                 dumx.append(k[0])
                 dumy.append(j)
                 dumz.append(k[1])
