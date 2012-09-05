@@ -65,13 +65,13 @@ while runnum < runlim:
     drip.Set('hf_sweep_stop', target-(scanwin*(runlim-1)+100)/2+scanwin*runnum+100)
     drip.Set('hf_sweep_time', 10)
     drip.Set('lo_cw_freq', target-24500-(scanwin*(runlim-1)+100)/2+scanwin*runnum)
-    sigrun = eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime),sp="sweepline"))[1:-1])
+    sigrun = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime).Wait(),sp="sweepline").Wait()))['result'])
     sigtp = sigrun['data']
     tf = list(np.linspace(target-(scanwin*(runlim-1)+100)/2+scanwin*runnum,sigrun['sampling_rate']/2+target-(scanwin*(runlim-1)+100)/2+scanwin*runnum,len(sigtp)))
     sigpow = sigpow + sigtp[lb:ub]
     freq = freq + tf[lb:ub]
     drip.Set('pancake_coil_current','4A')
-    bgrun = eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime)),sp="sweepline")[1:-1])
+    bgrun = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(filename = tempf, duration = scantime).Wait(),sp="sweepline").Wait()))['result'])
     bgtp = bgrun['data']
     bgpow = bgpow + bgtp[lb:ub]
     runnum = runnum + 1
