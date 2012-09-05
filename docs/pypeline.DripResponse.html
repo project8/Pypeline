@@ -9,11 +9,11 @@
 <font color="#000000" face="helvetica, arial"><strong>pypeline.DripResponse</strong> = <a name="pypeline.DripResponse">class DripResponse</a>(<a href="builtins.html#dict">builtins.dict</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>Class&nbsp;which&nbsp;shall&nbsp;be&nbsp;returned&nbsp;by&nbsp;any&nbsp;DripInterface&nbsp;method&nbsp;which&nbsp;involves&nbsp;posting&nbsp;a&nbsp;document&nbsp;to&nbsp;a&nbsp;dripline&nbsp;db&nbsp;and,&nbsp;potentially,&nbsp;waiting&nbsp;for&nbsp;a&nbsp;result.<br>
+<td colspan=2><tt>Class&nbsp;which&nbsp;shall&nbsp;be&nbsp;returned&nbsp;by&nbsp;any&nbsp;DripInterface&nbsp;method&nbsp;which&nbsp;involves&nbsp;posting&nbsp;a&nbsp;document&nbsp;to&nbsp;a&nbsp;dripline&nbsp;db&nbsp;expecting&nbsp;dripline&nbsp;to&nbsp;modify&nbsp;that&nbsp;document.<br>
 &nbsp;<br>
 This&nbsp;class&nbsp;will&nbsp;handle&nbsp;keeping&nbsp;track&nbsp;of&nbsp;the&nbsp;document's&nbsp;_id,&nbsp;and&nbsp;looking&nbsp;for&nbsp;responses&nbsp;stored&nbsp;there&nbsp;by&nbsp;dripline&nbsp;etc.<br>
 &nbsp;<br>
-Will&nbsp;be&nbsp;indexable&nbsp;with&nbsp;all&nbsp;of&nbsp;the&nbsp;standard&nbsp;dripline&nbsp;database&nbsp;fields.<br>&nbsp;</tt></td></tr>
+Will&nbsp;have&nbsp;a&nbsp;key:value&nbsp;pair&nbsp;for&nbsp;each&nbsp;field&nbsp;of&nbsp;the&nbsp;document.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
 <dd><a href="pypeline.DripResponse.html#DripResponse">DripResponse</a></dd>
@@ -22,24 +22,32 @@ Will&nbsp;be&nbsp;indexable&nbsp;with&nbsp;all&nbsp;of&nbsp;the&nbsp;standard&nb
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="DripResponse-Update"><strong>Update</strong></a>(self)</dt><dd><tt>Checks&nbsp;a&nbsp;doc&nbsp;for&nbsp;updates&nbsp;and&nbsp;updates&nbsp;local&nbsp;attributes&nbsp;if&nbsp;they&nbsp;differ.<br>
-If&nbsp;they&nbsp;differ,&nbsp;update&nbsp;self&nbsp;to&nbsp;match&nbsp;the&nbsp;document.</tt></dd></dl>
+<dl><dt><a name="DripResponse-Update"><strong>Update</strong></a>(self)</dt><dd><tt>Sets&nbsp;a&nbsp;key:value&nbsp;pair&nbsp;for&nbsp;each&nbsp;field&nbsp;of&nbsp;the&nbsp;couch&nbsp;doc.<br>
+Existing&nbsp;key:values&nbsp;are&nbsp;changed&nbsp;and&nbsp;new&nbsp;ones&nbsp;are&nbsp;created.<br>
+Missing&nbsp;keys&nbsp;are&nbsp;NOT&nbsp;removed.<br>
+&nbsp;<br>
+Changes&nbsp;are&nbsp;made&nbsp;to&nbsp;the&nbsp;current&nbsp;instance&nbsp;but&nbsp;a&nbsp;copy&nbsp;is&nbsp;also&nbsp;returned.</tt></dd></dl>
 
 <dl><dt><a name="DripResponse-Wait"><strong>Wait</strong></a>(self, timeout<font color="#909090">=15</font>)</dt><dd><tt>Actively&nbsp;monitor&nbsp;a&nbsp;document&nbsp;for&nbsp;updates<br>
 &nbsp;<br>
 Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;timeout&gt;=15&nbsp;is&nbsp;max&nbsp;wait&nbsp;time&nbsp;in&nbsp;seconds<br>
 &nbsp;&nbsp;&nbsp;&nbsp;WARNING:&nbsp;if&nbsp;&lt;timeout&gt;==False,&nbsp;the&nbsp;max&nbsp;timeout&nbsp;(3600&nbsp;sec)&nbsp;will&nbsp;be&nbsp;used<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(I'm&nbsp;not&nbsp;putting&nbsp;in&nbsp;an&nbsp;infinite&nbsp;loop)</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(I'm&nbsp;not&nbsp;putting&nbsp;in&nbsp;an&nbsp;infinite&nbsp;loop)<br>
+&nbsp;<br>
+Changes&nbsp;are&nbsp;made&nbsp;to&nbsp;the&nbsp;current&nbsp;instance&nbsp;but&nbsp;a&nbsp;copy&nbsp;is&nbsp;also&nbsp;returned.</tt></dd></dl>
 
 <dl><dt><a name="DripResponse-Waiting"><strong>Waiting</strong></a>(self)</dt><dd><tt>Check&nbsp;a&nbsp;document&nbsp;to&nbsp;see&nbsp;if&nbsp;it&nbsp;has&nbsp;a&nbsp;'result'&nbsp;field<br>
-(ie&nbsp;dripline&nbsp;has&nbsp;responded&nbsp;to&nbsp;it.)</tt></dd></dl>
+(ie&nbsp;dripline&nbsp;has&nbsp;responded&nbsp;to&nbsp;it.)<br>
+&nbsp;<br>
+Returns&nbsp;True&nbsp;or&nbsp;False&nbsp;if&nbsp;'result'&nbsp;is&nbsp;found&nbsp;or&nbsp;not&nbsp;respectively.</tt></dd></dl>
 
-<dl><dt><a name="DripResponse-__init__"><strong>__init__</strong></a>(self, cmd_db, doc_id)</dt><dd><tt>Initialization&nbsp;for&nbsp;a&nbsp;DripResponse&nbsp;instance.<br>
+<dl><dt><a name="DripResponse-__init__"><strong>__init__</strong></a>(self, cmd_db, doc_id)</dt><dd><tt>Internal:&nbsp;Initializes&nbsp;the&nbsp;default&nbsp;attribute&nbsp;values&nbsp;etc.<br>
 &nbsp;<br>
 Inputs:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&lt;cmd_db&gt;&nbsp;the&nbsp;dripline&nbsp;command&nbsp;database.&nbsp;This&nbsp;is&nbsp;where&nbsp;DripResponse&nbsp;will&nbsp;look<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;updates&nbsp;do&nbsp;documents</tt></dd></dl>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;updates&nbsp;do&nbsp;documents<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;doc_id&gt;&nbsp;the&nbsp;value&nbsp;of&nbsp;"_id"&nbsp;for&nbsp;the&nbsp;document.</tt></dd></dl>
 
 <hr>
 Data descriptors defined here:<br>

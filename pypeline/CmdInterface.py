@@ -1,5 +1,5 @@
 '''
-    Class specifically for interactions with dripline's command database
+    Source for the _CmdInterface class, actual content which interacts with the dripline_cmd database.
 '''
 
 # standard imports
@@ -16,24 +16,36 @@ except ImportError:
 
 class _CmdInterface:
     '''
-        Class for interactions with the command database.
-
-        This class is meant to be internal to pypeline and should NOT be used directly
+        Internal:
+            This class is meant to be internal to pypeline (DripInterface primarily)
+            and should NOT be used directly by the user. If you feel compelled to 
+            use it directly then DripInterface probably needs some new features.
+        
+        Class which actually interacts with the dripline_cmd database.
+            Primarily this means it contains properly formatted documents to be
+            filled in and posted. Most of the methods here will have a counterpart
+            in DripInterface by the same name which is the primary place where they
+            are called.
     '''
 
     def __init__(self, cmd_database):
         '''
-            <cmd_database> is the dripline command database (element of a couchdb Server object)
+            As always, __init__ does the default setup for each instance of the class.
+
+            Inputs:
+                <cmd_database> is the dripline command database (element of a couchdb Server object)
         '''
         self._cmd_database = cmd_database
 
-    def Get(self, channel, wait=False):
+    def Get(self, channel):
         '''
             Post a "get" document to the command database.
     
             Inputs:
-                <cmd_database> must be a database object (from couchdb package)
                 <channel> must be an active channel in dripline.
+
+            Returns:
+                a DripResponse instance.
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
         get_doc = {
@@ -54,9 +66,9 @@ class _CmdInterface:
             Inputs:
                 <channel> must be an active channel in dripline
                 <value> value to assign to <channel>
-            
-                If <channel> is left blank, this method will print the names
-                of all possible channels to set.
+
+            Returns:
+                a DripResponse instance
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
         set_doc = {
@@ -72,7 +84,13 @@ class _CmdInterface:
 
     def StartLoggers(self, instruments):
         '''
-            Tells the dripline logger to start following one or more instruments
+            Posts a "syscmd" document to start one ore more loggers
+
+            Inputs:
+                <instruments> instrument name or list of names.
+
+            Returns:
+                A DripResponse instance.
         '''
         if type(instruments) == type(''):
             instruments = [instruments]
@@ -91,7 +109,13 @@ class _CmdInterface:
 
     def StopLoggers(self, instruments):
         '''
-            Tells the dripline logger to stop following one or more instruments
+            Posts a "syscmd" document to stop one or more loggers
+
+            Inputs:
+                <instruments> instrument name or list of names
+
+            Returns:
+                a DripResponse instance
         '''
         if type(instruments) == type(''):
             instruments = [instruments]
@@ -112,6 +136,9 @@ class _CmdInterface:
         '''
             Tells the dripline logger to list which instruments are currently
             being logged.
+
+            Returns:
+                A DripResponse instance
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
         start_doc = {
@@ -136,8 +163,10 @@ class _CmdInterface:
                            [=None] results in a uuid4().hex hash prefix and
                            .egg extension
                            NOTE: you should probably just take the default
-                           unless you have
-                           a good reason not to do so.
+                           unless you have a good reason not to do so.
+
+            Returns:
+                A DripResponse instance
         '''
         result = DripResponse(self._cmd_database, uuid4().hex)
         run_doc = {
@@ -154,6 +183,17 @@ class _CmdInterface:
         return result
 
     def CreatePowerSpectrum(self, dripresponse, sp):
+        '''
+            Posts a "run" document calling a non-mantis process
+
+            Inputs:
+                <dripresponse> is the DripResponse object which created the data file
+                            being used as *input* for the subprocess
+                <sp> is the subprocess to be called
+
+            Returns:
+                A DripResponse instance.
+        '''
         result = DripResponse(self._cmd_database, uuid4().hex)
         pow_doc = {
             '_id':result['_id'],
