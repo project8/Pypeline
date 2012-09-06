@@ -173,11 +173,8 @@ class LoggedDataHandler:
         '''
             Print names of eligible sensors.
         '''
-        sensors = []
-        for row in self._logged_data.view('log_access/all_logged_data'):
-            if row.value['sensor_name'] not in sensors:
-                sensors.append(row.value['sensor_name'])
-        print(sensors)
+        for row in self._logged_data.view('log_access/logger_list', reduce=True, group_level=2):
+            print(row.key)
 
     def FormatPlots(self,sensor,fig,ax):
         '''
