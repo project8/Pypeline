@@ -16,7 +16,9 @@ from matplotlib import pyplot as plt
 
 class LoggedDataHandler:
     '''
-        Class to plot data logged on CouchDB.
+        Class to plot data logged on CouchDB. The constructor requires the URL
+        of the CouchDB server. See plotting_example.py in scripts/examples for
+        more help.
     '''
 
     def __init__(self, couch_url="http://127.0.0.1:5984"):
@@ -63,7 +65,7 @@ class LoggedDataHandler:
         result = [self.times, self.values, self.units]
         return result
 
-    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=False):
         '''
             Creates a plot of logged data.
 
@@ -71,17 +73,24 @@ class LoggedDataHandler:
                 <sensors> (string or list of strings) These are
                           the names of the sensors to plot. If this is left
                           blank, a list of all sensors for which there exists
-                          data will be printed.
+                          data from the past 3 hours will be printed.
+                <dynamupdate> (Boolean) Turns on or off dynamic updating of
+                              plots.
                 <start> (datetime object or string formatted the same as a
                         CouchDB timestamp) This is the start of the plotting
                         window.
                 <stop> (datetime object or string formatted the same as a
                        CouchDB timestamp) This is the end of the plotting
-                       window.
+                       window. If this is changed from its default, dynamic
+                       updating cannot be enabled.
         '''
         if not sensors:
-            self.EligibleSensors()
+            self.EligibleLoggers()
         else:
+            if not stop:
+                stop = datetime.today()
+            else:
+                dynamupdate = False
             if dynamupdate:
                 plt.ion()
             if isinstance(start, datetime):
