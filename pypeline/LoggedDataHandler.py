@@ -169,12 +169,31 @@ class LoggedDataHandler:
         print(p1)
         plt.show()
 
-    def EligibleSensors(self):
+    def EligibleLoggers(self, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
-            Print names of eligible sensors.
+            Print names of sensors with logged data in a certain timeframe.
+            Searches the last three hours by default.
+
+            Inputs:
+            <start> (datetime object or a CouchDB formatted timestamp) Sets the
+                    beginning of the search window. If set to False, this method
+                    will print out all loggers which have logged data.
+            <stop> (datetime object or a CouchDB formatted timestamp) Sets the
+                   end of the search window. 
         '''
-        for row in self._logged_data.view('log_access/logger_list', reduce=True, group_level=2):
-            print(row.key)
+        if not start:
+            for row in self._logged_data.view('log_access/logger_list', reduce=True, group_level=2):
+                print(row.key)
+        else:
+            sensors = []
+            if isinstance(start, datetime):
+                start = start.strftime("%Y-%m-%d %H:%M:%S")
+            if isinstance(stop, datetime):
+                stop = stop.strftime("%Y-%m-%d %H:%M:%S")
+            for row in self._logged_data.view('log_access/all_logged_data', startkey=start, endkey=stop):
+                if row.value['sensor_name'] not in sensors:
+                    print(row.value['sensor_name'])
+                    sensors.append(row.value['sensor_name'])
 
     def FormatPlots(self,sensor,fig,ax):
         '''
