@@ -117,6 +117,8 @@ class _CmdInterface:
             Returns:
                 a DripResponse instance
         '''
+        if instruments == 'all':
+            instruments = self.CurrentLoggers().Wait()['final']
         if type(instruments) == type(''):
             instruments = [instruments]
         result = DripResponse(self._cmd_database, uuid4().hex)

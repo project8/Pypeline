@@ -16,7 +16,9 @@ from matplotlib import pyplot as plt
 
 class LoggedDataHandler:
     '''
-        Class to plot data logged on CouchDB.
+        Class to plot data logged on CouchDB. The constructor requires the URL
+        of the CouchDB server. See plotting_example.py in scripts/examples for
+        more help.
     '''
 
     def __init__(self, couch_url="http://127.0.0.1:5984"):
@@ -63,7 +65,7 @@ class LoggedDataHandler:
         result = [self.times, self.values, self.units]
         return result
 
-    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=False):
         '''
             Creates a plot of logged data.
 
@@ -71,17 +73,24 @@ class LoggedDataHandler:
                 <sensors> (string or list of strings) These are
                           the names of the sensors to plot. If this is left
                           blank, a list of all sensors for which there exists
-                          data will be printed.
+                          data from the past 3 hours will be printed.
+                <dynamupdate> (Boolean) Turns on or off dynamic updating of
+                              plots.
                 <start> (datetime object or string formatted the same as a
                         CouchDB timestamp) This is the start of the plotting
                         window.
                 <stop> (datetime object or string formatted the same as a
                        CouchDB timestamp) This is the end of the plotting
-                       window.
+                       window. If this is changed from its default, dynamic
+                       updating cannot be enabled.
         '''
         if not sensors:
-            self.EligibleSensors()
+            self.EligibleLoggers()
         else:
+            if not stop:
+                stop = datetime.today()
+            else:
+                dynamupdate = False
             if dynamupdate:
                 plt.ion()
             if isinstance(start, datetime):
@@ -169,15 +178,31 @@ class LoggedDataHandler:
         print(p1)
         plt.show()
 
-    def EligibleSensors(self):
+    def EligibleLoggers(self, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
         '''
-            Print names of eligible sensors.
+            Print names of sensors with logged data in a certain timeframe.
+            Searches the last three hours by default.
+
+            Inputs:
+            <start> (datetime object or a CouchDB formatted timestamp) Sets the
+                    beginning of the search window. If set to False, this method
+                    will print out all loggers which have logged data.
+            <stop> (datetime object or a CouchDB formatted timestamp) Sets the
+                   end of the search window. 
         '''
-        sensors = []
-        for row in self._logged_data.view('log_access/all_logged_data'):
-            if row.value['sensor_name'] not in sensors:
-                sensors.append(row.value['sensor_name'])
-        print(sensors)
+        if not start:
+            for row in self._logged_data.view('log_access/logger_list', reduce=True, group_level=2):
+                print(row.key)
+        else:
+            sensors = []
+            if isinstance(start, datetime):
+                start = start.strftime("%Y-%m-%d %H:%M:%S")
+            if isinstance(stop, datetime):
+                stop = stop.strftime("%Y-%m-%d %H:%M:%S")
+            for row in self._logged_data.view('log_access/all_logged_data', startkey=start, endkey=stop):
+                if row.value['sensor_name'] not in sensors:
+                    print(row.value['sensor_name'])
+                    sensors.append(row.value['sensor_name'])
 
     def FormatPlots(self,sensor,fig,ax):
         '''
