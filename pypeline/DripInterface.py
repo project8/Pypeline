@@ -198,9 +198,9 @@ class DripInterface:
             intervals = ['10' for i in range(len(instruments))]
         elif type(intervals) == type(''):
             intervals = [intervals]
-        self._conf_iterface.AddLoggers(instruments,intervals)
+        self._conf_iterface.AddLoggers(instruments, intervals)
 
-    def RemoveLoggers(self, instruments=False):
+    def RemoveLoggers(self, instruments=''):
         '''
             Removes the docuemnt(s) from the configuration database which makes <instruments> (a) potential logger(s)
 
@@ -210,17 +210,11 @@ class DripInterface:
             Returns:
                 nothing is returned
         '''
-        if not instruments:
-            self._conf_interface.EligibleLoggers()
-        #######################
-        # This stuff needs to be moved to the _ConfInterface!!!!!!!!!!!
-        else:
-            if type(instruments) == type(''):
-                instruments = [instruments]
-            for inst in instruments:
-                for row in self._conf_database.view('objects/loggers'):
-                    if row.key == inst:
-                        self._conf_database.delete(self._conf_database.get(row.id))
+        if not instruments and not instruments == False:
+            return self._conf_interface.EligibleLoggers()
+        elif type(instruments) == type(''):
+            instruments = [instruments]
+        self._conf_interface.RemoveLoggers(instruments)
             
     def Run(self, duration=250, rate=500, filename=None):
         '''
