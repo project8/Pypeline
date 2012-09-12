@@ -191,31 +191,14 @@ class DripInterface:
                 nothing is returned
         '''
         if not instruments:
-            self._conf_interface.EligibleChannels()
-        #######################
-        # This stuff needs to be moved to the _ConfInterface!!!!!!!!!!!
-        else:
-            if type(instruments) == type(''):
-                instruments = [instruments]
-            if not intervals:
-                intervals = ['10' for a in range(len(instruments))]
-            elif type(intervals) == type(''):
-                intervals = [intervals]
-            for i in range(len(instruments)):
-                match = False
-                for row in self._conf_database.view('objects/loggers'):
-                    if instruments[i] == row.key:
-                        match = True
-                if match:
-                    print(instruments[i] + " already added")
-                    continue
-                add_doc = {
-                    '_id':uuid4().hex,
-                    'channel':instruments[i],
-                    'interval':intervals[i],
-                    'type':'logger',
-                }
-                self._conf_database.save(add_doc)
+            return self._conf_interface.EligibleChannels()
+        if type(instruments) == type(''):
+            instruments = [instruments]
+        if not intervals:
+            intervals = ['10' for i in range(len(instruments))]
+        elif type(intervals) == type(''):
+            intervals = [intervals]
+        self._conf_iterface.AddLoggers(instruments,intervals)
 
     def RemoveLoggers(self, instruments=False):
         '''

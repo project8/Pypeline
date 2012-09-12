@@ -49,17 +49,9 @@ class _ConfInterface:
         '''
             Add each element of instruments to the configuration database as a logger
         '''
-        if type(instruments) == type(''):
-            instruments = [instruments]
-        if not intervals:
-            intervals = ['10' for a in range(len(instruments))]
-        elif type(intervals) == type(''):
-            intervals = [intervals]
-        for i in range(len(instruments)):
+        for (instrument,interval) in zip(instruments,intervals):
             match = False
-            for row in self._conf_database.view('objects/loggers'):
-                if instruments[i] == row.key:
-                    match = True
+            match = sum([instrument==row.key for row in self._conf_database.view('objects/loggers')])
             if match:
                 print(instruments[i] + " already added")
                 continue
