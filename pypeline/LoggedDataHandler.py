@@ -105,7 +105,7 @@ class LoggedDataHandler:
 
             for sensor in sensors:
                 data = self.Get(sensor, start, stop)
-                line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor)
+                line1 = ax.plot(data[0][sensor], data[1][sensor], label=sensor+": "+str(data[1][sensor][-1]))
 
             while dynamupdate:
                 try:
@@ -113,7 +113,7 @@ class LoggedDataHandler:
                     for sensor in sensors:
                         data = self.Get(sensor, start, stop)
                         line1 = ax.plot(data[0][sensor], data[1][sensor],
-                                        label=sensor)
+                                        label=sensor+": "+str(data[1][sensor][-1]))
                     self.FormatPlots(sensor,fig,ax)
                     fig.canvas.draw()
                 except KeyboardInterrupt:
