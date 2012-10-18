@@ -216,7 +216,7 @@ class DripInterface:
             instruments = [instruments]
         self._conf_interface.RemoveLoggers(instruments)
             
-    def Run(self, duration=250, rate=500, filename=None):
+    def Run(self, duration=250, rate=500, filename=None, channels=2):
         '''
             Posts a document to the command database instructing dripline to start a mantis run.
 
@@ -234,7 +234,7 @@ class DripInterface:
         '''
         if not filename:
             filename = '/data/' + uuid4().hex + '.egg'
-        result = self._cmd_interface.Run(duration, rate, filename)
+        result = self._cmd_interface.Run(duration, rate, filename, channels)
         return result
 
     def CreatePowerSpectrum(self, dripresponse, sp):

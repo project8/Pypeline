@@ -154,7 +154,7 @@ class _CmdInterface:
         self._cmd_database.save(start_doc)
         return result
     
-    def Run(self, duration, rate, filename):
+    def Run(self, duration, rate, filename, channels):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -179,6 +179,7 @@ class _CmdInterface:
                 "duration":str(duration),
                 "rate":str(rate),
                 "output":filename,
+                "mode":channels,
             },
         }
         self._cmd_database.save(run_doc)
