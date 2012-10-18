@@ -179,7 +179,7 @@ class _CmdInterface:
                 "duration":str(duration),
                 "rate":str(rate),
                 "output":filename,
-                "mode":channels,
+                "mode":str(channels),
             },
         }
         self._cmd_database.save(run_doc)
