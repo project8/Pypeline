@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module pypeline.peakdet</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="pypeline.html"><font color="#ffffff">pypeline</font></a>.peakdet</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/laroque/code/Pypeline/pypeline/peakdet.py">/home/laroque/code/Pypeline/pypeline/peakdet.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-arange"><strong>arange</strong></a>(...)</dt><dd><tt><a href="#-arange">arange</a>([start,]&nbsp;stop[,&nbsp;step,],&nbsp;dtype=None)<br>
+&nbsp;<br>
+Return&nbsp;evenly&nbsp;spaced&nbsp;values&nbsp;within&nbsp;a&nbsp;given&nbsp;interval.<br>
+&nbsp;<br>
+Values&nbsp;are&nbsp;generated&nbsp;within&nbsp;the&nbsp;half-open&nbsp;interval&nbsp;``[start,&nbsp;stop)``<br>
+(in&nbsp;other&nbsp;words,&nbsp;the&nbsp;interval&nbsp;including&nbsp;`start`&nbsp;but&nbsp;excluding&nbsp;`stop`).<br>
+For&nbsp;integer&nbsp;arguments&nbsp;the&nbsp;function&nbsp;is&nbsp;equivalent&nbsp;to&nbsp;the&nbsp;Python&nbsp;built-in<br>
+`range&nbsp;&lt;<a href="http://docs.python.org/lib/built-in-funcs.html&gt;`_">http://docs.python.org/lib/built-in-funcs.html&gt;`_</a>&nbsp;function,<br>
+but&nbsp;returns&nbsp;an&nbsp;ndarray&nbsp;rather&nbsp;than&nbsp;a&nbsp;list.<br>
+&nbsp;<br>
+When&nbsp;using&nbsp;a&nbsp;non-integer&nbsp;step,&nbsp;such&nbsp;as&nbsp;0.1,&nbsp;the&nbsp;results&nbsp;will&nbsp;often&nbsp;not<br>
+be&nbsp;consistent.&nbsp;&nbsp;It&nbsp;is&nbsp;better&nbsp;to&nbsp;use&nbsp;``linspace``&nbsp;for&nbsp;these&nbsp;cases.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+start&nbsp;:&nbsp;number,&nbsp;optional<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Start&nbsp;of&nbsp;interval.&nbsp;&nbsp;The&nbsp;interval&nbsp;includes&nbsp;this&nbsp;value.&nbsp;&nbsp;The&nbsp;default<br>
+&nbsp;&nbsp;&nbsp;&nbsp;start&nbsp;value&nbsp;is&nbsp;0.<br>
+stop&nbsp;:&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;End&nbsp;of&nbsp;interval.&nbsp;&nbsp;The&nbsp;interval&nbsp;does&nbsp;not&nbsp;include&nbsp;this&nbsp;value,&nbsp;except<br>
+&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;some&nbsp;cases&nbsp;where&nbsp;`step`&nbsp;is&nbsp;not&nbsp;an&nbsp;integer&nbsp;and&nbsp;floating&nbsp;point<br>
+&nbsp;&nbsp;&nbsp;&nbsp;round-off&nbsp;affects&nbsp;the&nbsp;length&nbsp;of&nbsp;`out`.<br>
+step&nbsp;:&nbsp;number,&nbsp;optional<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Spacing&nbsp;between&nbsp;values.&nbsp;&nbsp;For&nbsp;any&nbsp;output&nbsp;`out`,&nbsp;this&nbsp;is&nbsp;the&nbsp;distance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;between&nbsp;two&nbsp;adjacent&nbsp;values,&nbsp;``out[i+1]&nbsp;-&nbsp;out[i]``.&nbsp;&nbsp;The&nbsp;default<br>
+&nbsp;&nbsp;&nbsp;&nbsp;step&nbsp;size&nbsp;is&nbsp;1.&nbsp;&nbsp;If&nbsp;`step`&nbsp;is&nbsp;specified,&nbsp;`start`&nbsp;must&nbsp;also&nbsp;be&nbsp;given.<br>
+dtype&nbsp;:&nbsp;dtype<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;type&nbsp;of&nbsp;the&nbsp;output&nbsp;array.&nbsp;&nbsp;If&nbsp;`dtype`&nbsp;is&nbsp;not&nbsp;given,&nbsp;infer&nbsp;the&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;type&nbsp;from&nbsp;the&nbsp;other&nbsp;input&nbsp;arguments.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+arange&nbsp;:&nbsp;ndarray<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Array&nbsp;of&nbsp;evenly&nbsp;spaced&nbsp;values.<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;floating&nbsp;point&nbsp;arguments,&nbsp;the&nbsp;length&nbsp;of&nbsp;the&nbsp;result&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;``ceil((stop&nbsp;-&nbsp;start)/step)``.&nbsp;&nbsp;Because&nbsp;of&nbsp;floating&nbsp;point&nbsp;overflow,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;this&nbsp;rule&nbsp;may&nbsp;result&nbsp;in&nbsp;the&nbsp;last&nbsp;element&nbsp;of&nbsp;`out`&nbsp;being&nbsp;greater<br>
+&nbsp;&nbsp;&nbsp;&nbsp;than&nbsp;`stop`.<br>
+&nbsp;<br>
+See&nbsp;Also<br>
+--------<br>
+linspace&nbsp;:&nbsp;Evenly&nbsp;spaced&nbsp;numbers&nbsp;with&nbsp;careful&nbsp;handling&nbsp;of&nbsp;endpoints.<br>
+ogrid:&nbsp;Arrays&nbsp;of&nbsp;evenly&nbsp;spaced&nbsp;numbers&nbsp;in&nbsp;N-dimensions.<br>
+mgrid:&nbsp;Grid-shaped&nbsp;arrays&nbsp;of&nbsp;evenly&nbsp;spaced&nbsp;numbers&nbsp;in&nbsp;N-dimensions.<br>
+&nbsp;<br>
+Examples<br>
+--------<br>
+&gt;&gt;&gt;&nbsp;np.<a href="#-arange">arange</a>(3)<br>
+array([0,&nbsp;1,&nbsp;2])<br>
+&gt;&gt;&gt;&nbsp;np.<a href="#-arange">arange</a>(3.0)<br>
+array([&nbsp;0.,&nbsp;&nbsp;1.,&nbsp;&nbsp;2.])<br>
+&gt;&gt;&gt;&nbsp;np.<a href="#-arange">arange</a>(3,7)<br>
+array([3,&nbsp;4,&nbsp;5,&nbsp;6])<br>
+&gt;&gt;&gt;&nbsp;np.<a href="#-arange">arange</a>(3,7,2)<br>
+array([3,&nbsp;5])</tt></dd></dl>
+ <dl><dt><a name="-peakdet"><strong>peakdet</strong></a>(v, delta, x<font color="#909090">=None</font>)</dt><dd><tt>Converted&nbsp;from&nbsp;MATLAB&nbsp;script&nbsp;at&nbsp;<a href="http://billauer.co.il/peakdet.html">http://billauer.co.il/peakdet.html</a><br>
+&nbsp;<br>
+Currently&nbsp;returns&nbsp;two&nbsp;lists&nbsp;of&nbsp;tuples,&nbsp;but&nbsp;maybe&nbsp;arrays&nbsp;would&nbsp;be&nbsp;better<br>
+&nbsp;<br>
+function&nbsp;[maxtab,&nbsp;mintab]=<a href="#-peakdet">peakdet</a>(v,&nbsp;delta,&nbsp;x)<br>
+%PEAKDET&nbsp;Detect&nbsp;peaks&nbsp;in&nbsp;a&nbsp;vector<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[MAXTAB,&nbsp;MINTAB]&nbsp;=&nbsp;PEAKDET(V,&nbsp;DELTA)&nbsp;finds&nbsp;the&nbsp;local<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maxima&nbsp;and&nbsp;minima&nbsp;("peaks")&nbsp;in&nbsp;the&nbsp;vector&nbsp;V.<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MAXTAB&nbsp;and&nbsp;MINTAB&nbsp;consists&nbsp;of&nbsp;two&nbsp;columns.&nbsp;Column&nbsp;1<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;contains&nbsp;indices&nbsp;in&nbsp;V,&nbsp;and&nbsp;column&nbsp;2&nbsp;the&nbsp;found&nbsp;values.<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;With&nbsp;[MAXTAB,&nbsp;MINTAB]&nbsp;=&nbsp;PEAKDET(V,&nbsp;DELTA,&nbsp;X)&nbsp;the&nbsp;indices<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;MAXTAB&nbsp;and&nbsp;MINTAB&nbsp;are&nbsp;replaced&nbsp;with&nbsp;the&nbsp;corresponding<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X-values.<br>
+%<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;point&nbsp;is&nbsp;considered&nbsp;a&nbsp;maximum&nbsp;peak&nbsp;if&nbsp;it&nbsp;has&nbsp;the&nbsp;maximal<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value,&nbsp;and&nbsp;was&nbsp;preceded&nbsp;(to&nbsp;the&nbsp;left)&nbsp;by&nbsp;a&nbsp;value&nbsp;lower&nbsp;by<br>
+%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DELTA.<br>
+&nbsp;<br>
+%&nbsp;Eli&nbsp;Billauer,&nbsp;3.4.05&nbsp;(Explicitly&nbsp;not&nbsp;copyrighted).<br>
+%&nbsp;This&nbsp;function&nbsp;is&nbsp;released&nbsp;to&nbsp;the&nbsp;public&nbsp;domain;&nbsp;Any&nbsp;use&nbsp;is&nbsp;allowed.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Inf</strong> = inf<br>
+<strong>NaN</strong> = nan</td></tr></table>
+</body></html>

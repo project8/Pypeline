@@ -28,3 +28,13 @@ pip-log.txt
 
 #editor temp files
 *.swp
+
+#saved data
+*.txt
+*.jpg
+
+#compiled python files
+*.pyc
+
+#DS Store
+*.DS_Store
