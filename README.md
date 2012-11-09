@@ -34,6 +34,17 @@ scipy:
     1) I'm (Micah) using 0.12.0.dev-8647010. Find it at http://numpy.scipy.org.
     2) I'm (Ben) using 0.12.x from http://github.com/scipy/scipy
 
+gnuplot.py:
+    
+    1) I'm (Gray) using 1.8 -BUT NOT ANYMORE-.  Find it at REDACTED
+    1b) I'm (Gray) beginning to thing that gnuplot.py was made by a hack.  If it keeps fighting me I'm going to write my own version.
+    1c) I (Gray) have affirmed gnuplot.py is a piece of junk and have replaced it with my own code
+
+tkinter:
+    The tell me (Gray) that it comes with all python distributions.  I'm using v2.7.3
+
+pmw:
+    I'm (Gray)  using version 1.3.2
 
 Development Notes
 -----------------
