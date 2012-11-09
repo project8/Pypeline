@@ -4,6 +4,7 @@ import string
 
 import LoggedDataHandler_Gnuplot
 
+
 def start_plotgui():
     root=Tkinter.Tk()
     Pmw.initialise(root)
@@ -19,7 +20,8 @@ class PlotMakingGui:
         sensors=self.logg.EligibleLoggers()
 #pmw complains if there are underscores in a button name
 #possible cause: pmw was written by insects
-        button_names=[string.translate(x,string.maketrans('_',' ')) for x in sensors]
+        #button_names=[string.translate(x,string.maketransU('_',' ')) for x in sensors]
+        button_names=[self.python_is_horrible(x,"_"," ") for x in sensors]
         print button_names
         for sensor in button_names:
             self.buttonbox.add(sensor)
@@ -30,6 +32,15 @@ class PlotMakingGui:
         if len(button_names)==0:
             print "no sensors selected"
             return
-        sensors=[string.translate(x,string.maketrans(' ','_')) for x in button_names]
+        #sensors=[string.translate(x,string.maketrans(' ','_')) for x in button_names]
+        sensors=[self.python_is_horrible(x," ","_") for x in button_names]
         self.logg.Plot(sensors)
 
+    def python_is_horrible(self,s,a,b):
+        ret=""
+        for c in s:
+            if c==a:
+                ret=ret+b
+            else:
+                ret=ret+c
+        return ret
