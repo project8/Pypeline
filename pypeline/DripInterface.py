@@ -265,3 +265,4 @@ class DripInterface:
         if not status['final'] == 'thump':
            raise UserWarning('Could not find dripline pulse. Make sure it is running.')
         return status['final']
+

@@ -209,3 +209,4 @@ class _CmdInterface:
         }
         self._cmd_database.save(pow_doc)
         return result
+
