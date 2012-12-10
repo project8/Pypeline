@@ -2,6 +2,7 @@ import LoggedDataMonitor
 import usegnuplot
 import threading
 from uuid import uuid4
+import time
 
 class LoggedDataMonitorPlotter:
 	'''
@@ -15,8 +16,32 @@ class LoggedDataMonitorPlotter:
 		self.myid=uuid4()
 
 	def StartUpdating(self):
+		self.Replot()
 		self.data_store.AddDoOnUpdate(self.myid,self.Replot)
 
+	def SavePlotData(self):
+		if len(self.sensors_to_plot)==0:
+			return
+		plotsets=[]
+		units=""
+		filename=time.strftime("%Y_%m_%d_%H:%M:%S_",time.localtime())
+		filename+=self.sensors_to_plot[0]+"_log.txt"
+		self.sensors_to_plot_mutex.acquire()
+		for sensor in self.sensors_to_plot:
+			plotsets.append(self.data_store.GetTimeAndValues(sensor))
+		self.sensors_to_plot_mutex.release()
+		print("saving to "+filename)
+		f=open(filename,"w")
+		counter=0
+		for dataset in plotsets:
+		    for entry in dataset:
+			for elem in entry:
+			    f.write(str(elem)+" ")
+			f.write(self.sensors_to_plot[counter])
+			f.write("\n")
+		    counter=counter+1
+		f.close()
+			
 	def Replot(self):
 		if len(self.sensors_to_plot)==0:
 			return

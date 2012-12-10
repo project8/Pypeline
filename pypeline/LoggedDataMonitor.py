@@ -12,7 +12,6 @@ from couchdb import Server as CouchServer
 import numpy as np
 from scipy import optimize
 import threading
-import threading
 
 class LoggedDataMonitor:
 	'''
