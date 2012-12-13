@@ -116,9 +116,8 @@ class LoggedDataHandler_Gnuplot:
             self.g.gp("set timefmt \"%Y-%m-%d %H:%M:%S\"")
             self.g.gp("set format x \"%H:%M\"")
             self.g.gp("set ylabel \""+data[2][sensors[0]][0]+"\"")
-            self.g.gp("set xlabel \"Time\"")
-
-            self.g.plotMany(plotsets,argsets)
+#           self.g.gp("set xlabel \"Time\"")
+#			self.g.plotMany(plotsets,argsets)
 
 #                self.FormatPlots(sensor,fig,ax)
 #                plt.show()
@@ -213,3 +212,18 @@ class LoggedDataHandler_Gnuplot:
                          box.width, box.height * 0.9])
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2),
                   fancybox=True, shadow=True, ncol=2)
+	
+	def BeginDataMonitoring(self):
+		'''
+			start getting data so I can update plots
+		'''
+		#get the last update sequence
+		self.recent=self._logged_data.info()['update_seq']
+
+	def UpdatePlots(self):
+		changes=self._logged_data.changes(since=self.recent)
+		self.recent=changes['last_seq']
+		for changeset in changes['results']:
+			doc=self._logged_data[changeset['id']]
+
+

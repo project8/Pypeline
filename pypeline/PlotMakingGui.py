@@ -1,6 +1,7 @@
 import Tkinter
 import Pmw
 import string
+import time
 
 import LoggedDataHandler_Gnuplot
 
@@ -26,6 +27,12 @@ class PlotMakingGui:
         for sensor in button_names:
             self.buttonbox.add(sensor)
         self.plotbutton=Tkinter.Button(parent,text="PLOT",command=self.plot_pressed).pack()
+        self.plot_start_time_entry=Pmw.EntryField(label_text="Start Time:",labelpos='w',value=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()-60*60*3)))
+        self.plot_start_time_entry.pack(fill='x',padx=10,pady=10)
+        self.plot_stop_time_entry=Pmw.EntryField(label_text="Stop Time:",labelpos='w',value="now")
+        self.plot_stop_time_entry.pack(fill='x',padx=10,pady=10)
+
+
 
     def plot_pressed(self):
         button_names=self.buttonbox.getvalue()
@@ -34,7 +41,11 @@ class PlotMakingGui:
             return
         #sensors=[string.translate(x,string.maketrans(' ','_')) for x in button_names]
         sensors=[self.python_is_horrible(x," ","_") for x in button_names]
-        self.logg.Plot(sensors)
+        if self.plot_stop_time_entry.getvalue()=="now":
+            self.logg.Plot(sensors=sensors,start=self.plot_start_time_entry.getvalue())
+        else:
+            self.logg.Plot(sensors=sensors,start=self.plot_start_time_entry.getvalue(),stop=self.plot_stop_time_entry.getvalue())
+
 
     def python_is_horrible(self,s,a,b):
         ret=""
