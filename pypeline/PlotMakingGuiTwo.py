@@ -2,12 +2,14 @@ import Tkinter
 import Pmw
 import string
 import time
+import math
 from datetime import datetime, timedelta
 
 import LoggedDataMonitor
 import LoggedDataMonitorPlotter
 import CommandMonitor
 import DripInterface
+import usegnuplot
 
 
 def start_plotgui():
@@ -73,6 +75,10 @@ class PlotMakingGuiTwo:
 		self.set_entry_field={}
 		for key in settable_variables:
 			self.add_settable_line(key,setcontrols)
+		digibutton1=Tkinter.Button(setcontrols,text="Digitize Channel 1",command=lambda i=1: self.digitize(i))
+		digibutton1.pack(side="top")
+		corrbutton1=Tkinter.Button(setcontrols,text="Correlate Channels",command=self.correlate)
+		corrbutton1.pack(side="top")
 		setcontrols.pack(side="left")
 		notconsole.pack(side="top")
 		cframe=Tkinter.Frame(parent)
@@ -141,10 +147,58 @@ class PlotMakingGuiTwo:
 
 	def do_on_command_update(self,command_entry):
 		mytime=datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-		if "result" in command_entry:
-			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+str(command_entry["result"])+"\n")
-		else:
-			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
+#		if "result" in command_entry:
+#			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+str(command_entry["result"])+"\n")
+#		else:
+		self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
+
+	def digitize(self,channel):
+		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=100,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
+		dat=run['data']
+		freqs=[]
+		moddat=[ 10.0*math.log10(x) for x in dat ]
+		for x in range(len(dat)):
+			freqs.append(run['sampling_rate']*x/2.0)
+		toplot=zip(freqs,moddat)
+		g=usegnuplot.Gnuplot()
+		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		g.gp("set style line 11 lc rgb '#808080' lt 1")
+		g.gp("set border 3 back ls 11")
+		g.gp("set tics nomirror")
+		g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		g.gp("set grid back ls 12")
+		g.gp("set xlabel \"Frequency (MHz)\"")
+		g.gp("set ylabel \"Power (dBm)\"")
+		g.gp("unset key")
+		g.plot1d(toplot," with lines")
+
+	def correlate(self):
+		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=100,filename="/data/temp.egg").Wait(),sp="correline").Wait()['result'])
+		dat=run['data']
+		freqs=[]
+#		moddat=[ 10.0*math.log10(x) for x in dat ]
+		for x in range(len(dat)):
+			freqs.append(run['sampling_rate']*x/2.0)
+		toplot=zip(freqs,dat)
+		g=usegnuplot.Gnuplot()
+		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		g.gp("set style line 11 lc rgb '#808080' lt 1")
+		g.gp("set border 3 back ls 11")
+		g.gp("set tics nomirror")
+		g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		g.gp("set grid back ls 12")
+		g.gp("set xlabel \"Frequency (MHz)\"")
+		g.gp("set ylabel \"Correlated Power\"")
+		g.gp("unset key")
+		g.plot1d(toplot," with lines")
+
+		
+
+		
+
+
 
 
 
