@@ -3,6 +3,7 @@ import Pmw
 import string
 import time
 import math
+import threading
 from datetime import datetime, timedelta
 
 import LoggedDataMonitor
@@ -79,6 +80,13 @@ class PlotMakingGuiTwo:
 		digibutton1.pack(side="top")
 		corrbutton1=Tkinter.Button(setcontrols,text="Correlate Channels",command=self.correlate)
 		corrbutton1.pack(side="top")
+		dpphframe=Tkinter.Frame(setcontrols)
+		dpphbutton=Tkinter.Button(dpphframe,text="DPPH Run",command=self.dpph_run_threaded)
+		dpphbutton.pack(side="left")
+		Tkinter.Label(dpphframe,text="Frequency").pack(side="left")
+		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
+		self.dpph_frequency_textbox.pack(side="left")
+		dpphframe.pack(side="top")
 		setcontrols.pack(side="left")
 		notconsole.pack(side="top")
 		cframe=Tkinter.Frame(parent)
@@ -158,7 +166,7 @@ class PlotMakingGuiTwo:
 		freqs=[]
 		moddat=[ 10.0*math.log10(x) for x in dat ]
 		for x in range(len(dat)):
-			freqs.append(run['sampling_rate']*x/2.0)
+			freqs.append(run['sampling_rate']*x/(2.0*len(dat)))
 		toplot=zip(freqs,moddat)
 		g=usegnuplot.Gnuplot()
 		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
@@ -179,7 +187,7 @@ class PlotMakingGuiTwo:
 		freqs=[]
 #		moddat=[ 10.0*math.log10(x) for x in dat ]
 		for x in range(len(dat)):
-			freqs.append(run['sampling_rate']*x/2.0)
+			freqs.append(run['sampling_rate']*x/(2.0*1e6))
 		toplot=zip(freqs,dat)
 		g=usegnuplot.Gnuplot()
 		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
@@ -193,6 +201,51 @@ class PlotMakingGuiTwo:
 		g.gp("set ylabel \"Correlated Power\"")
 		g.gp("unset key")
 		g.plot1d(toplot," with lines")
+
+	def dpph_run_threaded(self):
+		freq=self.dpph_frequency_textbox.get()
+		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
+		thethread.daemon=True
+		thethread.start()
+		
+	def dpph_run(self,freq):
+		freqend=int(freq)+100
+		self.drip.Set("hf_sweep_start",freq)
+		self.drip.Set("hf_sweep_stop",str(freqend))
+		self.drip.Set("hf_sweeper_power",-20,True)
+#		self.drip.Set("dpph_current","0A",True)
+		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
+		dat1=run1['data']
+#		self.drip.Set("dpph_current","2A",True)
+		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
+		dat2=run2['data']
+		diff=[]
+		freqs=[]
+#		self.drip.Set("dpph_current","0A")
+		for x in range(len(dat1)):
+			freqs.append(run2['sampling_rate']*x/(2.0*(len(dat1))))
+			diff.append((dat1[x]-dat2[x])/(dat1[x]+dat2[x]))
+		toplot=zip(freqs,diff)
+ 		g=usegnuplot.Gnuplot()
+		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		g.gp("set style line 11 lc rgb '#808080' lt 1")
+		g.gp("set border 3 back ls 11")
+		g.gp("set tics nomirror")
+		g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		g.gp("set grid back ls 12")
+		g.gp("set xlabel \"Frequency (MHz)\"")
+		g.gp("set ylabel \"Normalized Difference\"")
+		g.gp("unset key")
+		g.plot1d(toplot," with lines")
+
+
+
+
+
+
+
+
 
 		
 
