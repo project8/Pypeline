@@ -70,7 +70,7 @@ class PlotMakingGuiTwo:
 		self.savebutton_2=Tkinter.Button(saveframe,text="SAVE 2",command=lambda i=2: self.save_pressed(i)).pack(side="left")
 		self.savebutton_3=Tkinter.Button(saveframe,text="SAVE 3",command=lambda i=3: self.save_pressed(i)).pack(side="left")
 		plotcontrols.pack(side="left")
-		settable_variables=["hf_cw_freq","hf_sweep_start","hf_sweep_stop","hf_sweep_time","hf_sweeper_power","lo_cw_freq","dpph_current","trap_current"]
+		settable_variables=["hf_cw_freq","hf_sweep_start","hf_sweep_stop","hf_sweep_time","hf_sweeper_power","lo_cw_freq","dpph_current","trap_current","waveguide_cell_heater_current"]
 		setcontrols=Tkinter.Frame(notconsole)
 		self.set_entry_field={}
 		for key in settable_variables:
