@@ -210,18 +210,21 @@ class PlotMakingGuiTwo:
 		
 	def dpph_run(self,freq):
 		freqend=int(freq)+100
+		self.drip.Set("dpph_current","0A",True)
 		self.drip.Set("hf_sweep_start",freq)
 		self.drip.Set("hf_sweep_stop",str(freqend))
-		self.drip.Set("hf_sweeper_power",-20,True)
-#		self.drip.Set("dpph_current","0A",True)
-		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
+		self.drip.Set("hf_sweeper_power",-20)
+		lo_freq=str(int(freq)-24500)
+		self.drip.Set("lo_cw_freq",lo_freq,True)
+		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
 		dat1=run1['data']
-#		self.drip.Set("dpph_current","2A",True)
-		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
+		self.drip.Set("dpph_current","2A",True)
+		time.sleep(1)
+		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
 		dat2=run2['data']
 		diff=[]
 		freqs=[]
-#		self.drip.Set("dpph_current","0A")
+		self.drip.Set("dpph_current","0A")
 		for x in range(len(dat1)):
 			freqs.append(run2['sampling_rate']*x/(2.0*(len(dat1))))
 			diff.append((dat1[x]-dat2[x])/(dat1[x]+dat2[x]))
