@@ -83,6 +83,9 @@ class PlotMakingGuiTwo:
 		dpphframe=Tkinter.Frame(setcontrols)
 		dpphbutton=Tkinter.Button(dpphframe,text="DPPH Run",command=self.dpph_run_threaded)
 		dpphbutton.pack(side="left")
+		dpphwidebutton=Tkinter.Button(setcontrols,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
+		dpphwidebutton.pack(side="top")
+
 		Tkinter.Label(dpphframe,text="Frequency").pack(side="left")
 		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_frequency_textbox.pack(side="left")
@@ -209,26 +212,7 @@ class PlotMakingGuiTwo:
 		thethread.start()
 		
 	def dpph_run(self,freq):
-		freqend=int(freq)+100
-		self.drip.Set("dpph_current","0A",True)
-		self.drip.Set("hf_sweep_start",freq)
-		self.drip.Set("hf_sweep_stop",str(freqend))
-		self.drip.Set("hf_sweeper_power",-20)
-		lo_freq=str(int(freq)-24500)
-		self.drip.Set("lo_cw_freq",lo_freq,True)
-		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
-		dat1=run1['data']
-		self.drip.Set("dpph_current","2A",True)
-		time.sleep(1)
-		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
-		dat2=run2['data']
-		diff=[]
-		freqs=[]
-		self.drip.Set("dpph_current","0A")
-		for x in range(len(dat1)):
-			freqs.append(run2['sampling_rate']*x/(2.0*(len(dat1))))
-			diff.append((dat1[x]-dat2[x])/(dat1[x]+dat2[x]))
-		toplot=zip(freqs,diff)
+		toplot=self.dpph_run_ret(freq)
  		g=usegnuplot.Gnuplot()
 		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
 		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
@@ -241,6 +225,64 @@ class PlotMakingGuiTwo:
 		g.gp("set ylabel \"Normalized Difference\"")
 		g.gp("unset key")
 		g.plot1d(toplot," with lines")
+
+	def dpph_run_ret(self,freq,validstart=10,validstop=90):
+		freqend=int(freq)+100
+		inttime=4000
+		self.drip.Set("dpph_current","0A",True)
+		self.drip.Set("hf_sweep_start",freq)
+		self.drip.Set("hf_sweep_stop",str(freqend))
+		self.drip.Set("hf_sweeper_power",-20)
+		lo_freq=str(int(freq)-24500)
+		self.drip.Set("lo_cw_freq",lo_freq,True)
+		time.sleep(1)
+		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=inttime,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
+		#time.sleep(1)
+		dat1=run1['data']
+		self.drip.Set("dpph_current","2A",True)
+		time.sleep(1)
+		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=inttime,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
+		#time.sleep(1)
+		dat2=run2['data']
+		diff=[]
+		freqs=[]
+		self.drip.Set("dpph_current","0A")
+		for x in range(len(dat1)):
+			if (run2['sampling_rate']*x/(2.0*(len(dat1)))<validstop) and (run2['sampling_rate']*x/(2.0*(len(dat1)))>validstart):
+				freqs.append(int(freq)+run2['sampling_rate']*x/(2.0*(len(dat1))))
+				diff.append((dat1[x]-dat2[x])/(dat1[x]+dat2[x]))
+		toplot=zip(freqs,diff)
+		return toplot
+
+ 	def dpph_run_wide_threaded(self):
+		freq=self.dpph_frequency_textbox.get()
+		thethread=threading.Thread(target=lambda : self.dpph_run_wide())
+		thethread.daemon=True
+		thethread.start()
+
+	def dpph_run_wide(self):
+		plotthings=[]
+		argsets=[]
+		for i in range(18):
+			onfreq=25000+i*80
+			plotthings.append(self.dpph_run_ret(onfreq))
+			argsets.append("using 1:2 with lines")
+ 		g=usegnuplot.Gnuplot()
+		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		g.gp("set style line 11 lc rgb '#808080' lt 1")
+		g.gp("set border 3 back ls 11")
+		g.gp("set tics nomirror")
+		g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		g.gp("set grid back ls 12")
+		g.gp("set xlabel \"Frequency (MHz)\"")
+		g.gp("set ylabel \"Normalized Difference\"")
+		g.gp("unset key")
+		#g.plot1d(toplot," with lines")
+		g.plotMany(plotthings,argsets)
+
+
+
 
 
 
