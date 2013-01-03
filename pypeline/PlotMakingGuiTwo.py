@@ -155,10 +155,10 @@ class PlotMakingGuiTwo:
 
 	def do_on_command_update(self,command_entry):
 		mytime=datetime.today().strftime("%Y-%m-%d %H:%M:%S")
-#		if "result" in command_entry:
-#			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+str(command_entry["result"])+"\n")
-#		else:
-		self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
+		if "result" in command_entry:
+			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+str(command_entry["result"])+"\n")
+		else:
+			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
 
 	def digitize(self,channel):
 		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=100,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
@@ -216,11 +216,11 @@ class PlotMakingGuiTwo:
 		self.drip.Set("hf_sweeper_power",-20)
 		lo_freq=str(int(freq)-24500)
 		self.drip.Set("lo_cw_freq",lo_freq,True)
-		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
+		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
 		dat1=run1['data']
 		self.drip.Set("dpph_current","2A",True)
 		time.sleep(1)
-		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=2000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
+		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
 		dat2=run2['data']
 		diff=[]
 		freqs=[]
