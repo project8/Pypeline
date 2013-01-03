@@ -85,7 +85,6 @@ class PlotMakingGuiTwo:
 		dpphbutton.pack(side="left")
 		dpphwidebutton=Tkinter.Button(setcontrols,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
 		dpphwidebutton.pack(side="top")
-
 		Tkinter.Label(dpphframe,text="Frequency").pack(side="left")
 		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_frequency_textbox.pack(side="left")
@@ -98,6 +97,7 @@ class PlotMakingGuiTwo:
 		cframe.pack(side="bottom")
 		self.logg.AddDoOnUpdate("update_gui_sensors",self.update_sensor_values)
 		self.cmd.AddDoOnUpdate("update_console",self.do_on_command_update)
+		self.dpph_set=False
 
 #        self.plot_start_time_entry=Pmw.EntryField(label_text="Start Time:",labelpos='w',value=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()-60*60*3)))
 #        self.plot_start_time_entry.pack(fill='x',padx=10,pady=10)
@@ -137,7 +137,11 @@ class PlotMakingGuiTwo:
 	def update_sensor_values(self):
 		for key in self.selectedsensors:
 			varname=self.python_is_horrible(key," ","_") 
-			self.sensor_display_labels[key].config(text='%.1f'%float(self.logg.values[varname][len(self.logg.values[varname])-1])+" "+self.logg.units[varname])
+			theval=float(self.logg.values[varname][len(self.logg.values[varname])-1])
+			if abs(theval) > 0.1:
+				self.sensor_display_labels[key].config(text='%.1f'%theval+" "+self.logg.units[varname])
+			else:
+				self.sensor_display_labels[key].config(text='%.1g'%theval+" "+self.logg.units[varname])
 	
 	def add_settable_line(self,sensorname,parent):
 		c=Tkinter.Frame(parent)
@@ -207,7 +211,8 @@ class PlotMakingGuiTwo:
 
 	def dpph_run_threaded(self):
 		freq=self.dpph_frequency_textbox.get()
-		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
+#		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,240))
 		thethread.daemon=True
 		thethread.start()
 		
@@ -280,6 +285,57 @@ class PlotMakingGuiTwo:
 		g.gp("unset key")
 		#g.plot1d(toplot," with lines")
 		g.plotMany(plotthings,argsets)
+
+	def dpph_run_step(self,freq,span):
+		validstart=10
+		validstop=90
+		nscans=int(span/80)
+		newscans=[]
+		newfreqs=[]
+		print "taking ",nscans," dpph scans"
+		for i in range(nscans):
+			freqstart=int(freq)+i*80
+			freqend=int(freqstart)+100
+			inttime=2000
+			self.drip.Set("hf_sweep_start",freq)
+			self.drip.Set("hf_sweep_stop",str(freqend))
+			self.drip.Set("hf_sweeper_power",-20)
+			lo_freq=str(int(freq)-24500)
+			self.drip.Set("lo_cw_freq",lo_freq,True)
+			time.sleep(0.1)
+			run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=inttime,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
+			dat1=run1['data']
+			freqs=[]
+			for x in range(len(dat1)):
+				freqs.append(int(freqstart)+run2['sampling_rate']*x/(2.0*(len(dat1))))
+			newfreqs.append(freqs)
+			newscans.append(dat1)
+		if self.dpph_set:
+			argsets=[]
+			toplot=[]
+			for i in range(len(newscans)):
+				diff=[]
+				for j in range(len(newscans[i])):
+					diff.append((newscans[i][j]-self.last_dpph[i][j])/(newscans[i][j]+self.last_dpph[i][j]))
+				toplot.append(zip(newfreqs[i],diff))
+				argsets.append("using 1:2 with lines")
+ 			g=usegnuplot.Gnuplot()
+			g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+			g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+			g.gp("set style line 11 lc rgb '#808080' lt 1")
+			g.gp("set border 3 back ls 11")
+			g.gp("set tics nomirror")
+			g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+			g.gp("set grid back ls 12")
+			g.gp("set xlabel \"Frequency (MHz)\"")
+			g.gp("set ylabel \"Normalized Difference\"")
+			g.gp("unset key")
+			g.plotMany(toplot,argsets)
+		else:
+			print "Initial DPPH Scan done"
+		self.dpph_set=True
+		self.last_dpph=newscans
+
 
 
 
