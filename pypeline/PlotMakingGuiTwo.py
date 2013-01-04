@@ -22,6 +22,7 @@ def start_plotgui():
 
 class PlotMakingGuiTwo:
 	def __init__(self,parent):
+		self.sweeper_power_default=-10
 #		self.buttonbox=Pmw.RadioSelect(parent,labelpos='nw',label_text='sensors',orient='vertical',selectmode='multiple',buttontype='checkbutton')
 #		self.buttonbox.pack(fill='both',padx=8,pady=8)
 		notconsole=Tkinter.Frame(parent)
@@ -83,8 +84,16 @@ class PlotMakingGuiTwo:
 		dpphframe=Tkinter.Frame(setcontrols)
 		dpphbutton=Tkinter.Button(dpphframe,text="DPPH Run",command=self.dpph_run_threaded)
 		dpphbutton.pack(side="left")
-		dpphwidebutton=Tkinter.Button(setcontrols,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
-		dpphwidebutton.pack(side="top")
+		dpphwideframe=Tkinter.Frame(setcontrols)
+		dpphwideframe.pack(side="top")
+		dpphwidebutton=Tkinter.Button(dpphwideframe,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
+		dpphwidebutton.pack(side="left")
+		Tkinter.Label(dpphwideframe,text="Start Frequency").pack(side="left")
+		self.dpph_wide_freq_start_textbox=Tkinter.Entry(dpphwideframe,bg="white")
+		self.dpph_wide_freq_start_textbox.pack(side="left")
+		Tkinter.Label(dpphwideframe,text="Stop Frequency").pack(side="left")
+		self.dpph_wide_freq_stop_textbox=Tkinter.Entry(dpphwideframe,bg="white")
+		self.dpph_wide_freq_stop_textbox.pack(side="left")
 		Tkinter.Label(dpphframe,text="Frequency").pack(side="left")
 		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_frequency_textbox.pack(side="left")
@@ -163,7 +172,9 @@ class PlotMakingGuiTwo:
 	def do_on_command_update(self,command_entry):
 		mytime=datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 		if "result" in command_entry:
-			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+str(command_entry["result"])+"\n")
+			fullresult=str(command_entry['result'])
+			resultstring=fullresult[:20]+(fullresult[20:] and '..')
+			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+resultstring+"\n")
 		else:
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
 
@@ -237,36 +248,39 @@ class PlotMakingGuiTwo:
 		self.drip.Set("dpph_current","0A",True)
 		self.drip.Set("hf_sweep_start",freq)
 		self.drip.Set("hf_sweep_stop",str(freqend))
-		self.drip.Set("hf_sweeper_power",-20)
+		self.drip.Set("hf_sweeper_power",str(self.sweeper_power_default))
 		lo_freq=str(int(freq)-24500)
 		self.drip.Set("lo_cw_freq",lo_freq,True)
-		run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp1.egg").Wait(),sp="powerline").Wait()['result'])
-		dat1=run1['data']
+		run1=self.run_sweep(int(freq))
 		self.drip.Set("dpph_current","2A",True)
-		time.sleep(1)
-		run2=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=1000,filename="/data/temp2.egg").Wait(),sp="powerline").Wait()['result'])
-		dat2=run2['data']
-		diff=[]
-		freqs=[]
+		time.sleep(0.5)
+		run2=self.run_sweep(int(freq))
 		self.drip.Set("dpph_current","0A")
-		for x in range(len(dat1)):
-			if (run2['sampling_rate']*x/(2.0*(len(dat1)))<validstop) and (run2['sampling_rate']*x/(2.0*(len(dat1)))>validstart):
-				freqs.append(int(freq)+run2['sampling_rate']*x/(2.0*(len(dat1))))
-				diff.append((dat1[x]-dat2[x])/(dat1[x]+dat2[x]))
+		freqs=[]
+		diff=[]
+		for x in range(len(run1['data'])):
+			if (run1['freq'][x]-int(freq)<validstop) and (run1['freq'][x]-int(freq)>validstart):
+				freqs.append(run1['freq'][x])
+				diff.append((run1['data'][x]-run2['data'][x])/(run1['data'][x]+run2['data'][x]))
 		toplot=zip(freqs,diff)
 		return toplot
 
  	def dpph_run_wide_threaded(self):
-		freq=self.dpph_frequency_textbox.get()
-		thethread=threading.Thread(target=lambda : self.dpph_run_wide())
+		startfreq=self.dpph_wide_freq_start_textbox.get()
+		stopfreq=self.dpph_wide_freq_stop_textbox.get()
+		print "start frequency ",startfreq
+		print "stop frequency ",stopfreq
+		thethread=threading.Thread(target=lambda : self.dpph_run_wide(startfreq,stopfreq))
 		thethread.daemon=True
 		thethread.start()
 
-	def dpph_run_wide(self):
+	def dpph_run_wide(self,startfreq,stopfreq):
 		plotthings=[]
 		argsets=[]
-		for i in range(18):
-			onfreq=25000+i*80
+		nruns=int((int(stopfreq)-int(startfreq))/80)+1
+		print "number of runs",nruns
+		for i in range(nruns):
+			onfreq=int(startfreq)+i*80
 			plotthings.append(self.dpph_run_ret(onfreq))
 			argsets.append("using 1:2 with lines")
  		g=usegnuplot.Gnuplot()
@@ -333,23 +347,12 @@ class PlotMakingGuiTwo:
 		self.dpph_set=True
 		self.last_dpph=newscans
 
-
-
-
-
-
-
-
-
-
-
-
-
-		
-
-		
-
-
-
-
-
+	def run_sweep(self,freq_offset):
+		myrate=200
+		myduration=1000
+		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
+		freqs=[]
+		for x in range(len(run['data'])):
+			freqs.append(int(freq_offset)+run['sampling_rate']*x/(2.0*(len(run['data']))))
+		run['freq']=freqs
+		return run
