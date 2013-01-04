@@ -81,6 +81,7 @@ class _CmdInterface:
             },
         }
         self._cmd_database.save(set_doc)
+        return result
 
     def StartLoggers(self, instruments):
         '''

@@ -129,7 +129,7 @@ class LoggedDataHandler:
                 self.FormatPlots(sensor,fig,ax)
                 plt.show()
 
-    def Save(self, filename):
+    def Save(self, filename, sensor):
         '''
             Saves all data that has been stored in object in specified file.
 
@@ -137,7 +137,12 @@ class LoggedDataHandler:
             <filename> (string) Complete name of file where data will be saved.
         '''
         f = open(filename, 'w')
-        f.write(str([self.times, self.values, self.units]))
+        t = [x.strftime("%s") for x in self.times[sensor]]
+        v = [x for x in self.values[sensor]]
+        u = [x for x in self.units[sensor]]
+        for ti in range(0, len(t)):
+            f.write("{0}, {1}, {2}\n".format(t[ti],v[ti],u[ti]))
+            
         f.close()
 
     def Fit(self, sensor, fitfunc=False, p0=[0, 1]):

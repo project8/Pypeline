@@ -14,6 +14,8 @@ class LoggedDataMonitorPlotter:
 		self.sensors_to_plot_mutex=threading.Lock()
 		self.g=usegnuplot.Gnuplot()
 		self.myid=uuid4()
+		self.ymax=1000
+		self.ymin=-1000
 
 	def StartUpdating(self):
 		self.Replot()
@@ -50,11 +52,20 @@ class LoggedDataMonitorPlotter:
 		units=""
 		self.sensors_to_plot_mutex.acquire()
 		for sensor in self.sensors_to_plot:
-			plotsets.append(self.data_store.GetTimeAndValues(sensor))
+			vs=[ [x[0],self.ClipY(float(x[1]))] for x in self.data_store.GetTimeAndValues(sensor)]
+			#plotsets.append(self.data_store.GetTimeAndValues(sensor))
+			plotsets.append(vs)
 			argsets.append("using 1:3 with lines title \""+sensor+"\"")
 			units=self.data_store.GetUnits(sensor)
 		self.sensors_to_plot_mutex.release()
 		self.g.gp("set xdata time")
+		self.g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		self.g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		self.g.gp("set style line 11 lc rgb '#808080' lt 1")
+		self.g.gp("set border 3 back ls 11")
+		self.g.gp("set tics nomirror")
+		self.g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		self.g.gp("set grid back ls 12")
 		self.g.gp("set timefmt \"%Y-%m-%d %H:%M:%S\"")
 		self.g.gp("set format x \"%H:%M\"")
 		self.g.gp("set ylabel \""+units+"\"")
@@ -66,6 +77,12 @@ class LoggedDataMonitorPlotter:
 		self.sensors_to_plot=sensors
 		self.sensors_to_plot_mutex.release()
 
+	def ClipY(self,val):
+		if val>self.ymax:
+			return self.ymax
+		if val<self.ymin:
+			return self.ymin
+		return val
 
 
 		

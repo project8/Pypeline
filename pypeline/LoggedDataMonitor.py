@@ -36,6 +36,7 @@ class LoggedDataMonitor:
 		self.data_mutex=threading.Lock()
 		#by default, load data from the last three hours
 		self.timescale_hours=3;
+		#self.timescale_hours=5;
 		print "loading last "+str(self.timescale_hours)+" hours of data"
 		self.last_seq=self._logged_data.info()['update_seq']
 		start_time=datetime.today()-timedelta(hours=self.timescale_hours);
