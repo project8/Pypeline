@@ -275,14 +275,6 @@ class PlotMakingGuiTwo:
 		thethread.start()
 
 	def dpph_run_wide(self,startfreq,stopfreq):
-		plotthings=[]
-		argsets=[]
-		nruns=int((int(stopfreq)-int(startfreq))/80)+1
-		print "number of runs",nruns
-		for i in range(nruns):
-			onfreq=int(startfreq)+i*80
-			plotthings.append(self.dpph_run_ret(onfreq))
-			argsets.append("using 1:2 with lines")
  		g=usegnuplot.Gnuplot()
 		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
 		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
@@ -294,7 +286,34 @@ class PlotMakingGuiTwo:
 		g.gp("set xlabel \"Frequency (MHz)\"")
 		g.gp("set ylabel \"Normalized Difference\"")
 		g.gp("unset key")
-		#g.plot1d(toplot," with lines")
+
+		datas=[]
+		argsets=[]
+		counters=[]
+		nruns=int((int(stopfreq)-int(startfreq))/80)+1
+		print "number of runs",nruns
+		while True:
+			for i in range(nruns):
+				onfreq=int(startfreq)+i*80
+				newdat=self.dpph_run_ret(onfreq)
+				if len(datas)<=i:
+					datas.append(newdat)
+					counters.append(1)
+				else:
+					for j in range(len(datas[i])):
+						datas[i][j]=(datas[i][j][0],datas[i][j][1]+newdat[j][1])
+					counters[i]=counters[i]+1
+				plotthings=[]
+				argsets=[]
+				for k in range(len(datas)):
+					plotthings.append( [] )
+					multiplier=1.0/float(counters[k])
+					for m in range(len(datas[k])):
+						plotthings[k].append( (datas[k][m][0],multiplier*(datas[k][m][1])) )
+					argsets.append("using 1:2 with lines")
+				g.plotMany(plotthings,argsets)
+
+	def dpph_wide_update_plot(self,datas):
 		g.plotMany(plotthings,argsets)
 
 	def dpph_run_step(self,freq,span):
