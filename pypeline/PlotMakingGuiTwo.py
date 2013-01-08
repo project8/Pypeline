@@ -94,9 +94,12 @@ class PlotMakingGuiTwo:
 		Tkinter.Label(dpphwideframe,text="Stop Frequency").pack(side="left")
 		self.dpph_wide_freq_stop_textbox=Tkinter.Entry(dpphwideframe,bg="white")
 		self.dpph_wide_freq_stop_textbox.pack(side="left")
-		Tkinter.Label(dpphframe,text="Frequency").pack(side="left")
+		Tkinter.Label(dpphframe,text="Lower Frequency").pack(side="left")
 		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_frequency_textbox.pack(side="left")
+		Tkinter.Label(dpphframe,text="Span").pack(side="left")
+		self.dpph_span_textbox=Tkinter.Entry(dpphframe,bg="white")
+		self.dpph_span_textbox.pack(side="left")
 		dpphframe.pack(side="top")
 		setcontrols.pack(side="left")
 		notconsole.pack(side="top")
@@ -222,8 +225,9 @@ class PlotMakingGuiTwo:
 
 	def dpph_run_threaded(self):
 		freq=self.dpph_frequency_textbox.get()
+		span=self.dpph_span_textbox.get()
 #		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
-		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,240))
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span))
 		thethread.daemon=True
 		thethread.start()
 		
@@ -313,41 +317,33 @@ class PlotMakingGuiTwo:
 					argsets.append("using 1:2 with lines")
 				g.plotMany(plotthings,argsets)
 
-	def dpph_wide_update_plot(self,datas):
-		g.plotMany(plotthings,argsets)
-
 	def dpph_run_step(self,freq,span):
 		validstart=10
 		validstop=90
-		nscans=int(span/80)
+		nscans=int(int(span)/80)+1
 		newscans=[]
-		newfreqs=[]
 		print "taking ",nscans," dpph scans"
 		self.drip.Set("hf_sweeper_power",-10)
 		for i in range(nscans):
 			freqstart=int(freq)+i*80
-			freqend=int(freqstart)+100
-			inttime=2000
-			self.drip.Set("hf_sweep_start",freq)
-			self.drip.Set("hf_sweep_stop",str(freqend))
-			lo_freq=str(int(freq)-24500)
-			self.drip.Set("lo_cw_freq",lo_freq,True)
-			time.sleep(0.1)
-			run1=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=inttime,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
-			dat1=run1['data']
-			freqs=[]
-			for x in range(len(dat1)):
-				freqs.append(int(freqstart)+run1['sampling_rate']*x/(2.0*(len(dat1))))
-			newfreqs.append(freqs)
-			newscans.append(dat1)
+			newscans.append(self.run_sweep(freqstart))
 		if self.dpph_set:
 			argsets=[]
 			toplot=[]
 			for i in range(len(newscans)):
 				diff=[]
-				for j in range(len(newscans[i])):
-					diff.append((newscans[i][j]-self.last_dpph[i][j])/(newscans[i][j]+self.last_dpph[i][j]))
-				toplot.append(zip(newfreqs[i],diff))
+				for j in range(len(newscans[i]['data'])):
+#					print i," and ",j," newscans is ",newscans[i]['data'][j]
+#					print i," and ",j," oldscans is ",self.last_dpph[i]['data'][j]
+					x=newscans[i]['data'][j]
+					y=self.last_dpph[i]['data'][j]
+					deltaf=newscans[i]['freq'][j]-newscans[i]['freq'][0]
+					if (deltaf<validstop) and (deltaf>validstart):
+						if x+y==0:
+							diff.append( (newscans[i]['freq'][j],0 ) )
+						else:
+							diff.append( (newscans[i]['freq'][j],(x-y)/(x+y)) )
+				toplot.append(diff)
 				argsets.append("using 1:2 with lines")
  			g=usegnuplot.Gnuplot()
 			g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
