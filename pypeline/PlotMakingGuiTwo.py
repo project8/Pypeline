@@ -84,22 +84,25 @@ class PlotMakingGuiTwo:
 		dpphframe=Tkinter.Frame(setcontrols)
 		dpphbutton=Tkinter.Button(dpphframe,text="DPPH Run",command=self.dpph_run_threaded)
 		dpphbutton.pack(side="left")
-		dpphwideframe=Tkinter.Frame(setcontrols)
-		dpphwideframe.pack(side="top")
-		dpphwidebutton=Tkinter.Button(dpphwideframe,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
-		dpphwidebutton.pack(side="left")
-		Tkinter.Label(dpphwideframe,text="Start Frequency").pack(side="left")
-		self.dpph_wide_freq_start_textbox=Tkinter.Entry(dpphwideframe,bg="white")
-		self.dpph_wide_freq_start_textbox.pack(side="left")
-		Tkinter.Label(dpphwideframe,text="Stop Frequency").pack(side="left")
-		self.dpph_wide_freq_stop_textbox=Tkinter.Entry(dpphwideframe,bg="white")
-		self.dpph_wide_freq_stop_textbox.pack(side="left")
+		dpphbgbutton=Tkinter.Button(dpphframe,text="DPPH Background",command=self.dpph_run_bg_threaded)
+		dpphbgbutton.pack(side="top")
+#		dpphwideframe=Tkinter.Frame(setcontrols)
+#		dpphwideframe.pack(side="top")
+#		dpphwidebutton=Tkinter.Button(dpphwideframe,text="DPPH Run Wide",command=self.dpph_run_wide_threaded)
+#		dpphwidebutton.pack(side="left")
+#		Tkinter.Label(dpphwideframe,text="Start Frequency").pack(side="left")
+#		self.dpph_wide_freq_start_textbox=Tkinter.Entry(dpphwideframe,bg="white")
+#		self.dpph_wide_freq_start_textbox.pack(side="left")
+#		Tkinter.Label(dpphwideframe,text="Stop Frequency").pack(side="left")
+#		self.dpph_wide_freq_stop_textbox=Tkinter.Entry(dpphwideframe,bg="white")
+#		self.dpph_wide_freq_stop_textbox.pack(side="left")
 		Tkinter.Label(dpphframe,text="Lower Frequency").pack(side="left")
 		self.dpph_frequency_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_frequency_textbox.pack(side="left")
 		Tkinter.Label(dpphframe,text="Span").pack(side="left")
 		self.dpph_span_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_span_textbox.pack(side="left")
+		
 		dpphframe.pack(side="top")
 		setcontrols.pack(side="left")
 		notconsole.pack(side="top")
@@ -223,11 +226,18 @@ class PlotMakingGuiTwo:
 		g.gp("unset key")
 		g.plot1d(toplot," with lines")
 
+	def dpph_run_bg_threaded(self):
+		freq=self.dpph_frequency_textbox.get()
+		span=self.dpph_span_textbox.get()
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,True))
+		thethread.daemon=True
+		thethread.start()
+
 	def dpph_run_threaded(self):
 		freq=self.dpph_frequency_textbox.get()
 		span=self.dpph_span_textbox.get()
 #		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
-		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span))
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,False))
 		thethread.daemon=True
 		thethread.start()
 		
@@ -317,19 +327,27 @@ class PlotMakingGuiTwo:
 					argsets.append("using 1:2 with lines")
 				g.plotMany(plotthings,argsets)
 
-	def dpph_run_step(self,freq,span):
+	def dpph_run_step(self,freq,span,isbg):
 		validstart=10
 		validstop=90
 		nscans=int(int(span)/80)+1
 		newscans=[]
 		print "taking ",nscans," dpph scans"
-		self.drip.Set("hf_sweeper_power",-10)
+		self.drip.Set("hf_sweeper_power",str(self.sweeper_power_default))
 		for i in range(nscans):
 			freqstart=int(freq)+i*80
+			freqend=freqstart+100
+			self.drip.Set("hf_sweep_start",str(freqstart))
+			self.drip.Set("hf_sweep_stop",str(freqend))
+			lo_freq=str(int(freqstart)-24500)
+			self.drip.Set("lo_cw_freq",lo_freq,True)
+			print "on frequency ",freqstart
 			newscans.append(self.run_sweep(freqstart))
-		if self.dpph_set:
+		if not isbg:
 			argsets=[]
 			toplot=[]
+			filename="sweep_"+time.strftime("%Y_%m_%d_%H:%M:%S_",time.localtime())+".txt"
+			f=open(filename,"w")
 			for i in range(len(newscans)):
 				diff=[]
 				for j in range(len(newscans[i]['data'])):
@@ -343,8 +361,10 @@ class PlotMakingGuiTwo:
 							diff.append( (newscans[i]['freq'][j],0 ) )
 						else:
 							diff.append( (newscans[i]['freq'][j],(x-y)/(x+y)) )
+							f.write( str(newscans[i]['freq'][j])+" "+str((x-y)/(x+y))+"\n")
 				toplot.append(diff)
 				argsets.append("using 1:2 with lines")
+			f.close()
  			g=usegnuplot.Gnuplot()
 			g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
 			g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
@@ -357,14 +377,37 @@ class PlotMakingGuiTwo:
 			g.gp("set ylabel \"Normalized Difference\"")
 			g.gp("unset key")
 			g.plotMany(toplot,argsets)
+
 		else:
-			print "Initial DPPH Scan done"
-		self.dpph_set=True
-		self.last_dpph=newscans
+			argsets=[]
+			toplot=[]
+			for i in range(len(newscans)):
+				subplot=[]
+				for j in range(len(newscans[i]['data'])):
+					deltaf=newscans[i]['freq'][j]-newscans[i]['freq'][0]
+					if (deltaf<validstop) and (deltaf>validstart):
+						subplot.append( (newscans[i]['freq'][j],newscans[i]['data'][j]) )
+				toplot.append(subplot)
+				argsets.append("using 1:(10.0*log10($2)) with lines")
+			self.last_dpph=newscans
+			self.dpph_set=True
+ 			g=usegnuplot.Gnuplot()
+			g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+			g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+			g.gp("set style line 11 lc rgb '#808080' lt 1")
+			g.gp("set border 3 back ls 11")
+			g.gp("set tics nomirror")
+			g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+			g.gp("set grid back ls 12")
+			g.gp("set xlabel \"Frequency (MHz)\"")
+			g.gp("set ylabel \"Power\"")
+			g.gp("unset key")
+			g.plotMany(toplot,argsets)
+
 
 	def run_sweep(self,freq_offset):
 		myrate=200
-		myduration=1000
+		myduration=2000
 		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
 		freqs=[]
 		for x in range(len(run['data'])):
