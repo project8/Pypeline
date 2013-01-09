@@ -185,7 +185,7 @@ class PlotMakingGuiTwo:
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
 
 	def digitize(self,channel):
-		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=100,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
+		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=400,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
 		dat=run['data']
 		freqs=[]
 		moddat=[ 10.0*math.log10(x) for x in dat ]
