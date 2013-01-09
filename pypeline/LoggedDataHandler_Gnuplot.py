@@ -212,18 +212,18 @@ class LoggedDataHandler_Gnuplot:
                          box.width, box.height * 0.9])
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2),
                   fancybox=True, shadow=True, ncol=2)
-	
-	def BeginDataMonitoring(self):
-		'''
-			start getting data so I can update plots
-		'''
-		#get the last update sequence
-		self.recent=self._logged_data.info()['update_seq']
 
-	def UpdatePlots(self):
-		changes=self._logged_data.changes(since=self.recent)
-		self.recent=changes['last_seq']
-		for changeset in changes['results']:
-			doc=self._logged_data[changeset['id']]
+    def BeginDataMonitoring(self):
+        '''
+        	start getting data so I can update plots
+        '''
+        #get the last update sequence
+        self.recent=self._logged_data.info()['update_seq']
+
+    def UpdatePlots(self):
+        changes=self._logged_data.changes(since=self.recent)
+        self.recent=changes['last_seq']
+        for changeset in changes['results']:
+            doc=self._logged_data[changeset['id']]
 
 

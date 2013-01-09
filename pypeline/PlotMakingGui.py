@@ -23,7 +23,7 @@ class PlotMakingGui:
 #possible cause: pmw was written by insects
         #button_names=[string.translate(x,string.maketransU('_',' ')) for x in sensors]
         button_names=[self.python_is_horrible(x,"_"," ") for x in sensors]
-        print button_names
+        print(button_names)
         for sensor in button_names:
             self.buttonbox.add(sensor)
         self.plotbutton=Tkinter.Button(parent,text="PLOT",command=self.plot_pressed).pack()
@@ -37,7 +37,7 @@ class PlotMakingGui:
     def plot_pressed(self):
         button_names=self.buttonbox.getvalue()
         if len(button_names)==0:
-            print "no sensors selected"
+            print("no sensors selected")
             return
         #sensors=[string.translate(x,string.maketrans(' ','_')) for x in button_names]
         sensors=[self.python_is_horrible(x," ","_") for x in button_names]
