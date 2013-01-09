@@ -5,6 +5,8 @@
 '''
 
 # standard libraries
+import sys
+from datetime import datetime, timedelta
 # third party libraries
 # pypeline and 'internal' libraries
 import pypeline
@@ -21,11 +23,19 @@ def channel_vs_channel(channely, channelx, start, stop):
     string_format = '%Y-%m-%d %H:%M:%S'
     xdata = ldh.Get(channelx, start.strftime(string_format), stop.strftime(string_format))
     ydata = ldh.Get(channely, start.strftime(string_format), stop.strftime(string_format))
-
+    print('xdata:')
+    print(xdata)
 
 if __name__=='__main__':
+    print('in main:')
+    print(len(sys.argv))
     try:
-        channel_vs_channel(*sys.argv[1:])
+        # hall probe vs linear encoder, is the one I want now and a reasonable default for tests. This will probably be removed and instead print usage once finished.
+        if len(sys.argv) == 1:
+            print('got 2 args')
+            channel_vs_channel('hall_probe_voltage', 'linear_encoder', datetime(2012,12,20,15,27), datetime(2012,12,20,15,57))
+        elif len(sys.argv) > 1:
+            channel_vs_channel(*sys.argv[1:])
     except:
         print("it didn't work, I'll put in better exception catching later")
         print("probably bad arguments... you gave this:")
