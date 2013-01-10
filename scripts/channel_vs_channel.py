@@ -23,8 +23,34 @@ def channel_vs_channel(channely, channelx, start, stop):
     string_format = '%Y-%m-%d %H:%M:%S'
     xdata = ldh.Get(channelx, start.strftime(string_format), stop.strftime(string_format))
     ydata = ldh.Get(channely, start.strftime(string_format), stop.strftime(string_format))
-    print('xdata:')
-    print(xdata)
+    ys=[]
+    xs=[]
+    for tx,x in zip(xdata[0], xdata[1]):
+        xtmp = False
+        ytmp = False
+        dt = timedelta(seconds=60)
+        for ty,y in zip(ydata[0], ydata[1]):
+            if abs(ty-tx) < dt:
+                dt = abs(ty-tx)
+                xtmp = x
+                ytmp = y
+        if xtmp and ytmp:
+            ys.append(ytmp)
+            xs.append(xtmp)
+    dataset = sorted(zip(xs,ys))
+    plot = pypeline.usegnuplot.Gnuplot()
+    plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+    plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+    plot.gp("set style line 11 lc rgb '#808080' lt 1")
+    plot.gp("set border 3 back ls 11")
+    plot.gp("set tics nomirror")
+    plot.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+    plot.gp("set grid back ls 12")
+    plot.gp("set xlabel \"Linear Encoder\"")
+    plot.gp("set ylabel \"Hall Probe\"")
+    plot.gp("unset key")
+    plot.plot1d(dataset, ' with lines')
+    raw_input('waiting for you to finish looking')
 
 if __name__=='__main__':
     print('in main:')
