@@ -179,7 +179,7 @@ class PlotMakingGuiTwo:
 		mytime=datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 		if "result" in command_entry:
 			fullresult=str(command_entry['result'])
-			resultstring=fullresult[:20]+(fullresult[20:] and '..')
+			resultstring=fullresult[:40]+(fullresult[40:] and '..')
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+resultstring+"\n")
 		else:
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
@@ -405,10 +405,11 @@ class PlotMakingGuiTwo:
 			g.plotMany(toplot,argsets)
 
 
-	def run_sweep(self,freq_offset):
+	def run_sweep(self,freq_offset,eggfile="temp.egg"):
 		myrate=200
 		myduration=2000
-		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
+		therun=self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait(timeout=30)
+		run=eval(therun['result'])
 		freqs=[]
 		for x in range(len(run['data'])):
 			freqs.append(int(freq_offset)+run['sampling_rate']*x/(2.0*(len(run['data']))))
