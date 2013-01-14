@@ -22,7 +22,7 @@ def start_plotgui():
 
 class PlotMakingGuiTwo:
 	def __init__(self,parent):
-		self.sweeper_power_default=-10
+		self.sweeper_power_default=0
 #		self.buttonbox=Pmw.RadioSelect(parent,labelpos='nw',label_text='sensors',orient='vertical',selectmode='multiple',buttontype='checkbutton')
 #		self.buttonbox.pack(fill='both',padx=8,pady=8)
 		notconsole=Tkinter.Frame(parent)
@@ -102,8 +102,17 @@ class PlotMakingGuiTwo:
 		Tkinter.Label(dpphframe,text="Span").pack(side="left")
 		self.dpph_span_textbox=Tkinter.Entry(dpphframe,bg="white")
 		self.dpph_span_textbox.pack(side="left")
+
+		compression_test_frame=Tkinter.Frame(setcontrols,padx=1,pady=1)
+		compression_test_frame.pack(side="top");
+		compbutton=Tkinter.Button(compression_test_frame,text="Compression Test",command=self.compression)
+		compbutton.pack(side="left")
+		
+
 		
 		dpphframe.pack(side="top")
+
+
 		setcontrols.pack(side="left")
 		notconsole.pack(side="top")
 		cframe=Tkinter.Frame(parent)
@@ -113,6 +122,8 @@ class PlotMakingGuiTwo:
 		self.logg.AddDoOnUpdate("update_gui_sensors",self.update_sensor_values)
 		self.cmd.AddDoOnUpdate("update_console",self.do_on_command_update)
 		self.dpph_set=False
+
+		self.set_entry_field["hf_sweeper_power"].insert(0,"-15")
 
 #        self.plot_start_time_entry=Pmw.EntryField(label_text="Start Time:",labelpos='w',value=time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()-60*60*3)))
 #        self.plot_start_time_entry.pack(fill='x',padx=10,pady=10)
@@ -153,10 +164,10 @@ class PlotMakingGuiTwo:
 		for key in self.selectedsensors:
 			varname=self.python_is_horrible(key," ","_") 
 			theval=float(self.logg.values[varname][len(self.logg.values[varname])-1])
-			if abs(theval) > 0.1:
-				self.sensor_display_labels[key].config(text='%.1f'%theval+" "+self.logg.units[varname])
+			if abs(theval) > 0.1 and abs(theval)<1000:
+				self.sensor_display_labels[key].config(text='%.2f'%theval+" "+self.logg.units[varname])
 			else:
-				self.sensor_display_labels[key].config(text='%.1g'%theval+" "+self.logg.units[varname])
+				self.sensor_display_labels[key].config(text='%.2g'%theval+" "+self.logg.units[varname])
 	
 	def add_settable_line(self,sensorname,parent):
 		c=Tkinter.Frame(parent)
@@ -179,7 +190,7 @@ class PlotMakingGuiTwo:
 		mytime=datetime.today().strftime("%Y-%m-%d %H:%M:%S")
 		if "result" in command_entry:
 			fullresult=str(command_entry['result'])
-			resultstring=fullresult[:20]+(fullresult[20:] and '..')
+			resultstring=fullresult[:40]+(fullresult[40:] and '..')
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+" result: "+resultstring+"\n")
 		else:
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
@@ -229,15 +240,17 @@ class PlotMakingGuiTwo:
 	def dpph_run_bg_threaded(self):
 		freq=self.dpph_frequency_textbox.get()
 		span=self.dpph_span_textbox.get()
-		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,True))
+		sweeppower=self.set_entry_field["hf_sweeper_power"].get()
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,True,sweeppower))
 		thethread.daemon=True
 		thethread.start()
 
 	def dpph_run_threaded(self):
 		freq=self.dpph_frequency_textbox.get()
 		span=self.dpph_span_textbox.get()
+		sweeppower=self.set_entry_field["hf_sweeper_power"].get()
 #		thethread=threading.Thread(target=lambda : self.dpph_run(freq))
-		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,False))
+		thethread=threading.Thread(target=lambda : self.dpph_run_step(freq,span,False,sweeppower))
 		thethread.daemon=True
 		thethread.start()
 		
@@ -327,13 +340,14 @@ class PlotMakingGuiTwo:
 					argsets.append("using 1:2 with lines")
 				g.plotMany(plotthings,argsets)
 
-	def dpph_run_step(self,freq,span,isbg):
+	def dpph_run_step(self,freq,span,isbg,sweeppower):
+		print "sweep power is ",sweeppower
 		validstart=10
 		validstop=90
 		nscans=int(int(span)/80)+1
 		newscans=[]
 		print "taking ",nscans," dpph scans"
-		self.drip.Set("hf_sweeper_power",str(self.sweeper_power_default))
+		self.drip.Set("hf_sweeper_power",str(sweeppower))
 		for i in range(nscans):
 			freqstart=int(freq)+i*80
 			freqend=freqstart+100
@@ -405,12 +419,57 @@ class PlotMakingGuiTwo:
 			g.plotMany(toplot,argsets)
 
 
-	def run_sweep(self,freq_offset):
+	def run_sweep(self,freq_offset,eggfile="temp.egg"):
 		myrate=200
-		myduration=2000
-		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait()['result'])
+		myduration=4000
+		therun=self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait(timeout=30)
+		run=eval(therun['result'])
 		freqs=[]
 		for x in range(len(run['data'])):
 			freqs.append(int(freq_offset)+run['sampling_rate']*x/(2.0*(len(run['data']))))
 		run['freq']=freqs
 		return run
+
+	def compression(self):
+		lofreq=self.set_entry_field["lo_cw_freq"].get()
+		thethread=threading.Thread(target=lambda: self.compression_nonthread(lofreq))
+		thethread.start()
+	
+	def compression_nonthread(self,lofreq):
+		self.drip.Set("lo_cw_freq",str(lofreq))
+		print "lofreq is",lofreq
+		nfreq=int(lofreq)+24550
+		self.drip.Set("hf_cw_freq",str(nfreq))
+		peakdat=[]
+		nsdat=[]
+		g=usegnuplot.Gnuplot()
+		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+		g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+		g.gp("set style line 11 lc rgb '#808080' lt 1")
+		g.gp("set border 3 back ls 11")
+		g.gp("set tics nomirror")
+		g.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+		g.gp("set grid back ls 12")
+		g.gp("set xlabel \"Sweeper Power (dBm)\"")
+		g.gp("set ylabel \"Power (dBm)\"")
+
+		for pwr in [-50, -40, -30, -20, -15, -10, -5, 0]:
+			self.drip.Set("hf_sweeper_power",str(pwr),True)
+			run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=200,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
+			dat=run['data']
+			mymax=0
+			center=len(dat)/2
+			for i in range(10):
+				if dat[center+i-5]>mymax:
+					mymax=dat[center+i-5]
+			myns=dat[int(center-0.1*len(dat))]
+			print pwr," ",myns," ",mymax
+			peakdat.append( (pwr,mymax) )
+			nsdat.append( (pwr,myns) )
+			toplot=[]
+			args=[]
+			toplot.append(peakdat)
+			toplot.append(nsdat)
+			args.append("using 1:(10.0*log10($2))with lines title \"Peak Height\"")
+			args.append("using 1:(10.0*log10($2))with lines title \"Noise Height\"")
+			g.plotMany(toplot,args)
