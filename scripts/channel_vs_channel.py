@@ -59,7 +59,7 @@ if __name__=='__main__':
         # hall probe vs linear encoder, is the one I want now and a reasonable default for tests. This will probably be removed and instead print usage once finished.
         if len(sys.argv) == 1:
             print('got 2 args')
-            channel_vs_channel('hall_probe_voltage', 'linear_encoder', datetime(2012,12,20,15,27), datetime(2012,12,20,15,57))
+            channel_vs_channel('hall_probe_voltage', 'linear_encoder', datetime(2013,01,8,15,20), datetime(2013,01,8,16,5))
         elif len(sys.argv) > 1:
             channel_vs_channel(*sys.argv[1:])
     except:
