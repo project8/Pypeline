@@ -50,3 +50,10 @@ if "DISPLAY" in environ:
                 from PlotMakingGui import start_plotgui
             except ImportError:
                 print('import of PlotMakingGui failed, it is not available')
+        try:
+            from .usegnuplot import Gnuplot
+        except ImportError:
+            try:
+                from usegnuplot import Gnuplot
+            except ImportError:
+                print('import of Gnuplot failed, it is not available')

@@ -62,7 +62,7 @@ class LoggedDataHandler:
         self.times[sensor] = timelist
         self.values[sensor] = valuelist
         self.units[sensor] = unitlist
-        result = [self.times, self.values, self.units]
+        result = [timelist, valuelist, unitlist]
         return result
 
     def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=False):
