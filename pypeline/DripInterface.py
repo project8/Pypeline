@@ -32,7 +32,7 @@ class DripInterface:
         which it creates.
     '''
 
-    def __init__(self, dripline_url="http://127.0.0.1:5984"):
+    def __init__( self, dripline_url = "http://127.0.0.1:5984" ):
         '''
             Internal: Initializes each instance by doing the following:
                 1) connecting to the provided dripline couchdb (default is localhost)
@@ -47,23 +47,23 @@ class DripInterface:
             Returns:
                 no return
         '''
-        self._server = CouchServer(dripline_url)
+        self._server = CouchServer( dripline_url )
         self._timeout = 15 #timeout is 15 seconds...
         self._sleep_time = .1 #number of seconds to sleep while waiting
         self._wait_state = {}
-        if (self._server.__contains__('dripline_cmd')):
+        if ( self._server.__contains__( 'dripline_cmd' ) ):
             self._cmd_database = self._server['dripline_cmd']
-            self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
+            self._cmd_interface = _CmdInterface( self._server['dripline_cmd'] )
         else:
-            raise UserWarning('The dripline command database was not found!')
-        if (self._server.__contains__('dripline_conf')):
+            raise UserWarning( 'The dripline command database was not found!' )
+        if ( self._server.__contains__( 'dripline_conf' ) ):
             self._conf_database = self._server['dripline_conf']
-            self._conf_interface = _ConfInterface(self._server['dripline_conf'])
+            self._conf_interface = _ConfInterface( self._server['dripline_conf'] )
         else:
-            raise UserWarning('The dripline conf database was not found!')
+            raise UserWarning( 'The dripline conf database was not found!' )
         self.CheckHeartbeat()
 
-    def Get(self, channel='', wait=False):
+    def Get( self, channel = '', wait = False ):
         '''
             Post a document to the command database using the get verb for a specific channel.
 
@@ -81,12 +81,12 @@ class DripInterface:
         if not channel:
             result = self._conf_interface.EligibleChannels()
         else:
-            result = self._cmd_interface.Get(channel)
+            result = self._cmd_interface.Get( channel )
             if wait:
                 result.Wait()
         return result
 
-    def Set(self, channel=None, value=None, wait=False):
+    def Set( self, channel = None, value = None, wait = False ):
         '''
             Post a document to the command database using the set verb for a specific channel.
 
@@ -106,15 +106,15 @@ class DripInterface:
         if not channel:
             result = self._conf_interface.EligibleChannels()
         elif not value:
-            print("Please input value to assign to channel")
+            print( "Please input value to assign to channel" )
             result = False
         else:
-            result = self._cmd_interface.Set(channel, value)
+            result = self._cmd_interface.Set( channel, value )
             if wait:
                 result.Wait()
         return result
 
-    def StartLoggers(self, instruments=False, wait=False):
+    def StartLoggers( self, instruments = False, wait = False ):
         '''
             Posts a document to the command database to start the logging one or more instruments.
 
@@ -131,12 +131,12 @@ class DripInterface:
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StartLoggers(instruments)
+            result = self._cmd_interface.StartLoggers( instruments )
             if wait:
                 result.Wait()
         return result
 
-    def StopLoggers(self, instruments=False, wait=False):
+    def StopLoggers( self, instruments = False, wait = False ):
         ''' 
             Posts a document to the command database to stop the logging one or more instruments.
 
@@ -156,12 +156,12 @@ class DripInterface:
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StopLoggers(instruments)
+            result = self._cmd_interface.StopLoggers( instruments )
             if wait:
                 result.Wait()
         return result
 
-    def CurrentLoggers(self, wait=False):
+    def CurrentLoggers( self, wait = False ):
         '''
             Posts a document to the command database which requests the list of channels currently being logged.
 
@@ -179,7 +179,7 @@ class DripInterface:
             result.Wait()
         return result
     
-    def AddLoggers(self, instruments=False, intervals=False):
+    def AddLoggers( self, instruments = False, intervals = False ):
         '''
             Posts a document to the configuration database making an instrument into a potential logger.
 
@@ -192,15 +192,15 @@ class DripInterface:
         '''
         if not instruments:
             return self._conf_interface.EligibleChannels()
-        if type(instruments) == type(''):
+        if type( instruments ) == type( '' ):
             instruments = [instruments]
         if not intervals:
-            intervals = ['10' for i in range(len(instruments))]
-        elif type(intervals) == type(''):
+            intervals = ['10' for i in range( len( instruments ) )]
+        elif type( intervals ) == type( '' ):
             intervals = [intervals]
-        self._conf_iterface.AddLoggers(instruments, intervals)
+        self._conf_iterface.AddLoggers( instruments, intervals )
 
-    def RemoveLoggers(self, instruments=''):
+    def RemoveLoggers( self, instruments = '' ):
         '''
             Removes the docuemnt(s) from the configuration database which makes <instruments> (a) potential logger(s)
 
@@ -212,45 +212,46 @@ class DripInterface:
         '''
         if not instruments and not instruments == False:
             return self._conf_interface.EligibleLoggers()
-        elif type(instruments) == type(''):
+        elif type( instruments ) == type( '' ):
             instruments = [instruments]
-        self._conf_interface.RemoveLoggers(instruments)
-            
-    def Run(self, duration=250, rate=500, filename=None, channels=2):
+        self._conf_interface.RemoveLoggers( instruments )
+
+    def RunMantis( self, output = "/data/temp.egg", rate = 500, duration = 1000, mode = 2, length = 2097152, count = 640 ):
         '''
             Posts a document to the command database instructing dripline to start a mantis run.
 
             Inputs:
-                <duration> is the time interval (in ms) that will be digitized
-                <rate> is the sample rate (in MHz) of the digitizer
-                <filename> is the file on disk where the data will be written
-                           [=None] results in a uuid4().hex hash prefix and
-                           .egg extension
-                           NOTE: you should probably just take the default
-                           unless you have a good reason not to do so.
+                <output> the output file to which we should write
+                <rate> digitization rate in MHz
+                <duration> duration in ms
+                <mode> channel mode to use (1 or 2)
+                <length> length of record to use in bytes
+                <count> number of circular buffer nodes to use
 
             Returns:
                 An instance of pypeline.DripResponse
         '''
-        if not filename:
-            filename = '/data/' + uuid4().hex + '.egg'
-        result = self._cmd_interface.Run(duration, rate, filename, channels)
+        if not output:
+            output = '/data/' + uuid4().hex + '.egg'
+        result = self._cmd_interface.RunMantis( output, rate, duration, mode, length, count )
         return result
 
-    def CreatePowerSpectrum(self, dripresponse, sp):
+    def RunPowerline( self, points = 4096, events = 1024, input = "/data/temp.egg" ):
         '''
-            Posts a document to the command database requesting a power spectrum be created for a given run.
+            Posts a document to the command database instructing dripline to start a powerline run.
 
             Inputs:
-                <dripresponse> a pypeline.DripResposne object which instigated the relavent mantis run
-                <sp> the executable to be used (powerline or any other which may be added)
+                <points> number of fft points to use
+                <event> max number of records to use
+                <input> input file to process
 
             Returns:
                 A pypeline.DripResponse instance.
         '''
-        return self._cmd_interface.CreatePowerSpectrum(dripresponse, sp)
+        result = self._cmd_interface.RunPowerline( points, events, input ) 
+        return result
         
-    def CheckHeartbeat(self):
+    def CheckHeartbeat( self ):
         '''
             Checks to see if dripline is listing and responding to the command database.
 
@@ -260,9 +261,9 @@ class DripInterface:
             Returns:
                 The 'final' field fron the couch document produced by calling pypeline.DripInterface.Get("heartbeat")
         '''
-        status = self.Get("heartbeat")
+        status = self.Get( "heartbeat" )
         status.Wait()
         if not status['final'] == 'thump':
-           raise UserWarning('Could not find dripline pulse. Make sure it is running.')
+           raise UserWarning( 'Could not find dripline pulse. Make sure it is running.' )
         return status['final']
 
