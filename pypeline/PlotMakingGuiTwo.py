@@ -39,7 +39,8 @@ class PlotMakingGuiTwo:
         #button_names=[string.translate(x,string.maketransU('_',' ')) for x in sensors]
 		sensors=self.logg.GetSensors()
 		print sensors
-		button_names=[self.python_is_horrible(x,"_"," ") for x in sensors]
+		#button_names=[self.python_is_horrible(x,"_"," ") for x in sensors]
+		button_names=[x.replace("_"," ") for x in sensors]
 		print button_names
 #		for sensor in button_names:
 #			self.buttonbox.add(sensor)
@@ -143,13 +144,17 @@ class PlotMakingGuiTwo:
 			print "no sensors selected"
 			return
 #       sensors=[string.translate(x,string.maketrans(' ','_')) for x in button_names]
-		sensors=[self.python_is_horrible(x," ","_") for x in button_names]
+		#sensors=[self.python_is_horrible(x," ","_") for x in button_names]
+		sensors=[x.replace(" ","_") for x in button_names]
 		print "setting "+str(whichwindow)+" to plot "
 		print sensors
 		self.plots[whichwindow].SetSensors(sensors)
 	
 	def save_pressed(self,whichwindow):
 	    self.plots[whichwindow].SavePlotData()
+
+    def no_it_isnt(self,s,a,b):
+        return s.replace(a,b)
 
 	def python_is_horrible(self,s,a,b):
 		ret=""
@@ -162,7 +167,8 @@ class PlotMakingGuiTwo:
 
 	def update_sensor_values(self):
 		for key in self.selectedsensors:
-			varname=self.python_is_horrible(key," ","_") 
+			#varname=self.python_is_horrible(key," ","_") 
+            varname=key.replace(' ','_')
 			theval=float(self.logg.values[varname][len(self.logg.values[varname])-1])
 			if abs(theval) > 0.1 and abs(theval)<1000:
 				self.sensor_display_labels[key].config(text='%.2f'%theval+" "+self.logg.units[varname])
@@ -171,7 +177,8 @@ class PlotMakingGuiTwo:
 	
 	def add_settable_line(self,sensorname,parent):
 		c=Tkinter.Frame(parent)
-		l=Tkinter.Label(c,text=self.python_is_horrible(sensorname,"_"," "))
+		#l=Tkinter.Label(c,text=self.python_is_horrible(sensorname,"_"," "))
+        l=Tkinter.Label(c,text=sensorname.replace("_"," "))
 		l.pack(side="left",anchor="w")
 		self.set_entry_field[sensorname]=Tkinter.Entry(c,bg="white")
 		self.set_entry_field[sensorname].pack(side="left",anchor="e")
