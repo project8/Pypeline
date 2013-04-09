@@ -42,9 +42,11 @@ gnuplot.py:
 
 tkinter:
     The tell me (Gray) that it comes with all python distributions.  I'm using v2.7.3
+    *for portage users, be sure to have +tk on python (off by default)
 
 pmw:
-    I'm (Gray)  using version 1.3.2
+    I'm (Gray)  using version 1.3.2a
+    *it seems the newer 2.0.0 version has issues depending on your version of tkinter
 
 Development Notes
 -----------------
