@@ -37,8 +37,8 @@ class LoggedDataMonitorPlotter:
         counter=0
         for dataset in plotsets:
             for entry in dataset:
-            for elem in entry:
-                f.write(str(elem)+" ")
+                for elem in entry:
+                    f.write(str(elem)+" ")
             f.write(self.sensors_to_plot[counter])
             f.write("\n")
             counter=counter+1

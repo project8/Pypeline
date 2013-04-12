@@ -263,7 +263,7 @@ class PlotMakingGuiTwo:
         
     def dpph_run(self,freq):
         toplot=self.dpph_run_ret(freq)
-         g=usegnuplot.Gnuplot()
+        g=usegnuplot.Gnuplot()
         g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
         g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
         g.gp("set style line 11 lc rgb '#808080' lt 1")
@@ -299,7 +299,7 @@ class PlotMakingGuiTwo:
         toplot=zip(freqs,diff)
         return toplot
 
-     def dpph_run_wide_threaded(self):
+    def dpph_run_wide_threaded(self):
         startfreq=self.dpph_wide_freq_start_textbox.get()
         stopfreq=self.dpph_wide_freq_stop_textbox.get()
         print "start frequency ",startfreq
@@ -309,7 +309,7 @@ class PlotMakingGuiTwo:
         thethread.start()
 
     def dpph_run_wide(self,startfreq,stopfreq):
-         g=usegnuplot.Gnuplot()
+        g=usegnuplot.Gnuplot()
         g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
         g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
         g.gp("set style line 11 lc rgb '#808080' lt 1")
@@ -386,7 +386,7 @@ class PlotMakingGuiTwo:
                 toplot.append(diff)
                 argsets.append("using 1:2 with lines")
             f.close()
-             g=usegnuplot.Gnuplot()
+            g=usegnuplot.Gnuplot()
             g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
             g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
             g.gp("set style line 11 lc rgb '#808080' lt 1")
@@ -412,7 +412,7 @@ class PlotMakingGuiTwo:
                 argsets.append("using 1:(10.0*log10($2)) with lines")
             self.last_dpph=newscans
             self.dpph_set=True
-             g=usegnuplot.Gnuplot()
+            g=usegnuplot.Gnuplot()
             g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
             g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
             g.gp("set style line 11 lc rgb '#808080' lt 1")
