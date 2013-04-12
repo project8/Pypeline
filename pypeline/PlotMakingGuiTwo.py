@@ -65,7 +65,7 @@ class PlotMakingGuiTwo:
         plotframe=Tkinter.Frame(plotcontrols)
         plotframe.pack(side="top")
         self.plotbutton_1=Tkinter.Button(plotframe,text="PLOT ON 1",command=lambda i=1: self.plot_pressed(i)).pack(side="left")
-         self.plotbutton_2=Tkinter.Button(plotframe,text="PLOT ON 2",command=lambda i=2: self.plot_pressed(i)).pack(side="left")
+        self.plotbutton_2=Tkinter.Button(plotframe,text="PLOT ON 2",command=lambda i=2: self.plot_pressed(i)).pack(side="left")
         self.plotbutton_3=Tkinter.Button(plotframe,text="PLOT ON 3",command=lambda i=3: self.plot_pressed(i)).pack(side="left")
         saveframe=Tkinter.Frame(plotcontrols)
         saveframe.pack(side="top")
