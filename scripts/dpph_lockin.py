@@ -68,19 +68,21 @@ if __name__ == "__main__":
     try:
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-15, interesting_freq+25)
-        VDC = VDC + [GetLockinValue(pype, freq) for freq in fine_freqs]
-        VDC_freqs += fine_freqs
+        VDC_fine = []
+        #VDC = VDC + [GetLockinValue(pype, freq) for freq in fine_freqs]
+        VDC_fine = [GetLockinValue(pype, freq) for freq in fine_freqs]
+        #VDC_freqs += fine_freqs
         #for freq,volt in zip(VDC_freqs, VDC):
         #    print(str(freq) + ' MHz -> ' + str(volt) + ' V')
-        min_index = VDC.index(min(VDC))
-        max_index = VDC.index(max(VDC))
-        minima = signal.argrelextrema(array(VDC), less)[0]
-        min_index = max((array(VDC)[minima]<0)*minima)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(array(VDC_freqs[min_index:max_index]), array(VDC[min_index:max_index]))
+        min_index = VDC_fine.index(min(VDC_fine))
+        max_index = VDC_fine.index(max(VDC_fine))
+        minima = signal.argrelextrema(array(VDC_fine), less)[0]
+        min_index = max((array(VDC_fine)[minima]<0)*minima)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(array(fine_freqs[min_index:max_index]), array(VDC_fine[min_index:max_index]))
 
-        dataset = zip(VDC_freqs,VDC)
-        fitline = [VDC_freqs[min_index], slope*VDC_freqs[min_index]+intercept,
-                   VDC_freqs[max_index], slope*VDC_freqs[max_index]+intercept]
+        dataset = zip(fine_freqs,VDC_fine)
+        fitline = [fine_freqs[min_index], slope*fine_freqs[min_index]+intercept,
+                   fine_freqs[max_index], slope*fine_freqs[max_index]+intercept]
         #,zip([VDC_freqs[0],VDC_freqs[-1]],[VDC_freqs[0]*slope+intercept,VDC_freqs[-1]*slope+intercept])]
         plot = usegnuplot.Gnuplot()
         plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
@@ -94,7 +96,7 @@ if __name__ == "__main__":
         plot.gp("set ylabel \"Hall Probe\"")
         plot.gp("unset key")
         plot.g.stdin.write('set arrow from ' + str(fitline[0]) +','+ str(fitline[1]) + ' to ' + str(fitline[2]) +',' + str(fitline[3]) + 'nohead\n')
-        plot.plot1d(dataset[0], ' with lines')
+        plot.plot1d(dataset, ' with lines')
         raw_input('Found zero crossing at ' + str(-intercept/slope) + '\nwaiting for you to finish looking')
 
     except AssertionError as e:
