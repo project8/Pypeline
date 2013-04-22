@@ -2,7 +2,7 @@
 from time import sleep
 from sys import stdout
 # 3rd party
-from numpy import std, mean, array, less
+from numpy import std, mean, array, less, arange
 from scipy import stats, signal
 # local
 from pypeline import DripInterface, usegnuplot
@@ -45,7 +45,8 @@ if __name__ == "__main__":
 
 #    freqs = range(25000, 26500, 10)
     freqs = range(25640, 26500, 10)
-
+    
+    #determine a mean and standard deviation
     VDC = [GetLockinValue(pype, freq) for freq in freqs[0:num_stats_freqs]]
     VDC_freqs = freqs[0:num_stats_freqs]
     VDC_end = [GetLockinValue(pype, freq) for freq in freqs[-num_stats_freqs:]]
@@ -54,6 +55,7 @@ if __name__ == "__main__":
     print('mean is: ' + str(VDC_mean) + ' VDC')
     print('std is: ' + str(VDC_std) + ' VDC')
 
+    #find where the structure starts
     interesting_freq = False
     for freq in freqs[num_stats_freqs:]:
         #print('trying ' + str(freq) + ' MHz')
@@ -65,6 +67,8 @@ if __name__ == "__main__":
             interesting_freq = freq
             print('something of interest at ' + str(interesting_freq) + ' MHz')
             break
+
+    #take a set of fine data points to capture the structure
     try:
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-15, interesting_freq+25)
@@ -78,9 +82,20 @@ if __name__ == "__main__":
         max_index = VDC_fine.index(max(VDC_fine))
         minima = signal.argrelextrema(array(VDC_fine), less)[0]
         min_index = max((array(VDC_fine)[minima]<0)*minima)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(array(fine_freqs[min_index:max_index]), array(VDC_fine[min_index:max_index]))
+        maxima = signal.argrelextrema(array(VDC_fine), less)[0]
+        max_index = min
 
-        dataset = zip(fine_freqs,VDC_fine)
+        #take some very finely spaced data for doing a fit
+        glmin = VDC_fine.index(min(VDC_fine))
+        glmax = VDC_fine.index(max(VDC_fine))
+        firstpos = list(array(VDC_fine[glmin:glmax])>0).index(True)+glmin
+        very_fine_freqs = arange(fine_freqs[firstpos-2], fine_freqs[firstpos+1], 0.2)
+        print('starting very fine grain frequency measurement')
+        VDC_very_fine = [GetLockinValues(pype, freq) for freq in very_fine_freq]
+
+        slope, intercept, r_value, p_value, std_err = stats.linregress(array(very_fine_freqs), array(VDC_very_fine))
+
+        dataset = zip(fine_freqs+list(very_fine_freqs),VDC_fine+VDC_very_fine)
         fitline = [fine_freqs[min_index], slope*fine_freqs[min_index]+intercept,
                    fine_freqs[max_index], slope*fine_freqs[max_index]+intercept]
         #,zip([VDC_freqs[0],VDC_freqs[-1]],[VDC_freqs[0]*slope+intercept,VDC_freqs[-1]*slope+intercept])]
