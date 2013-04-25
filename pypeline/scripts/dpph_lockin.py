@@ -5,7 +5,7 @@ from sys import stdout
 from numpy import std, mean, array, less, arange, pi, where, diff, sign, polyfit, sqrt
 from scipy import optimize
 # local
-from pypeline import DripInterface, usegnuplot
+#from pypeline import DripInterface, usegnuplot
 
 def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
     '''
@@ -35,7 +35,7 @@ def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
         else:
             raise
 
-def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_condition=1e10):
+def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_sigma=1e10, stop_volts=20):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates to the user
 
@@ -43,21 +43,28 @@ def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_con
         <freq_list>:    an iterable of frequencies in MHz
         <reference>:    if stopping at structure, this is the reference voltage (usually mean)
         <deviation>:    if stopping at structure, count number of these away (usually standard deviation)
-        <stop_condition>:   number of <deviation> from <reference> to stop looping
+        <stop_sigma>:   number of <deviation> from <reference> to stop looping
     '''
     VDC = []
+    interest = False
     for freq in freq_list:
         stdout.write('trying ' + str(freq) + ' MHz\r')
         stdout.flush()
         VDC.append(GetLockinValue(pype, freq, power))
-        if abs((VDC[-1]-reference)/deviation) > stop_condition:
-            print('something of interest at ' + str(freq) + ' MHz')
-            break
+        if (abs((VDC[-1]-reference)/deviation) > stop_sigma) or (abs(VDC[-1]) > stop_volts):
+            if interest:
+                print('something of interest (' + str(VDC[-1]) + ' V) at ' + str(freq) + ' MHz')
+                break
+            else:
+                interest = True
+        else:
+            interest = False
     return VDC
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def dpph_lockin(pype):
     '''
-        If run as: $python dpph_lockin.py, do these things:
+        Do a dpph scan using DripInterface instance <pype>
     '''
     num_stats_freqs = 5
     pype = DripInterface('http://p8portal.phys.washington.edu:5984')
@@ -70,21 +77,24 @@ if __name__ == "__main__":
     VDC_end = [GetLockinValue(pype, freq) for freq in freqs[-num_stats_freqs:]]
     VDC_std = std(VDC + VDC_end)
     VDC_mean = mean(VDC + VDC_end)
-    print('mean is: ' + str(VDC_mean) + ' VDC')
+    print('mean is: ' + str(VDC_mean) + ' VDCi')
     print('std is: ' + str(VDC_std) + ' VDC')
 
     #find where the structure starts
     interesting_freq = False
     VDC += GetVoltages(pype, freqs[num_stats_freqs:],
-                       reference=VDC_mean, deviation=VDC_std, stop_condition=20)
+                       reference=VDC_mean, deviation=VDC_std, stop_sigma=30, stop_volts=.5)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
-        interesting_freq = VDC_freqs[-1]
+        interesting_freq = VDC_freqs[-2]
+    else:
+        for pair in zip(freqs, VDC):
+            print(pair)
 
     #take a set of fine data points to capture the structure
     try:
         assert interesting_freq, 'interesting_freq'
-        fine_freqs = range(interesting_freq-20, interesting_freq+30, 2)
+        fine_freqs = range(interesting_freq-30, interesting_freq+30, 2)
         VDC_fine = GetVoltages(pype, fine_freqs)
         #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
@@ -94,7 +104,7 @@ if __name__ == "__main__":
         est = fine_freqs[crossing]-VDC_fine[crossing]*(fine_freqs[crossing+1]-fine_freqs[crossing])/(VDC_fine[crossing+1]-VDC_fine[crossing])
 
         #take some very finely spaced data for doing a fit
-        very_fine_freqs = arange(est-0.5, est+0.5, 0.1)
+        very_fine_freqs = arange(est-1, est+1, 0.1)
         print('starting very fine grain frequency measurement')
         VDC_very_fine = GetVoltages(pype, very_fine_freqs)
 
@@ -119,8 +129,8 @@ if __name__ == "__main__":
         plot.gp("set tics nomirror")
         plot.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
         plot.gp("set grid back ls 12")
-        plot.gp("set xlabel \"Linear Encoder\"")
-        plot.gp("set ylabel \"Hall Probe\"")
+        plot.gp("set xlabel \"Sweeper Frequency [MHz]\"")
+        plot.gp("set ylabel \"Lockin Output [V]\"")
         plot.gp("unset key")
         plot.g.stdin.write('set arrow from ' + str(fitline[0]) +','+ str(fitline[1]) + ' to ' + str(fitline[2]) +',' + str(fitline[3]) + 'nohead\n')
         plot.plot1d(dataset, '')
@@ -138,3 +148,12 @@ if __name__ == "__main__":
         if e[0] == 'zero_crossing':
             print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
         raise
+
+
+if __name__ == "__main__":
+    '''
+        If run as: $python dpph_lockin.py, do these things:
+    '''
+    from pypeline import DripInterface, usegnuplot
+    pype = DripInterface('http://p8portal.phys.washington.edu:5984')
+    dpph_lockin(pype)
