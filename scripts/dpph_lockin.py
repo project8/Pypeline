@@ -2,12 +2,12 @@
 from time import sleep
 from sys import stdout
 # 3rd party
-from numpy import std, mean, array, less, arange, pi, where, diff, sign
-from scipy import stats, signal
+from numpy import std, mean, array, less, arange, pi, where, diff, sign, polyfit, sqrt
+from scipy import optimize
 # local
 from pypeline import DripInterface, usegnuplot
 
-def GetLockinValue(interface, freq=25553.440, power=-60, slptime=1):
+def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
     '''
         Make a reading with the lockin amplifier at a specific frequency.
 
@@ -20,7 +20,6 @@ def GetLockinValue(interface, freq=25553.440, power=-60, slptime=1):
             <reading>   the DVM reading in Volts DC from the lockin
     '''
     try:
-    #if 'a'=='a':
         interface.Set('hf_cw_freq', freq).Wait()['result']=='ok'
         interface.Set('hf_sweeper_power', power).Wait()['result']=='ok'
         sleep(slptime)
@@ -52,7 +51,7 @@ def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_con
         stdout.flush()
         VDC.append(GetLockinValue(pype, freq, power))
         if abs((VDC[-1]-reference)/deviation) > stop_condition:
-            print('something of interest at ' + str(interesting_freq) + ' MHz')
+            print('something of interest at ' + str(freq) + ' MHz')
             break
     return VDC
 
@@ -77,7 +76,7 @@ if __name__ == "__main__":
     #find where the structure starts
     interesting_freq = False
     VDC += GetVoltages(pype, freqs[num_stats_freqs:],
-                       reference=VDC_mean, deviation=VDC_std, stop_condition=40)
+                       reference=VDC_mean, deviation=VDC_std, stop_condition=20)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
@@ -87,48 +86,31 @@ if __name__ == "__main__":
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-20, interesting_freq+30, 2)
         VDC_fine = GetVoltages(pype, fine_freqs)
-        #find global extrema
+        #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
-        dataset = zip(fine_freqs, VDC_fine)
-        #assert VDC_fine[min_index]*VDC_fine[max_index] < 0, 'zero_crossing'
-        crossing = where(diff(sign(VDC_fine)))[0][-1]
+        crossing = min(min_index,max_index) + where(diff(sign(VDC_fine[min(min_index,max_index):max(min_index,max_index)])))[0][-1]
         assert crossing, 'zero_crossing'
-
-        #zoom in on the zero crossing
-#        count = 20
-#        left = fine_freqs[min(min_index, max_index)]
-#        right = fine_freqs[max(min_index, max_index)]
-#        leftV = VDC_fine[fine_freqs.index(left)]
-#        rightV = VDC_fine[fine_freqs.index(right)]
-#        while count:
-#            freq = left - leftV*(right-left)/(rightV-leftV)
-#            voltage = GetVoltages(pype, freq)[0]
-#            if voltage*leftV<0:
-#                right = freq
-#                rightV = voltage
-#            elif voltage*rightV<0:
-#                left = freq
-#                leftV = voltage
-#            else:
-#                assert voltage, 'zero_crossing'
-#            dataset = sorted(dataset+[(freq, voltage)])
-#            count = (count-1)*((leftV*rightV)<0)*((right-left)>.1)
+        est = fine_freqs[crossing]-VDC_fine[crossing]*(fine_freqs[crossing+1]-fine_freqs[crossing])/(VDC_fine[crossing+1]-VDC_fine[crossing])
 
         #take some very finely spaced data for doing a fit
-   #     firstpos = list(array(VDC_fine[glmin:glmax])<0).index(True)+glmin
-        very_fine_freqs = arange(fine_freqs[crossing]-.5, fine_freqs[crossing+1]+.5, 0.1)
-   #     very_fine_freqs = arange(fine_freqs[firstpos-1], fine_freqs[firstpos], 0.1)
+        very_fine_freqs = arange(est-0.5, est+0.5, 0.1)
         print('starting very fine grain frequency measurement')
-        VDC_very_fine = GetVoltages(pype, very_fine_freqs)#[GetLockinValue(pype, freq) for freq in very_fine_freqs]
+        VDC_very_fine = GetVoltages(pype, very_fine_freqs)
 
-        slope, intercept, r_value, p_value, std_err = stats.linregress(array(very_fine_freqs), array(VDC_very_fine))
-        
+        fitfunc = lambda p, x: p[1] * (x - p[0])
+        errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
+        p_in = [25000.0, -1.0]
+        fit = optimize.leastsq(errfunc, p_in, args=(array(very_fine_freqs), array(VDC_very_fine), array([1e-5]*len(very_fine_freqs))), full_output=1)
+        resonance = fit[0][0]
+        slope = fit[0][1]
+        cov = fit[1]
+        resonance_err = (0.0002/2.0036)*resonance
 
-        dataset = zip(fine_freqs+list(very_fine_freqs),VDC_fine+VDC_very_fine)
-        fitline = [fine_freqs[min_index], slope*fine_freqs[min_index]+intercept,
-                   fine_freqs[max_index], slope*fine_freqs[max_index]+intercept]
-        #,zip([VDC_freqs[0],VDC_freqs[-1]],[VDC_freqs[0]*slope+intercept,VDC_freqs[-1]*slope+intercept])]
+        dataset = sorted(zip(fine_freqs+list(very_fine_freqs),VDC_fine+VDC_very_fine))
+        fitline = [very_fine_freqs[0], slope * (very_fine_freqs[0]-resonance),
+                   very_fine_freqs[-1], slope * (very_fine_freqs[-1]-resonance)]
+
         plot = usegnuplot.Gnuplot()
         plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
         plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
@@ -143,20 +125,16 @@ if __name__ == "__main__":
         plot.g.stdin.write('set arrow from ' + str(fitline[0]) +','+ str(fitline[1]) + ' to ' + str(fitline[2]) +',' + str(fitline[3]) + 'nohead\n')
         plot.plot1d(dataset, '')
 
-        print('Found zero crossing at ' + str(-intercept/slope))
+        print('Found zero crossing at ' + str(resonance) + ' +/- ' + str(resonance_err) + ' MHz')
         geff = 2.0036
         chargemass = 1.758e11
-        print('find found slope: '+str(slope)+
-              'intercept: '+str(intercept)+
-              'r_value: '+str(r_value)+
-              'p_value: '+str(p_value)+
-              'std_err: '+str(std_err))
-        print('Field is: ' + str(4*pi*(-intercept/slope)*10**7/(geff*chargemass)) + ' kGauss')
+        freq_to_field = 4*pi*10**7/(geff*chargemass)
+        print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' + str(freq_to_field*resonance_err) + ' kGauss')
         raw_input('waiting for you to finish looking')
 
     except AssertionError as e:
         if e[0] == 'interesting_freq':
-            print('\nNo interesting frequencies found\n')
+            print('\n' + '*'*60 + '\nNo interesting frequencies found\n' + '*'*60 + '\n')
         if e[0] == 'zero_crossing':
-            print('\nNo zero question \n')
+            print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
         raise
