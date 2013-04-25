@@ -2,8 +2,8 @@
 from time import sleep
 from sys import stdout
 # 3rd party
-from numpy import std, mean, array, less, arange, pi
-from scipy import stats, signal
+from numpy import std, mean, array, less, arange, pi, where, diff, sign, polyfit, sqrt
+from scipy import optimize
 # local
 from pypeline import DripInterface, usegnuplot
 
@@ -20,7 +20,6 @@ def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
             <reading>   the DVM reading in Volts DC from the lockin
     '''
     try:
-    #if 'a'=='a':
         interface.Set('hf_cw_freq', freq).Wait()['result']=='ok'
         interface.Set('hf_sweeper_power', power).Wait()['result']=='ok'
         sleep(slptime)
@@ -36,16 +35,25 @@ def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
         else:
             raise
 
-def GetVoltages(freq_list, reference=0, deviation=0.2, stop_condition=1e10):
+def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_condition=1e10):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates to the user
 
+        <pype>:         pypeline DripInterface instance
         <freq_list>:    an iterable of frequencies in MHz
         <reference>:    if stopping at structure, this is the reference voltage (usually mean)
         <deviation>:    if stopping at structure, count number of these away (usually standard deviation)
         <stop_condition>:   number of <deviation> from <reference> to stop looping
     '''
-    pass
+    VDC = []
+    for freq in freq_list:
+        stdout.write('trying ' + str(freq) + ' MHz\r')
+        stdout.flush()
+        VDC.append(GetLockinValue(pype, freq, power))
+        if abs((VDC[-1]-reference)/deviation) > stop_condition:
+            print('something of interest at ' + str(freq) + ' MHz')
+            break
+    return VDC
 
 if __name__ == "__main__":
     '''
@@ -55,7 +63,6 @@ if __name__ == "__main__":
     pype = DripInterface('http://p8portal.phys.washington.edu:5984')
 
     freqs = range(25000, 26500, 10)
-#    freqs = range(25640, 26500, 10)
     
     #determine a mean and standard deviation
     VDC = [GetLockinValue(pype, freq) for freq in freqs[0:num_stats_freqs]]
@@ -68,50 +75,42 @@ if __name__ == "__main__":
 
     #find where the structure starts
     interesting_freq = False
-    for freq in freqs[num_stats_freqs:]:
-        #print('trying ' + str(freq) + ' MHz')
-        stdout.write('trying ' + str(freq) + ' MHz\r')
-        stdout.flush()
-        VDC.append(GetLockinValue(pype, freq))
-        VDC_freqs.append(freq)
-        if abs((VDC[-1]-VDC_mean)/VDC_std) > 40:
-            interesting_freq = freq
-            print('something of interest at ' + str(interesting_freq) + ' MHz')
-            break
+    VDC += GetVoltages(pype, freqs[num_stats_freqs:],
+                       reference=VDC_mean, deviation=VDC_std, stop_condition=20)
+    VDC_freqs = freqs[:len(VDC)]
+    if not len(VDC) == len(freqs):
+        interesting_freq = VDC_freqs[-1]
 
     #take a set of fine data points to capture the structure
     try:
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-20, interesting_freq+30, 2)
-        VDC_fine = []
-        #VDC = VDC + [GetLockinValue(pype, freq) for freq in fine_freqs]
-        VDC_fine = [GetLockinValue(pype, freq) for freq in fine_freqs]
-        #VDC_freqs += fine_freqs
-        #for freq,volt in zip(VDC_freqs, VDC):
-        #    print(str(freq) + ' MHz -> ' + str(volt) + ' V')
+        VDC_fine = GetVoltages(pype, fine_freqs)
+        #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
-        #minima = signal.argrelextrema(array(VDC_fine), less)[0]
-        #min_index = min((array(VDC_fine)[minima]<0)*minima)
-        #maxima = signal.argrelextrema(array(VDC_fine), less)[0]
-        #max_index = max((array(VDC_fine)[maxima]>0)*maxima)
+        crossing = min(min_index,max_index) + where(diff(sign(VDC_fine[min(min_index,max_index):max(min_index,max_index)])))[0][-1]
+        assert crossing, 'zero_crossing'
+        est = fine_freqs[crossing]-VDC_fine[crossing]*(fine_freqs[crossing+1]-fine_freqs[crossing])/(VDC_fine[crossing+1]-VDC_fine[crossing])
 
         #take some very finely spaced data for doing a fit
-        glmin = VDC_fine.index(max(VDC_fine))
-        glmax = VDC_fine.index(min(VDC_fine))
-        print('max and min are: ' + str(max(VDC_fine)) + ' ' + str(min(VDC_fine)))
-        firstpos = list(array(VDC_fine[glmin:glmax])<0).index(True)+glmin
-        very_fine_freqs = arange(fine_freqs[firstpos-1], fine_freqs[firstpos], 0.1)
+        very_fine_freqs = arange(est-0.5, est+0.5, 0.1)
         print('starting very fine grain frequency measurement')
-        VDC_very_fine = [GetLockinValue(pype, freq) for freq in very_fine_freqs]
+        VDC_very_fine = GetVoltages(pype, very_fine_freqs)
 
-        slope, intercept, r_value, p_value, std_err = stats.linregress(array(very_fine_freqs), array(VDC_very_fine))
-        
+        fitfunc = lambda p, x: p[1] * (x - p[0])
+        errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
+        p_in = [25000.0, -1.0]
+        fit = optimize.leastsq(errfunc, p_in, args=(array(very_fine_freqs), array(VDC_very_fine), array([1e-5]*len(very_fine_freqs))), full_output=1)
+        resonance = fit[0][0]
+        slope = fit[0][1]
+        cov = fit[1]
+        resonance_err = (0.0002/2.0036)*resonance
 
-        dataset = zip(fine_freqs+list(very_fine_freqs),VDC_fine+VDC_very_fine)
-        fitline = [fine_freqs[min_index], slope*fine_freqs[min_index]+intercept,
-                   fine_freqs[max_index], slope*fine_freqs[max_index]+intercept]
-        #,zip([VDC_freqs[0],VDC_freqs[-1]],[VDC_freqs[0]*slope+intercept,VDC_freqs[-1]*slope+intercept])]
+        dataset = sorted(zip(fine_freqs+list(very_fine_freqs),VDC_fine+VDC_very_fine))
+        fitline = [very_fine_freqs[0], slope * (very_fine_freqs[0]-resonance),
+                   very_fine_freqs[-1], slope * (very_fine_freqs[-1]-resonance)]
+
         plot = usegnuplot.Gnuplot()
         plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
         plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
@@ -126,18 +125,16 @@ if __name__ == "__main__":
         plot.g.stdin.write('set arrow from ' + str(fitline[0]) +','+ str(fitline[1]) + ' to ' + str(fitline[2]) +',' + str(fitline[3]) + 'nohead\n')
         plot.plot1d(dataset, '')
 
-        print('Found zero crossing at ' + str(-intercept/slope))
+        print('Found zero crossing at ' + str(resonance) + ' +/- ' + str(resonance_err) + ' MHz')
         geff = 2.0036
         chargemass = 1.758e11
-        print('find found slope: '+str(slope)+
-              'intercept: '+str(intercept)+
-              'r_value: '+str(r_value)+
-              'p_value: '+str(p_value)+
-              'std_err: '+str(std_err))
-        print('Field is: ' + str(4*pi*(-intercept/slope)*10**7/(geff*chargemass)) + ' kGauss')
+        freq_to_field = 4*pi*10**7/(geff*chargemass)
+        print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' + str(freq_to_field*resonance_err) + ' kGauss')
         raw_input('waiting for you to finish looking')
 
     except AssertionError as e:
         if e[0] == 'interesting_freq':
-            print('No interesting frequencies found')
+            print('\n' + '*'*60 + '\nNo interesting frequencies found\n' + '*'*60 + '\n')
+        if e[0] == 'zero_crossing':
+            print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
         raise
