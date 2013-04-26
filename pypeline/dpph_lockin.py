@@ -6,7 +6,7 @@ from numpy import std, mean, array, less, arange, pi, where, diff, sign, polyfit
 from scipy import optimize
 # local
 from DripInterface import DripInterface
-from usegnuplot import usegnuplot
+import usegnuplot
 
 def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
     '''
