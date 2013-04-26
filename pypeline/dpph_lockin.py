@@ -5,7 +5,8 @@ from sys import stdout
 from numpy import std, mean, array, less, arange, pi, where, diff, sign, polyfit, sqrt
 from scipy import optimize
 # local
-#from pypeline import DripInterface, usegnuplot
+from DripInterface import DripInterface
+from usegnuplot import usegnuplot
 
 def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
     '''
@@ -46,19 +47,19 @@ def GetVoltages(pype, freq_list, power=-40, reference=0, deviation=0.2, stop_sig
         <stop_sigma>:   number of <deviation> from <reference> to stop looping
     '''
     VDC = []
-    interest = False
+#    interest = False
     for freq in freq_list:
         stdout.write('trying ' + str(freq) + ' MHz\r')
         stdout.flush()
         VDC.append(GetLockinValue(pype, freq, power))
         if (abs((VDC[-1]-reference)/deviation) > stop_sigma) or (abs(VDC[-1]) > stop_volts):
-            if interest:
+#            if interest:
                 print('something of interest (' + str(VDC[-1]) + ' V) at ' + str(freq) + ' MHz')
                 break
-            else:
-                interest = True
-        else:
-            interest = False
+#            else:
+#                interest = True
+#        else:
+#            interest = False
     return VDC
 
 #if __name__ == "__main__":
@@ -67,7 +68,6 @@ def dpph_lockin(pype):
         Do a dpph scan using DripInterface instance <pype>
     '''
     num_stats_freqs = 5
-    pype = DripInterface('http://p8portal.phys.washington.edu:5984')
 
     freqs = range(25000, 26500, 10)
     
@@ -83,7 +83,7 @@ def dpph_lockin(pype):
     #find where the structure starts
     interesting_freq = False
     VDC += GetVoltages(pype, freqs[num_stats_freqs:],
-                       reference=VDC_mean, deviation=VDC_std, stop_sigma=30, stop_volts=.5)
+                       reference=VDC_mean, deviation=VDC_std, stop_sigma=30, stop_volts=1)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-2]
@@ -148,12 +148,3 @@ def dpph_lockin(pype):
         if e[0] == 'zero_crossing':
             print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
         raise
-
-
-if __name__ == "__main__":
-    '''
-        If run as: $python dpph_lockin.py, do these things:
-    '''
-    from pypeline import DripInterface, usegnuplot
-    pype = DripInterface('http://p8portal.phys.washington.edu:5984')
-    dpph_lockin(pype)

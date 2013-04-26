@@ -13,6 +13,10 @@ try:
     from .DripResponse import DripResponse
 except ImportError:
     from DripResponse import DripResponse
+try:
+    from .dpph_lockin import dpph_lockin
+except ImportError:
+    from dpph_lockin import dpph_lockin
 if "DISPLAY" in environ:
     if environ["DISPLAY"]:
         try:
