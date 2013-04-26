@@ -2,10 +2,10 @@ from Tkinter import *
 from datetime import datetime
 from pypeline import DripInterface, dpph_lockin
 
+
 class App:
     def __init__(self, master):
         self.master = master
-
 
         self.frame = Frame(master)
         self.frame.grid()
@@ -15,11 +15,11 @@ class App:
 
     def setup_grid(self):
         '''
-            Create all of the permanent text, should only need to call this once
+            Create the permanent text, should only need to call this once
         '''
         self.time = StringVar()
         self.time.set(datetime.now())
-        
+
         # Text labels
         self.timedesc = Label(self.frame, text="The time is:", relief=RAISED)
         self.timedesc.grid(row=0, sticky=W)
@@ -59,5 +59,5 @@ class App:
         dpph_lockin(pype)
 
 root = Tk()
-app=App(root)
+app = App(root)
 root.mainloop()
