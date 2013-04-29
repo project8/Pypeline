@@ -2,7 +2,7 @@
 from time import sleep
 from sys import stdout
 # 3rd party
-from numpy import std, mean, array, less, arange, pi, where, diff,
+from numpy import std, mean, array, less, arange, pi, where, diff
 from numpy import sign, polyfit, sqrt
 from scipy import optimize
 # local
@@ -10,7 +10,7 @@ from DripInterface import DripInterface
 import usegnuplot
 
 
-def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
+def GetLockinValue(interface, freq=25553.440, slptime=2):
     '''
         Make a reading with the lockin amplifier at a specific frequency.
 
@@ -24,13 +24,8 @@ def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
     '''
     try:
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
-        #interface.Set('hf_sweeper_power', power).Wait()['result']=='ok'
         sleep(slptime)
         out = interface.Get('lockin_out').Wait()
-        try_again = raw_input(out)
-        if try_again:
-            out.Wait(30)
-            print(out)
         return float(out['final'].strip().strip('NDCV'))
     except KeyError as keyname:
         if keyname[0] == 'result':
@@ -43,7 +38,7 @@ def GetLockinValue(interface, freq=25553.440, power=-40, slptime=1):
             raise
 
 
-def GetVoltages(pype, freq_list, power=-50, reference=0, deviation=0.2,
+def GetVoltages(pype, freq_list, power=-55, reference=0, deviation=0.2,
                 stop_sigma=1e10, stop_volts=20):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates
@@ -62,7 +57,7 @@ def GetVoltages(pype, freq_list, power=-50, reference=0, deviation=0.2,
     for freq in freq_list:
         stdout.write('trying ' + str(freq) + ' MHz\r')
         stdout.flush()
-        VDC.append(GetLockinValue(pype, freq, power))
+        VDC.append(GetLockinValue(pype, freq))
         if ((abs((VDC[-1]-reference)/deviation) > stop_sigma) or
            (abs(VDC[-1]) > stop_volts)):
 #            if interest:
@@ -90,7 +85,7 @@ def dpph_lockin(pype):
     VDC_end = GetVoltages(pype, freqs[-num_stats_freqs:])
     VDC_std = std(VDC + VDC_end)
     VDC_mean = mean(VDC + VDC_end)
-    print('mean is: ' + str(VDC_mean) + ' VDCi')
+    print('mean is: ' + str(VDC_mean) + ' VDC')
     print('std is: ' + str(VDC_std) + ' VDC')
 
     #find where the structure starts
@@ -112,6 +107,10 @@ def dpph_lockin(pype):
         #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
+        #left = min(min_index, max_index)
+        #right = max(min_index, max_index)
+        #crossing = left + where(diff(sign(VDC_fine[left:right])))[0][-1]
+        print(len(VDC_fine[min(min_index,max_index):max(min_index,max_index)]))
         crossing = min(min_index, max_index) + where(
             diff(sign(VDC_fine[min(min_index, max_index):
                                max(min_index, max_index)])))[0][-1]
