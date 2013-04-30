@@ -1,6 +1,6 @@
 from Tkinter import *
 from datetime import datetime
-from pypeline import DripInterface, dpph_lockin, scripts
+from pypeline import DripInterface, scripts#dpph_lockin
 
 
 class App:
@@ -30,14 +30,8 @@ class App:
         self.timeval.grid(row=0, column=1)
        
         # Buttons
-        self.button = Button(self.frame, text="QUIT", fg="red", command=self.frame.quit)
-        self.button.grid(row=1, column=0)
-
         self.hi_there = Button(self.frame, text="Hello", command=self.say_hi)
         self.hi_there.grid(row=1, column=1, sticky=W)
-
-        #self.update = Button(self.frame, text="Update", command=self.update_values)
-        #self.update.grid(row=1, column=2, sticky=E)
 
         self.check_heartbeat = Button(self.frame, text="Check Heartbeat", command=self.check_heartbeat)
         self.check_heartbeat.grid(row=1, column=3)
@@ -60,7 +54,7 @@ class App:
         '''
             Do a dpph run using the lockin method
         '''
-        dpph_lockin(self.pype)
+        scripts.dpph_lockin(self.pype)
 
     def check_heartbeat(self):
         '''

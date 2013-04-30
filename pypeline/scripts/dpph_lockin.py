@@ -6,8 +6,8 @@ from numpy import std, mean, array, less, arange, pi, where, diff
 from numpy import sign, polyfit, sqrt
 from scipy import optimize
 # local
-from DripInterface import DripInterface
-import usegnuplot
+from ..DripInterface import DripInterface
+from ..usegnuplot import Gnuplot
 
 
 def GetLockinValue(interface, freq=25553.440, slptime=2):
@@ -143,7 +143,7 @@ def dpph_lockin(pype):
                    very_fine_freqs[-1],
                    slope * (very_fine_freqs[-1]-resonance)]
 
-        plot = usegnuplot.Gnuplot()
+        plot = Gnuplot()
         plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
         plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
         plot.gp("set style line 11 lc rgb '#808080' lt 1")
