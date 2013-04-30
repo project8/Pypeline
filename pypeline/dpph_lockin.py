@@ -77,7 +77,7 @@ def dpph_lockin(pype):
     '''
     num_stats_freqs = 5
 
-    freqs = range(25000, 26500, 10)
+    freqs = range(25000, 26500, 5)
 
     #determine a mean and standard deviation
     VDC = GetVoltages(pype, freqs[0:num_stats_freqs])
@@ -91,7 +91,7 @@ def dpph_lockin(pype):
     #find where the structure starts
     interesting_freq = False
     VDC += GetVoltages(pype, freqs[num_stats_freqs:], reference=VDC_mean,
-                       deviation=VDC_std, stop_sigma=30, stop_volts=1)
+                       deviation=VDC_std, stop_sigma=30, stop_volts=0.5)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-2]
