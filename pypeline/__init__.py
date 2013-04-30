@@ -14,10 +14,6 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 try:
-    from .dpph_lockin import dpph_lockin
-except ImportError:
-    from dpph_lockin import dpph_lockin
-try:
     import scripts
 except ImportError:
     #from scripts import *
