@@ -17,6 +17,12 @@ try:
     from .dpph_lockin import dpph_lockin
 except ImportError:
     from dpph_lockin import dpph_lockin
+try:
+    import scripts
+except ImportError:
+    #from scripts import *
+    print('crap')
+    raise
 if "DISPLAY" in environ:
     if environ["DISPLAY"]:
         try:
