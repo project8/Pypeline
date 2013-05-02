@@ -53,48 +53,48 @@ def GetVoltages(pype, freq_list, power=-55, reference=0, deviation=0.2,
     if not float(pype.Get('hf_sweeper_power').Wait()['final']):
         raise AssertionError('power setting not stable')
     VDC = []
-#    interest = False
     for freq in freq_list:
         stdout.write('trying ' + str(freq) + ' MHz\r')
         stdout.flush()
         VDC.append(GetLockinValue(pype, freq))
         if ((abs((VDC[-1]-reference)/deviation) > stop_sigma) or
            (abs(VDC[-1]) > stop_volts)):
-#            if interest:
                 print('something of interest (' + str(VDC[-1]) + ' V) at '
                       + str(freq) + ' MHz')
                 break
-#            else:
-#                interest = True
-#        else:
-#            interest = False
     return VDC
 
 
-def dpph_lockin(pype):
+def dpph_lockin(pype, guess=25000):
     '''
         Do a dpph scan using DripInterface instance <pype>
-    '''
-    num_stats_freqs = 5
 
-    freqs = range(25000, 26500, 5)
+        Inputs:
+            <guess> is an intial guess for the starting frequency
+    '''
+    num_stats_freqs = 10
+
+    init_step = 2
+    if guess == 25000:
+        init_step = 5
+    freqs = range(25000, 26500, init_step)
+    freqs.sort(key=lambda value: abs(value-guess))
 
     #determine a mean and standard deviation
-    VDC = GetVoltages(pype, freqs[0:num_stats_freqs])
-    VDC_freqs = freqs[0:num_stats_freqs]
-    VDC_end = GetVoltages(pype, freqs[-num_stats_freqs:])
-    VDC_std = std(VDC + VDC_end)
-    VDC_mean = mean(VDC + VDC_end)
+    VDC = GetVoltages(pype, freqs[-num_stats_freqs:])
+    VDC_freqs = freqs[-num_stats_freqs:]
+    VDC_std = std(VDC)
+    VDC_mean = mean(VDC)
     print('mean is: ' + str(VDC_mean) + ' VDC')
     print('std is: ' + str(VDC_std) + ' VDC')
 
     #find where the structure starts
     interesting_freq = False
-    VDC += GetVoltages(pype, freqs[num_stats_freqs:], reference=VDC_mean,
-                       deviation=VDC_std, stop_sigma=30, stop_volts=0.5)
+    VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
+                      stop_sigma=30, stop_volts=0.5)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
-        interesting_freq = VDC_freqs[-2]
+        interesting_freq = VDC_freqs[-1]
     else:
         for pair in zip(freqs, VDC):
             print(pair)
@@ -102,7 +102,7 @@ def dpph_lockin(pype):
     #take a set of fine data points to capture the structure
     try:
         assert interesting_freq, 'interesting_freq'
-        fine_freqs = range(interesting_freq-30, interesting_freq+30, 2)
+        fine_freqs = range(interesting_freq-25, interesting_freq+20, 2)
         VDC_fine = GetVoltages(pype, fine_freqs)
         #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
