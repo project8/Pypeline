@@ -61,29 +61,29 @@ class App:
         # Set interface
         self.set_button = Button(self.frame, text="Set",
                                  command=self.SetChannel)
-        self.set_button.grid(row=1, column=0, sticky=EW)
+        self.set_button.grid(row=2, column=0, sticky=EW)
         self.set_selection = OptionMenu(self.frame, self.setchannelVar,
                                         *self.channels)
-        self.set_selection.grid(row=1, column=1, sticky=EW)
+        self.set_selection.grid(row=2, column=1, sticky=EW)
         self.set_answer_label = Entry(self.frame,
                                       textvariable=self.setchannelvalueVar,
                                       relief=SUNKEN)
-        self.set_answer_label.grid(row=1, column=2, sticky=EW)
+        self.set_answer_label.grid(row=2, column=2, sticky=EW)
 
         # Run interface
-        self.script_selection = OptionMenu(self.frame, self.which_script,
-                                           *['check_heartbeat', 'run_dpph'])
-        self.script_selection.grid(row=2, column=0)
-
         self.run_script = Button(self.frame, text="Run",
                                  command=self.run_script)
-        self.run_script.grid(row=2, column=1, sticky=W)
+        self.run_script.grid(row=3, column=0, sticky=EW)
+        self.script_selection = OptionMenu(self.frame, self.which_script,
+                                           *['check_heartbeat', 'run_dpph'])
+        self.script_selection.grid(row=3, column=1, sticky=EW)
+
 
     def update_values(self):
         '''
             Update displayed values
         '''
-        self.time.set(str(datetime.now()))
+        self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
