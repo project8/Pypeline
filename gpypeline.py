@@ -87,12 +87,12 @@ class App:
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
-        result = self.pype.Get(self.getchannelVar).Wait()['final']
+        result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
-        result = self.pype.Set(self.setchannelVar,
-                               self.setchannelvalueVar).Wait()['final']
+        result = self.pype.Set(self.setchannelVar.get(),
+                               self.setchannelvalueVar.get()).Wait()['final']
         self.setchannelvalueVar.set(result)
 
     def run_script(self):
@@ -127,16 +127,16 @@ class App:
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()
-        self.guessval.set(float(halldoc['final'].split()[0]))
+        self.guessval.set(abs(float(halldoc['final'].split()[0])))
         self.guessunits.set('kG')
 
     def dpph_lockin(self):
         geff = 2.0036
         chargemass = 1.758e11
         freq_to_field = 4*pi*10**7/(geff*chargemass)
-        if self.guessunits.get() is "kG":
+        if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get()/freq_to_field)
-            self.guessunits.sset("MHz")
+            self.guessunits.set("MHz")
         scripts.dpph_lockin(self.pype, self.guessval.get())
 
     def check_heartbeat(self):
