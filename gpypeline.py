@@ -1,5 +1,7 @@
 from Tkinter import *
+from tkFileDialog import asksaveasfile
 from datetime import datetime
+from json import dump
 from numpy import pi
 from pypeline import DripInterface, scripts
 
@@ -104,7 +106,7 @@ class App:
 
     def run_dpph(self):
         '''
-            Do a dpph run using the lockin method
+            Dpph popup window
         '''
         self.guessval = DoubleVar()
         self.guessval.set(25000)
@@ -124,6 +126,9 @@ class App:
         checkhall.grid(row=1, column=0, columnspan=2)
         dorun = Button(dpph_popup, text="Start Scan", command=self.dpph_lockin)
         dorun.grid(row=1, column=2)
+        savebutton = Button(dpph_popup, text="Save",
+                            command=self.store_dpph_data)
+        savebutton.grid(row=1, column=3)
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()
@@ -137,7 +142,17 @@ class App:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get()/freq_to_field)
             self.guessunits.set("MHz")
-        scripts.dpph_lockin(self.pype, self.guessval.get())
+        self.dpph_result = scripts.dpph_lockin(self.pype, self.guessval.get())
+
+    def store_dpph_data(self):
+        if not self.dpph_result:
+            print('no dpph_result stored')
+            return
+        outfile = tkFileDialog.asksaveasfile(defaultextension='.json')
+        dump({"frequencies":self.dpph_result[0],
+              "voltages":self.dpph_result[1]},
+             outfile)
+        outfile.close()
 
     def check_heartbeat(self):
         '''

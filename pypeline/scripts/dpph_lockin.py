@@ -167,6 +167,7 @@ def dpph_lockin(pype, guess=25000):
         print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' +
               str(freq_to_field*resonance_err) + ' kGauss')
         #raw_input('waiting for you to finish looking')
+        return zip(*dataset)
 
     except AssertionError as e:
         if e[0] == 'interesting_freq':
