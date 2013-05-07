@@ -61,6 +61,11 @@ class DripInterface:
             self._conf_interface = _ConfInterface(self._server['dripline_conf'])
         else:
             raise UserWarning('The dripline conf database was not found!')
+        if (self._server.__contains__('dripline_logged_data')):
+            self._log_database = self._server['dripline_logged_data']
+            #self._log_interface = _ConfInterface(self._server['dripline_conf'])
+        else:
+            raise UserWarning('The dripline conf database was not found!')
 
     def Get(self, channel='', wait=False):
         '''

@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 # Standard Libs
 from Tkinter import *
 from tkFileDialog import asksaveasfile
@@ -17,7 +19,7 @@ class App:
         self.frame = Frame(master)
         self.frame.grid()
 
-        self.pype = DripInterface('http://p8portal.phys.washington.edu:5984')
+        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
 
         self.setup_grid()
         self.update_values()
@@ -41,6 +43,20 @@ class App:
         self.setchannelVar = StringVar()
         #value to set
         self.setchannelvalueVar = DoubleVar()
+        #values in loggers
+        self.loggers_list = ['bypass_valve_t',
+                        'coldhead_bottom_face_t',
+                        'getter_valve_t',
+                        'hall_probe_voltage',
+                        'inlet_pressure',
+                        'left_gas_line_lower_t',
+                        'left_gas_line_upper_t',
+                        'linear_encoder',
+                        'liquid_helium_level',
+                        'liquid_nitrogen_level']
+        self.loggers_dict = {}
+        for channel in self.loggers_list:
+            self.loggers_dict[channel] = StringVar()
 
         # Text labels
         self.timedesc = Label(self.frame, text="The time is:")
@@ -82,12 +98,22 @@ class App:
                                            *['check_pulse', 'run_dpph'])
         self.script_selection.grid(row=3, column=1, sticky=EW)
 
+        # Data display
+        #########################
+        for rowi,channel in enumerate(self.loggers_list):
+            Label(self.frame, text=channel).grid(row=rowi, column=3)
+            Label(self.frame, textvariable=self.loggers_dict[channel],
+                  relief=SUNKEN).grid(row=rowi, column=4, sticky=EW)
 
     def update_values(self):
         '''
             Update displayed values
         '''
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
+        latest = self.pype._log_database.view('pypeline_view/latest_values')
+        for channel in self.loggers_list:
+            self.loggers_dict[channel].set(latest[channel].rows[0]['value']
+                                                               ['cal_val'])
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
