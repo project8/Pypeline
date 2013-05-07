@@ -1,8 +1,14 @@
+#!/usr/bin/python2
+
+# Standard Libs
 from Tkinter import *
 from tkFileDialog import asksaveasfile
 from datetime import datetime
 from json import dump
+from inspect import getargspec
+# 3rd party Libs
 from numpy import pi
+# internal Libs
 from pypeline import DripInterface, scripts
 
 
@@ -13,7 +19,7 @@ class App:
         self.frame = Frame(master)
         self.frame.grid()
 
-        self.pype = DripInterface('http://p8portal.phys.washington.edu:5984')
+        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
 
         self.setup_grid()
         self.update_values()
@@ -26,11 +32,9 @@ class App:
         # Tkinter Variables
         #########################
         #current time
-        self.time = StringVar()
-        self.time.set(datetime.now())
+        self.time = StringVar(value=datetime.now())
         #which script to run
-        self.which_script = StringVar()
-        self.which_script.set("check_heartbeat")
+        self.which_script = StringVar(value="check_pulse")
         #which channel to get
         self.getchannelVar = StringVar()
         #get return
@@ -39,6 +43,20 @@ class App:
         self.setchannelVar = StringVar()
         #value to set
         self.setchannelvalueVar = DoubleVar()
+        #values in loggers
+        self.loggers_list = ['bypass_valve_t',
+                        'coldhead_bottom_face_t',
+                        'getter_valve_t',
+                        'hall_probe_voltage',
+                        'inlet_pressure',
+                        'left_gas_line_lower_t',
+                        'left_gas_line_upper_t',
+                        'linear_encoder',
+                        'liquid_helium_level',
+                        'liquid_nitrogen_level']
+        self.loggers_dict = {}
+        for channel in self.loggers_list:
+            self.loggers_dict[channel] = StringVar()
 
         # Text labels
         self.timedesc = Label(self.frame, text="The time is:")
@@ -74,18 +92,28 @@ class App:
 
         # Run interface
         self.run_script = Button(self.frame, text="Run",
-                                 command=self.run_script)
+                                 command=self.ScriptDialog)
         self.run_script.grid(row=3, column=0, sticky=EW)
         self.script_selection = OptionMenu(self.frame, self.which_script,
-                                           *['check_heartbeat', 'run_dpph'])
+                                           *['check_pulse', 'run_dpph'])
         self.script_selection.grid(row=3, column=1, sticky=EW)
 
+        # Data display
+        #########################
+        for rowi,channel in enumerate(self.loggers_list):
+            Label(self.frame, text=channel).grid(row=rowi, column=3)
+            Label(self.frame, textvariable=self.loggers_dict[channel],
+                  relief=SUNKEN).grid(row=rowi, column=4, sticky=EW)
 
     def update_values(self):
         '''
             Update displayed values
         '''
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
+        latest = self.pype._log_database.view('pypeline_view/latest_values')
+        for channel in self.loggers_list:
+            self.loggers_dict[channel].set(latest[channel].rows[0]['value']
+                                                               ['cal_val'])
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
@@ -97,9 +125,41 @@ class App:
                                self.setchannelvalueVar.get()).Wait()['final']
         self.setchannelvalueVar.set(result)
 
-    def run_script(self):
+    def ScriptDialog(self):
+        graphic_scripts = ['run_dpph']
         script_name = self.which_script.get()
-        getattr(self, script_name)()
+        if script_name in graphic_scripts:
+            getattr(self, script_name)()
+        else:
+            self.generic_script_popup(script_name)
+
+    def generic_script_popup(self, script_name):
+        script_popup = Toplevel()
+        script_popup.grid()
+
+        script_fun = getattr(scripts, script_name)
+        arg_names,_,_,default_vals = getargspec(script_fun)
+        initial_vals = [None] * len(arg_names)
+        if default_vals:
+            initial_vals[-len(default_vals):] = default_vals
+        self.gui_input_dict = {}
+        for rowi,(keyname,initval) in enumerate(zip(arg_names, initial_vals)):
+            if keyname == 'pype':
+                continue
+            self.gui_input_dict[keyname] = StringVar(value=str(initval))
+            Label(script_popup, text=keyname).grid(row=rowi, column=0)
+            Entry(script_popup,
+                  textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
+                                                                  column=1)
+        startbt = Button(script_popup, text="Start Script",
+                         command=self.exec_script)
+        startbt.grid(row=len(self.gui_input_dict.keys())+1, columnspan=2)
+
+    def exec_script(self):
+        args_dict = {}
+        for key in self.gui_input_dict:
+            args_dict[key] = self.gui_input_dict[key].get()
+        script(pype, *args_dict)
 
     def say_hi(self):
         print("hi there, everyone!")
@@ -154,9 +214,9 @@ class App:
              outfile)
         outfile.close()
 
-    def check_heartbeat(self):
+    def check_pulse(self):
         '''
-            check dripline for a heartbeat
+            check dripline for a pulse
         '''
         scripts.check_pulse(self.pype)
 
