@@ -196,12 +196,13 @@ class PlotMakingGuiTwo:
 			self.consoletext.insert("0.0",mytime+": "+str(command_entry["command"])+"\n")
 
 	def digitize(self,channel):
-		run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=400,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
-		dat=run['data']
+		mantis_output=self.drip.RunMantis(rate=500,duration=1000,filename="/data/temp.egg",channels=1,length=4194304,count=600).Wait(30)['result']
+		powerline_output=eval(self.drip.RunPowerline(points=8192,events=1024,filename="/data/temp.egg").Wait(30)['result'])
+		dat=powerline_output['data']
 		freqs=[]
 		moddat=[ 10.0*math.log10(x) for x in dat ]
 		for x in range(len(dat)):
-			freqs.append(run['sampling_rate']*x/(2.0*len(dat)))
+			freqs.append(powerline_output['sampling_rate']*x/(2.0*len(dat)))
 		toplot=zip(freqs,moddat)
 		g=usegnuplot.Gnuplot()
 		g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
@@ -348,15 +349,18 @@ class PlotMakingGuiTwo:
 		newscans=[]
 		print "taking ",nscans," dpph scans"
 		self.drip.Set("hf_sweeper_power",str(sweeppower))
+		self.drip.Set("hf_sweep_start",str(freq))
+		self.drip.Set("hf_sweep_stop",str(int(freq)+nscans*80))
 		for i in range(nscans):
 			freqstart=int(freq)+i*80
 			freqend=freqstart+100
-			self.drip.Set("hf_sweep_start",str(freqstart))
-			self.drip.Set("hf_sweep_stop",str(freqend))
+			#self.drip.Set("hf_sweep_start",str(freqstart))
+			#self.drip.Set("hf_sweep_stop",str(freqend))
 			lo_freq=str(int(freqstart)-24500)
 			self.drip.Set("lo_cw_freq",lo_freq,True)
 			print "on frequency ",freqstart
-			newscans.append(self.run_sweep(freqstart))
+			egg="/data/sweep_"+time.strftime("%Y_%m_%d_%H:%M:%S_",time.localtime())+".egg"
+			newscans.append(self.run_sweep(freqstart,eggfile=egg))
 		if not isbg:
 			argsets=[]
 			toplot=[]
@@ -421,8 +425,9 @@ class PlotMakingGuiTwo:
 
 	def run_sweep(self,freq_offset,eggfile="temp.egg"):
 		myrate=200
-		myduration=4000
-		therun=self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait(timeout=30)
+		myduration=2000
+		#therun=self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename="/data/temp1.egg").Wait(),sp="sweepline").Wait(timeout=30)
+		therun=self.drip.CreatePowerSpectrum(self.drip.Run(rate=myrate,duration=myduration,filename=eggfile).Wait(),sp="sweepline").Wait(timeout=30)
 		run=eval(therun['result'])
 		freqs=[]
 		for x in range(len(run['data'])):
@@ -453,14 +458,21 @@ class PlotMakingGuiTwo:
 		g.gp("set xlabel \"Sweeper Power (dBm)\"")
 		g.gp("set ylabel \"Power (dBm)\"")
 
-		for pwr in [-50, -40, -30, -20, -15, -10, -5, 0]:
+		for pwr in [-50, -40, -30, -20, -15, -10, -5, 0, 5, 10]:
+
 			self.drip.Set("hf_sweeper_power",str(pwr),True)
-			run=eval(self.drip.CreatePowerSpectrum(self.drip.Run(rate=200,duration=200,filename="/data/temp.egg").Wait(),sp="powerline").Wait()['result'])
-			dat=run['data']
+
+			print( "running mantis..." )
+
+			tMantisOut = self.drip.RunMantis( output = "/data/temp.egg", rate = "200", duration = "200", mode = "1", length = "4194304", count = "48" ).Wait( 60 )["result"]
+			print( "running powerline..." )
+			tPowerlineOut = eval( self.drip.RunPowerline( points = "16384", events = "1024", input = "/data/temp.egg" ).Wait( 60 )["result"] )
+            
+			dat=tPowerlineOut['data']
 			mymax=0
 			center=len(dat)/2
-			for i in range(10):
-				if dat[center+i-5]>mymax:
+			for i in range(100):
+				if dat[center+i-50]>mymax:
 					mymax=dat[center+i-5]
 			myns=dat[int(center-0.1*len(dat))]
 			print pwr," ",myns," ",mymax

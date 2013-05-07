@@ -58,6 +58,7 @@ class LoggedDataMonitorPlotter:
 			argsets.append("using 1:3 with lines title \""+sensor+"\"")
 			units=self.data_store.GetUnits(sensor)
 		self.sensors_to_plot_mutex.release()
+		self.g.gp("set term x11 noraise")
 		self.g.gp("set xdata time")
 		self.g.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
 		self.g.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")

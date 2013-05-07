@@ -16,6 +16,8 @@ class GUI( Tkinter.Tk ):
         self.fParent = aParent
         self.InitializePypeline()
         self.InitializeWindow()
+	self.olddpph=[]
+        self.last_sweep=[]
         
     def InitializePypeline( self ):
         self.fDrip = DripInterface.DripInterface( 'http://p8portal.phys.washington.edu:5984' )
@@ -44,6 +46,9 @@ class GUI( Tkinter.Tk ):
         self.fSweeperPowerEntryText.set( "-30" )
         self.fSweeperPowerEntry = Tkinter.Entry( self, textvariable = self.fSweeperPowerEntryText )
         self.fSweeperPowerEntry.grid( column = 1, row = 1, sticky = "EW" )
+
+        self.fSweeperPowerButton = Tkinter.Button( self, text = u"set power", command = self.SetSweeperPower )
+        self.fSweeperPowerButton.grid( column = 2, row = 1, sticky = "EW" )
         
         self.fSweeperCenterFrequencyLabelText = Tkinter.StringVar()
         self.fSweeperCenterFrequencyLabelText.set( "center frequency [MHz]" )
@@ -189,15 +194,19 @@ class GUI( Tkinter.Tk ):
         self.fDigitizationPowerSpectrumButton = Tkinter.Button( self, text = u"do peak", command = self.DoPeak )
         self.fDigitizationPowerSpectrumButton.grid( column = 2, row = 16, sticky = "EW" )
         
-        self.fDigitizationPowerSpectrumButton = Tkinter.Button( self, text = u"do dpph", command = self.DoDPPH )
-        self.fDigitizationPowerSpectrumButton.grid( column = 2, row = 17, sticky = "EW" )        
+        #self.fDPPHButton = Tkinter.Button( self, text = u"do dpph", command = self.DoDPPH )
+        #self.fDPPHButton = Tkinter.Button( self, text = u"do dpph", command = self.DoDPPHbg )
+        self.fDPPHButton = Tkinter.Button( self, text = u"do dpph", command = self.DoDPPHsweep )
+        self.fDPPHButton.grid( column = 2, row = 17, sticky = "EW" )
+
+    def SetSweeperPower( self ):
+        print( "setting power..." )
+        self.fDrip.Set( "hf_sweeper_power", self.fSweeperPowerEntryText.get(), True )
+        print( "ready." )
     
     def SetSweeperStaticMode( self ):
         print( "setting frequency..." )
         self.fDrip.Set( "hf_cw_freq", self.fSweeperCenterFrequencyEntryText.get(), True )
-        print( "setting power..." )
-        time.sleep( 1 )
-        self.fDrip.Set( "hf_sweeper_power", self.fSweeperPowerEntryText.get(), True )
         print( "ready." )
         
     def SetSweeperSweepingMode( self ):
@@ -205,9 +214,6 @@ class GUI( Tkinter.Tk ):
         self.fDrip.Set( "hf_sweep_start", self.fSweeperStartFrequencyEntryText.get(), True )
         self.fDrip.Set( "hf_sweep_stop", self.fSweeperStopFrequencyEntryText.get(), True )
         self.fDrip.Set( "hf_sweep_time", self.fSweeperSweepTimeEntryText.get(), True )
-        print( "setting power..." )
-        time.sleep( 1 )
-        self.fDrip.Set( "hf_sweeper_power", self.fSweeperPowerEntryText.get(), True )
         print( "ready." )
         
     def SetOscillatorFrequency( self ) :
@@ -319,18 +325,17 @@ class GUI( Tkinter.Tk ):
 
     def DoDPPH( self ):        
         
-        print( "starting in ten seconds..." )
-        
-        time.sleep( 10 )
-        
+        print( "starting in two seconds..." )
+        time.sleep( 2 )
+                
         tStartFreq = 24900.
         tEndFreq = 26100.
-        tDeltaFreq = 300.
+        tDeltaFreq = 2.
         
         tDigRate = 200.
         tDigDuration = 1000
-        tDigPoints = 16384
-        tDigAverages = 8192
+        tDigPoints = 32768
+        tDigAverages = 4096
         
         tNoiseMin = 48.
         tNoiseMax = 49.
@@ -340,17 +345,20 @@ class GUI( Tkinter.Tk ):
         tInternalFreq = 24500.       
         tTargetFreq = 50.
         
-        tCurrentHighFreq = tStartFreq
-        tCurrentLowFreq = tStartFreq - tInternalFreq - tTargetFreq
-        
         tFrequencies = []
         tAreasActive = []
         tAreasSuppressed = []
         tAreasCompared = []
         
+        #################
+        # activate dpph #
+        #################
 
-        time.sleep( 1 )
-        
+        self.fDrip.Set( "dpph_current", "0A", True )
+        time.sleep( 1000 )
+
+        tCurrentHighFreq = tStartFreq
+        tCurrentLowFreq = tStartFreq - tInternalFreq - tTargetFreq
         while tCurrentHighFreq <= tEndFreq:
             
             print( "analyzing at {0} MHz with oscillator at {1} MHz" ).format( tCurrentHighFreq, tCurrentLowFreq )
@@ -359,32 +367,30 @@ class GUI( Tkinter.Tk ):
             # set oscillators #
             ###################
             
-            self.fDrip.Set( "hf_sweeper_power", "-50", True )
-            time.sleep( 1 )
             self.fDrip.Set( "hf_cw_freq", str( tCurrentHighFreq ), True )
             time.sleep( 1 )
             self.fDrip.Set( "hf_sweeper_power", "-50", True )
             time.sleep( 1 )
-            self.fDrip.Set( "hf_sweeper_power", "-30", True )
+            self.fDrip.Set( "hf_sweeper_power", "-35", True )
             time.sleep( 1 )
-            self.fDrip.Set( "lo_cw_freq", str( tCurrentLowFreq ), True )
-            
-            tFrequencies.append( tCurrentHighFreq )
-            
-            ###############
-            # enable dpph #
-            ###############         
-            
-            self.fDrip.Set( "dpph_current", "0A", True )
-            time.sleep( 2 )
-            
+            self.fDrip.Set( "lo_cw_freq", str( tCurrentLowFreq ), True )           
             
             # calculate the power spectrum
             
             print( "running mantis..." )
-            tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = "200", duration = "1000", mode = "1", length = "4194304", count = "640" ).Wait( 60 )["result"]
+            
+            while True:
+                tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = tDigRate, duration = tDigDuration, mode = "1", length = "4194304", count = "48" ).Wait( 60 )
+                try:
+                    tDecider = tMantisOut["result"]
+                    break
+                except KeyError:
+                    print( "mantis barfed..." )
+                    print( tMantisOut )
+
             print( "running powerline..." )
-            tPowerlineOut = eval( self.fDrip.RunPowerline( points = "16384", events = "1024", input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
+            
+            tPowerlineOut = eval( self.fDrip.RunPowerline( points = tDigPoints, events = tDigAverages, input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
             tSamplingRate = tPowerlineOut["sampling_rate"]
             tYData = tPowerlineOut["data"]
             tLength = len( tYData )
@@ -418,26 +424,57 @@ class GUI( Tkinter.Tk ):
             for tIndex in range( -4, 5 ):
                 tAreaActive = tAreaActive + ( tYData[tPeakIndex + tIndex] - tNoisePower )
             tAreasActive.append( tAreaActive )
+            tFrequencies.append( tCurrentHighFreq )
             
             #summarize
             
             print( "enabled peak power was {0} at {1} MHz in bin {2} with area {3} on noise of {4}" ).format( tPeakPower, tPeakFrequency, tPeakIndex, tAreaActive, tNoisePower )
+            tCurrentHighFreq = tCurrentHighFreq + tDeltaFreq
+            tCurrentLowFreq = tCurrentLowFreq + tDeltaFreq
             
+
             
-            #################
-            # suppress dpph #
-            #################         
+        #################
+        # suppress dpph #
+        #################         
             
-            self.fDrip.Set( "dpph_current", "2A", True )
-            time.sleep( 2 )
+        self.fDrip.Set( "dpph_current", "2A", True )
+        time.sleep( 1000 )
             
+        tCurrentHighFreq = tStartFreq
+        tCurrentLowFreq = tStartFreq - tInternalFreq - tTargetFreq
+        while tCurrentHighFreq <= tEndFreq:
             
+            print( "analyzing at {0} MHz with oscillator at {1} MHz" ).format( tCurrentHighFreq, tCurrentLowFreq )
+            
+            ###################
+            # set oscillators #
+            ###################
+            
+            self.fDrip.Set( "hf_cw_freq", str( tCurrentHighFreq ), True )
+            time.sleep( 1 )
+            self.fDrip.Set( "hf_sweeper_power", "-50", True )
+            time.sleep( 1 )
+            self.fDrip.Set( "hf_sweeper_power", "-35", True )
+            time.sleep( 1 )
+            self.fDrip.Set( "lo_cw_freq", str( tCurrentLowFreq ), True )
+
             # calculate the power spectrum
             
             print( "running mantis..." )
-            tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = "200", duration = "1000", mode = "1", length = "4194304", count = "640" ).Wait( 60 )["result"]
+            
+            while True:
+                tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = tDigRate, duration = tDigDuration, mode = "1", length = "4194304", count = "48" ).Wait( 60 )
+                try:
+                    tDecider = tMantisOut["result"]
+                    break
+                except KeyError:
+                    print( "mantis barfed..." )
+                    print( tMantisOut )
+
             print( "running powerline..." )
-            tPowerlineOut = eval( self.fDrip.RunPowerline( points = "16384", events = "1024", input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
+            
+            tPowerlineOut = eval( self.fDrip.RunPowerline( points = tDigPoints, events = tDigAverages, input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
             tSamplingRate = tPowerlineOut["sampling_rate"]
             tYData = tPowerlineOut["data"]
             tLength = len( tYData )
@@ -468,18 +505,14 @@ class GUI( Tkinter.Tk ):
             # just sum the area
     
             tAreaSuppressed = 0.
-            for tIndex in range( -4, 5 ):
+            for tIndex in range( -5, 6 ):
                 tAreaSuppressed = tAreaSuppressed + ( tYData[tPeakIndex + tIndex] - tNoisePower )
             tAreasSuppressed.append( tAreaSuppressed )
+            tAreasCompared.append( (tAreaActive - tAreaSuppressed) / tAreaSuppressed )
             
             # summarize
             
             print( "suppressed peak power was {0} at {1} MHz in bin {2} with area {3} on noise of {4}" ).format( tPeakPower, tPeakFrequency, tPeakIndex, tAreaSuppressed, tNoisePower )
-            
-            
-            # go to next frequency            
-            
-            tAreasCompared.append( tAreaActive - tAreaSuppressed )
             tCurrentHighFreq = tCurrentHighFreq + tDeltaFreq
             tCurrentLowFreq = tCurrentLowFreq + tDeltaFreq
             
@@ -499,7 +532,7 @@ class GUI( Tkinter.Tk ):
         tCanvas.get_tk_widget().grid( column = 0, row = 1 )
         
         tPlotWindow = Tkinter.Toplevel()
-        tPlotWindow.title( "p8 dpph subtracted display" )
+        tPlotWindow.title( "p8 dpph compared display" )
         tPlotWindow.grid()        
         tFigure = Figure()
         tAxes = tFigure.add_subplot( 1, 1, 1 )
@@ -507,7 +540,222 @@ class GUI( Tkinter.Tk ):
         tCanvas = FigureCanvasTkAgg( tFigure, master = tPlotWindow )
         tCanvas.show()
         tCanvas.get_tk_widget().grid( column = 0, row = 1 )
+
+        self.fDrip.Set( "dpph_current", "0A", True )
         
         print( "ready." )        
         
         return
+
+    def DoDPPHbg( self ):
+
+        tFrequencies = []
+        tAreasActive = []
+ 
+        tStartFreq = 24700.
+        tEndFreq = 24900.
+        tDeltaFreq = 4.
+
+        tDigRate = 200.
+        tNoiseMin = 48.
+        tNoiseMax = 49.
+        tPeakMin = 49.
+        tPeakMax = 51. 
+        
+        tInternalFreq = 24200.       
+        tTargetFreq = 50.
+ 
+        tDigDuration = 1000
+        tDigPoints = 32768
+        tDigAverages = 4096
+        tCurrentHighFreq = tStartFreq
+        tCurrentLowFreq = tStartFreq - tInternalFreq - tTargetFreq
+        self.fDrip.Set( "hf_sweeper_power", "-75", True )
+        while tCurrentHighFreq <= tEndFreq:
+            print( "analyzing at {0} MHz with oscillator at {1} MHz" ).format( tCurrentHighFreq, tCurrentLowFreq )
+            self.fDrip.Set( "hf_cw_freq", str( tCurrentHighFreq ), True )
+            self.fDrip.Set( "lo_cw_freq", str( tCurrentLowFreq ), True )           
+            print( "running mantis..." )
+            while True:
+                tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = tDigRate, duration = tDigDuration, mode = "1", length = "4194304", count = "48" ).Wait( 60 )
+                try:
+                    tDecider = tMantisOut["result"]
+                    break
+                except KeyError:
+                    print( "mantis barfed..." )
+                    print( tMantisOut )
+
+            print( "running powerline..." )
+            
+            tPowerlineOut = eval( self.fDrip.RunPowerline( points = tDigPoints, events = tDigAverages, input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
+            tSamplingRate = tPowerlineOut["sampling_rate"]
+            tYData = tPowerlineOut["data"]
+            tLength = len( tYData )
+            tXData = [ tSamplingRate * tVariable / ( 2.0 * tLength ) for tVariable in range( tLength ) ]
+            
+            # figure out the peak parameters
+            
+            tPeakPower = -1000.0
+            tPeakFrequency = 0.0
+            tPeakIndex = -1
+            for tIndex in range( tLength ):
+                if tXData[tIndex] > tPeakMin:
+                    if tXData[tIndex] < tPeakMax:
+                        if tYData[tIndex] > tPeakPower:
+                            tPeakPower = tYData[tIndex]
+                            tPeakFrequency = tXData[tIndex]
+                            tPeakIndex = tIndex
+            
+            # figure out noise parameters
+            
+            tNoise = []
+            for tIndex in range( tLength ):
+                if tXData[tIndex] > tNoiseMin:
+                    if tXData[tIndex] < tNoiseMax:
+                        tNoise.append( tYData[tIndex] )
+            tNoisePower = numpy.mean( tNoise )
+            
+            # just sum the area
+    
+            tAreaActive = 0.
+            for tIndex in range( -4, 5 ):
+                tAreaActive = tAreaActive + ( tYData[tPeakIndex + tIndex] - tNoisePower )
+            tAreasActive.append( tAreaActive )
+            tFrequencies.append( tCurrentHighFreq )
+            
+            #summarize
+            
+            print( "enabled peak power was {0} at {1} MHz in bin {2} with area {3} on noise of {4}" ).format( tPeakPower, tPeakFrequency, tPeakIndex, tAreaActive, tNoisePower )
+            tCurrentHighFreq = tCurrentHighFreq + tDeltaFreq
+            tCurrentLowFreq = tCurrentLowFreq + tDeltaFreq
+        print( "plotting..." )        
+        
+        tPlotWindow = Tkinter.Toplevel()
+        tPlotWindow.title( "p8 dpph raw display" )
+        tPlotWindow.grid()        
+        tFigure = Figure()
+        tAxes = tFigure.add_subplot( 1, 1, 1 )
+        #tLine, = tAxes.plot( tFrequencies, tAreasSuppressed, "bo" )
+        tLine, = tAxes.plot( tFrequencies, tAreasActive, "ro" )
+        tCanvas = FigureCanvasTkAgg( tFigure, master = tPlotWindow )
+        tCanvas.show()
+        tCanvas.get_tk_widget().grid( column = 0, row = 1 )
+        
+	if len(self.olddpph) != 0:
+            tAreasCompared=[]
+            for x in range(len(self.olddpph)):
+                tAreasCompared.append( (self.olddpph[x]-tAreasActive[x])/(self.olddpph[x]) )
+            tPlotWindow = Tkinter.Toplevel()
+            tPlotWindow.title( "p8 dpph compared display" )
+            tPlotWindow.grid()        
+            tFigure = Figure()
+            tAxes = tFigure.add_subplot( 1, 1, 1 )
+            tLine, = tAxes.plot( tFrequencies, tAreasCompared, "go" )
+            tCanvas = FigureCanvasTkAgg( tFigure, master = tPlotWindow )
+            tCanvas.show()
+            tCanvas.get_tk_widget().grid( column = 0, row = 1 )
+
+	self.olddpph=tAreasActive
+
+        print( "ready." )        
+        
+        return
+
+    def DoDPPHsweep( self ):
+
+        tFrequencies = []
+        tAreasActive = []
+
+ 
+        tStartFreq = 24700.
+        tEndFreq = 24790.
+        tDeltaFreq = 80.
+
+        tDigRate = 200.
+        tNoiseMin = 48.
+        tNoiseMax = 49.
+        tPeakMin = 49.
+        tPeakMax = 51. 
+
+        
+        tInternalFreq = 24200.       
+        tTargetFreq = 50.
+ 
+        tDigDuration = 1000
+        tDigPoints = 256
+        tDigAverages =1048578*4
+
+        trim_points_front=int(tDigPoints*(10.)/tDigRate)
+        trim_points_back=int(tDigPoints*(10.)/tDigRate)
+
+        tCurrentHighFreq = tStartFreq
+        tCurrentLowFreq = tStartFreq - tInternalFreq - tTargetFreq
+        tXDataSet=[]
+        tYDataSet=[]
+
+        tPlotWindow = Tkinter.Toplevel()
+        tPlotWindow.title( "p8 dpph raw sweep display" )
+        tPlotWindow.grid()        
+        tFigure = Figure()
+        tAxes = tFigure.add_subplot( 1, 1, 1 )
+        self.fDrip.Set( "hf_sweeper_power", "-50", True )
+        self.fDrip.Set("hf_sweep_time","0.05",True)
+        
+
+        while tCurrentHighFreq <= tEndFreq:
+            print("analyzing at {0}").format(tCurrentHighFreq);
+            tLOFreq=tCurrentHighFreq-tInternalFreq
+            self.fDrip.Set("hf_sweep_start",str(tCurrentHighFreq),True);
+            self.fDrip.Set("hf_sweep_stop",str(tCurrentHighFreq+100),True);
+            print("LO to "+str(tLOFreq))
+            self.fDrip.Set( "lo_cw_freq", str(tLOFreq), True )           
+            time.sleep(1)
+            while True:
+                tMantisOut = self.fDrip.RunMantis( output = "/data/temp_gui_digitization.egg", rate = tDigRate, duration = tDigDuration, mode = "1", length = "4194304", count = "48" ).Wait( 60 )
+                try:
+                    tDecider = tMantisOut["result"]
+                    break
+                except KeyError:
+                    print( "mantis barfed..." )
+                    print( tMantisOut )
+
+            print( "running sweepline..." )
+            tSweeplineOut = eval( self.fDrip.RunPowerline( points = tDigPoints, events = tDigAverages, input = "/data/temp_gui_digitization.egg" ).Wait( 60 )["result"] )
+            tSamplingRate = tSweeplineOut["sampling_rate"]
+            tYData = tSweeplineOut["data"]
+            tLength = len( tYData )
+            tXData = [ tLOFreq+tSamplingRate * tVariable / ( 2.0 * tLength ) for tVariable in range( tLength ) ]
+            for i in range(trim_points_front):
+                tYData.pop(0)
+                tXData.pop(0)
+            for i in range(trim_points_back):
+                tYData.pop()
+                tXData.pop()
+            tXDataSet.append(tXData)
+            tYDataSet.append(tYData)
+            tLine, = tAxes.plot( tXData, tYData, "ro" )
+            tCanvas = FigureCanvasTkAgg( tFigure, master = tPlotWindow )
+            tCanvas.show()
+            tCanvas.get_tk_widget().grid( column = 0, row = 1 )
+            tCurrentHighFreq=tCurrentHighFreq+tDeltaFreq
+        if len(self.last_sweep)!=0:
+            tPlotWindow = Tkinter.Toplevel()
+            tPlotWindow.title( "p8 dpph compared display" )
+            tPlotWindow.grid()        
+            tFigure = Figure()
+            tAxes = tFigure.add_subplot( 1, 1, 1 )
+            for i in range(len(tYDataSet)):
+                dif=[]
+                for x in range(len(tYDataSet[i])):
+                    dif.append( (tYDataSet[i][x]-self.last_sweep[i][x])/(0.5*(tYDataSet[i][x]+self.last_sweep[i][x])))
+                tLine, = tAxes.plot( tXDataSet[i], dif, "go" )
+            tCanvas = FigureCanvasTkAgg( tFigure, master = tPlotWindow )
+            tCanvas.show()
+            tCanvas.get_tk_widget().grid( column = 0, row = 1 )
+
+        self.last_sweep=tYDataSet
+        print( "ready." )        
+        
+        return
+
+
