@@ -112,8 +112,9 @@ class App:
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
         latest = self.pype._log_database.view('pypeline_view/latest_values')
         for channel in self.loggers_list:
-            self.loggers_dict[channel].set(latest[channel].rows[0]['value']
-                                                               ['cal_val'])
+            ch_val = latest[channel].rows[0]['value']['cal_val']
+            if ch_val:
+                self.loggers_dict[channel].set(ch_val)
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
