@@ -13,6 +13,12 @@ try:
     from .DripResponse import DripResponse
 except ImportError:
     from DripResponse import DripResponse
+try:
+    import scripts
+except ImportError:
+    #from scripts import *
+    print('crap')
+    raise
 if "DISPLAY" in environ:
     if environ["DISPLAY"]:
         try:
