@@ -108,14 +108,12 @@ def dpph_lockin(pype, guess=25000):
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
         found_crossing = True
-        print(len(VDC_fine[min(min_index,max_index):max(min_index,max_index)]))
         try:
             crossing = min(min_index, max_index) + where(
                 diff(sign(VDC_fine[min(min_index, max_index):
-                                   max(min_index, max_index)])))[0][-1]
+                                   max(min_index, max_index)+1])))[0][-1]
         except IndexError:
             found_crossing = False
-        #assert crossing, 'zero_crossing'
         if found_crossing:
             est = fine_freqs[crossing] - VDC_fine[crossing] * (
                 (fine_freqs[crossing+1] - fine_freqs[crossing])
@@ -174,6 +172,8 @@ def dpph_lockin(pype, guess=25000):
             freq_to_field = 4*pi*10**7/(geff*chargemass)
             print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' +
                   str(freq_to_field*resonance_err) + ' kGauss')
+        else:
+            print('crossing not found, displaying ROI')
         return zip(*dataset)
 
     except AssertionError as e:
