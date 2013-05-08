@@ -153,14 +153,14 @@ class App:
                   textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
                                                                   column=1)
         startbt = Button(script_popup, text="Start Script",
-                         command=self.exec_script)
+                         command=lambda:self.exec_script(script_fun))
         startbt.grid(row=len(self.gui_input_dict.keys())+1, columnspan=2)
 
-    def exec_script(self):
+    def exec_script(self, script):
         args_dict = {}
         for key in self.gui_input_dict:
             args_dict[key] = self.gui_input_dict[key].get()
-        script(pype, *args_dict)
+        script(self.pype, *args_dict)
 
     def say_hi(self):
         print("hi there, everyone!")
