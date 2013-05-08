@@ -38,7 +38,7 @@ def GetLockinValue(interface, freq=25553.440, slptime=2):
             raise
 
 
-def GetVoltages(pype, freq_list, power=-78, reference=0, deviation=0.2,
+def GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
                 stop_sigma=1e10, stop_volts=20):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates
@@ -107,41 +107,47 @@ def dpph_lockin(pype, guess=25000):
         #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
-        #left = min(min_index, max_index)
-        #right = max(min_index, max_index)
-        #crossing = left + where(diff(sign(VDC_fine[left:right])))[0][-1]
+        found_crossing = True
         print(len(VDC_fine[min(min_index,max_index):max(min_index,max_index)]))
-        crossing = min(min_index, max_index) + where(
-            diff(sign(VDC_fine[min(min_index, max_index):
-                               max(min_index, max_index)])))[0][-1]
-        assert crossing, 'zero_crossing'
-        est = fine_freqs[crossing] - VDC_fine[crossing] * (
-            (fine_freqs[crossing+1] - fine_freqs[crossing])
-            / (VDC_fine[crossing+1] - VDC_fine[crossing]))
-
-        #take some very finely spaced data for doing a fit
-        very_fine_freqs = arange(est-1, est+1, 0.1)
-        print('starting very fine grain frequency measurement')
-        VDC_very_fine = GetVoltages(pype, very_fine_freqs)
-
-        fitfunc = lambda p, x: p[1] * (x - p[0])
-        errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
-        p_in = [25000.0, -1.0]
-        fit = optimize.leastsq(errfunc, p_in, full_output=1,
-                               args=(array(very_fine_freqs),
-                                     array(VDC_very_fine),
-                                     array([1e-5] * len(very_fine_freqs))))
-        resonance = fit[0][0]
-        slope = fit[0][1]
-        cov = fit[1]
-        resonance_err = (0.0002/2.0036)*resonance
+        try:
+            crossing = min(min_index, max_index) + where(
+                diff(sign(VDC_fine[min(min_index, max_index):
+                                   max(min_index, max_index)])))[0][-1]
+        except IndexError:
+            found_crossing = False
+        #assert crossing, 'zero_crossing'
+        if found_crossing:
+            est = fine_freqs[crossing] - VDC_fine[crossing] * (
+                (fine_freqs[crossing+1] - fine_freqs[crossing])
+                / (VDC_fine[crossing+1] - VDC_fine[crossing]))
+    
+            #take some very finely spaced data for doing a fit
+            very_fine_freqs = arange(est-1, est+1, 0.1)
+            print('starting very fine grain frequency measurement')
+            VDC_very_fine = GetVoltages(pype, very_fine_freqs)
+    
+            fitfunc = lambda p, x: p[1] * (x - p[0])
+            errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
+            p_in = [25000.0, -1.0]
+            fit = optimize.leastsq(errfunc, p_in, full_output=1,
+                                   args=(array(very_fine_freqs),
+                                         array(VDC_very_fine),
+                                         array([1e-5] * len(very_fine_freqs))))
+            resonance = fit[0][0]
+            slope = fit[0][1]
+            cov = fit[1]
+            resonance_err = (0.0002/2.0036)*resonance
+        else:
+            very_fine_freqs = []
+            VDC_very_fine = []
 
         dataset = sorted(zip(fine_freqs + list(very_fine_freqs),
                              VDC_fine + VDC_very_fine))
-        fitline = [very_fine_freqs[0],
-                   slope * (very_fine_freqs[0]-resonance),
-                   very_fine_freqs[-1],
-                   slope * (very_fine_freqs[-1]-resonance)]
+        if found_crossing:
+            fitline = [very_fine_freqs[0],
+                       slope * (very_fine_freqs[0]-resonance),
+                       very_fine_freqs[-1],
+                       slope * (very_fine_freqs[-1]-resonance)]
 
         plot = Gnuplot()
         plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
@@ -154,19 +160,20 @@ def dpph_lockin(pype, guess=25000):
         plot.gp("set xlabel \"Sweeper Frequency [MHz]\"")
         plot.gp("set ylabel \"Lockin Output [V]\"")
         plot.gp("unset key")
-        plot.g.stdin.write('set arrow from ' + str(fitline[0]) + ',' +
-                           str(fitline[1]) + ' to ' + str(fitline[2]) + ',' +
-                           str(fitline[3]) + 'nohead\n')
+        if found_crossing:
+            plot.g.stdin.write('set arrow from ' + str(fitline[0]) + ',' +
+                               str(fitline[1]) + ' to ' + str(fitline[2]) + ',' +
+                               str(fitline[3]) + 'nohead\n')
         plot.plot1d(dataset, '')
 
-        print('Found zero crossing at ' + str(resonance) + ' +/- ' +
-              str(resonance_err) + ' MHz')
-        geff = 2.0036
-        chargemass = 1.758e11
-        freq_to_field = 4*pi*10**7/(geff*chargemass)
-        print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' +
-              str(freq_to_field*resonance_err) + ' kGauss')
-        #raw_input('waiting for you to finish looking')
+        if found_crossing:
+            print('Found zero crossing at ' + str(resonance) + ' +/- ' +
+                  str(resonance_err) + ' MHz')
+            geff = 2.0036
+            chargemass = 1.758e11
+            freq_to_field = 4*pi*10**7/(geff*chargemass)
+            print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' +
+                  str(freq_to_field*resonance_err) + ' kGauss')
         return zip(*dataset)
 
     except AssertionError as e:
