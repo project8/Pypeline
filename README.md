@@ -34,7 +34,7 @@ scipy:
     1) I'm (Micah) using 0.12.0.dev-8647010. Find it at http://numpy.scipy.org.
     2) I'm (Ben) using 0.12.x from http://github.com/scipy/scipy
 
-gnuplot.py:
+gnuplot.py: DEPRICATED, gnuplot.py is no longer used
     
     1) I'm (Gray) using 1.8 -BUT NOT ANYMORE-.  Find it at REDACTED
     1b) I'm (Gray) beginning to thing that gnuplot.py was made by a hack.  If it keeps fighting me I'm going to write my own version.
@@ -44,7 +44,7 @@ tkinter:
     The tell me (Gray) that it comes with all python distributions.  I'm using v2.7.3
     *for portage users, be sure to have +tk on python (off by default)
 
-pmw:
+pmw: DEPRICATED? this is likely not to be used, that may change
     I'm (Gray)  using version 1.3.2a
     *it seems the newer 2.0.0 version has issues depending on your version of tkinter
 

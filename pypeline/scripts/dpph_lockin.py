@@ -15,9 +15,9 @@ def GetLockinValue(interface, freq=25553.440, slptime=2):
         Make a reading with the lockin amplifier at a specific frequency.
 
         Inputs:
-            <interface> a DripInterface object
+            <interface> a DripInterface instance
             <freq>      the frequency in MHz
-            <power>     the sweeper power in dBm
+            <slptime>   time to sleep before reading the lockin (in seconds)
 
         Output:
             <reading>   the DVM reading in Volts DC from the lockin
@@ -38,7 +38,7 @@ def GetLockinValue(interface, freq=25553.440, slptime=2):
             raise
 
 
-def GetVoltages(pype, freq_list, power=-85, reference=0, deviation=0.2,
+def GetVoltages(pype, freq_list, power=-78, reference=0, deviation=0.2,
                 stop_sigma=1e10, stop_volts=20):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates
@@ -91,7 +91,7 @@ def dpph_lockin(pype, guess=25000):
     #find where the structure starts
     interesting_freq = False
     VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
-                      stop_sigma=30, stop_volts=0.75)
+                      stop_sigma=30, stop_volts=1.5)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]

@@ -209,10 +209,10 @@ class App:
         if not self.dpph_result:
             print('no dpph_result stored')
             return
-        outfile = tkFileDialog.asksaveasfile(defaultextension='.json')
+        outfile = asksaveasfile(defaultextension='.json')
         dump({"frequencies":self.dpph_result[0],
               "voltages":self.dpph_result[1]},
-             outfile)
+             outfile, indent=4)
         outfile.close()
 
     def check_pulse(self):
