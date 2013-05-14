@@ -54,15 +54,18 @@ def GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
     if not float(pype.Get('hf_sweeper_power').Wait()['final']):
         raise AssertionError('power setting not stable')
     VDC = []
-    for freq in freq_list:
-        stdout.write('trying ' + str(freq) + ' MHz\r')
-        stdout.flush()
+    for count,freq in enumerate(freq_list):
         VDC.append(GetLockinValue(pype, freq))
+        stdout.write('{:.2E} MHz -> {:.2E} VDC ({:.1%})\r'.format(freq,
+                     VDC[-1], float(count)/len(freq_list)))
+        stdout.flush()
         if ((abs((VDC[-1]-reference)/deviation) > stop_sigma) or
            (abs(VDC[-1]) > stop_volts)):
                 print('something of interest (' + str(VDC[-1]) + ' V) at '
                       + str(freq) + ' MHz')
                 break
+    stdout.write(' '*60 + '\r')
+    stdout.flush()
     return VDC
 
 
@@ -84,6 +87,7 @@ def dpph_lockin(pype, guess=25000):
     freqs.sort(key=lambda value: abs(value-guess))
 
     #determine a mean and standard deviation
+    print('determine mean and standard deviation')
     VDC = GetVoltages(pype, freqs[-num_stats_freqs:])
     VDC_freqs = freqs[-num_stats_freqs:]
     VDC_std = std(VDC)
@@ -93,6 +97,7 @@ def dpph_lockin(pype, guess=25000):
 
     #find where the structure starts
     interesting_freq = False
+    print('look for structure')
     VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
                       stop_sigma=30, stop_volts=9e-7)
     VDC_freqs = freqs[:len(VDC)]
@@ -107,6 +112,7 @@ def dpph_lockin(pype, guess=25000):
     try:
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-25, interesting_freq+20, 2)
+        print('coarse scan of structure')
         VDC_fine = GetVoltages(pype, fine_freqs)
         dataset = sorted(zip(fine_freqs, VDC_fine))
         #find zero crossing
@@ -126,7 +132,7 @@ def dpph_lockin(pype, guess=25000):
     
             #take some very finely spaced data for doing a fit
             very_fine_freqs = arange(est-1, est+1, 0.1)
-            print('starting very fine grain frequency measurement')
+            print('fine scan of zero crossing')
             VDC_very_fine = GetVoltages(pype, very_fine_freqs)
             dataset = sorted(dataset + zip(very_fine_freqs, VDC_very_fine))
     
