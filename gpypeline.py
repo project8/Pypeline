@@ -169,27 +169,37 @@ class App:
         '''
             Dpph popup window
         '''
-        self.guessval = DoubleVar()
-        self.guessval.set(25000)
-        self.guessunits = StringVar()
-        self.guessunits.set("MHz")
+        self.guessval = DoubleVar(value=25000)
+        self.guessunits = StringVar(value="MHz")
+        self.nsigmavar = DoubleVar(value=20)
+        self.nvoltsvar = DoubleVar(value=9e-7)
 
         dpph_popup = Toplevel()
         dpph_popup.grid()
-        guesslabel = Label(dpph_popup, text="guess")
-        guesslabel.grid(row=0, column=0)
+        #guess
+        Label(dpph_popup, text="guess").grid(row=0, column=0, sticky=EW)
         guessentry = Entry(dpph_popup, textvariable=self.guessval)
-        guessentry.grid(row=0, column=1)
+        guessentry.grid(row=0, column=1, sticky=EW)
         unitsoption = OptionMenu(dpph_popup, self.guessunits, *["MHz", "kG"])
-        unitsoption.grid(row=0, column=2)
-        checkhall = Button(dpph_popup, text="Check Hall Probe",
+        unitsoption.grid(row=0, column=2, sticky=EW)
+        #stop conditions
+        Label(dpph_popup, text='Sigma limit').grid(row=1, column=0, sticky=EW)
+        nsigmaentry = Entry(dpph_popup, textvariable=self.nsigmavar)
+        nsigmaentry.grid(row=1, column=1, sticky=EW)
+        Label(dpph_popup, text='(a real)', justify=LEFT).grid(row=1, column=2)
+        Label(dpph_popup, text='Voltage limit').grid(row=2, column=0, sticky=EW)
+        nvoltsentry = Entry(dpph_popup, textvariable=self.nvoltsvar)
+        nvoltsentry.grid(row=2, column=1, sticky=EW)
+        Label(dpph_popup, text='[V]', justify=LEFT).grid(row=2, column=2)
+
+        checkhall = Button(dpph_popup, text="Use Hall Probe",
                            command=self.checkhallprobe)
-        checkhall.grid(row=1, column=0, columnspan=2)
+        checkhall.grid(row=3, column=0)
         dorun = Button(dpph_popup, text="Start Scan", command=self.dpph_lockin)
-        dorun.grid(row=1, column=2)
+        dorun.grid(row=3, column=1)
         savebutton = Button(dpph_popup, text="Save",
                             command=self.store_dpph_data)
-        savebutton.grid(row=1, column=3)
+        savebutton.grid(row=3, column=2)
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()
@@ -203,7 +213,10 @@ class App:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get()/freq_to_field)
             self.guessunits.set("MHz")
-        self.dpph_result = scripts.dpph_lockin(self.pype, self.guessval.get())
+        self.dpph_result = scripts.dpph_lockin(self.pype,
+                                             guess=self.guessval.get(),
+                                             stop_nsigma=self.nsigmavar.get(),
+                                             stop_voltage=self.nvoltsvar.get())
 
     def store_dpph_data(self):
         if not self.dpph_result:

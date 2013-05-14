@@ -49,6 +49,7 @@ def GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
         <reference>:    if stopping at structure, this is the reference voltage
         <deviation>:    if stopping at structure, count number of these away
         <stop_sigma>:   number of <deviation> from <reference> to stop looping
+        <stop_volts>:   absolute voltage to stop looping
     '''
     pype.Set('hf_sweeper_power', power).Wait()
     if not float(pype.Get('hf_sweeper_power').Wait()['final']):
@@ -69,7 +70,7 @@ def GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
     return VDC
 
 
-def dpph_lockin(pype, guess=25000):
+def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
     '''
         Do a dpph scan using DripInterface instance <pype>
 
@@ -99,7 +100,7 @@ def dpph_lockin(pype, guess=25000):
     interesting_freq = False
     print('look for structure')
     VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
-                      stop_sigma=30, stop_volts=9e-7)
+                      stop_sigma=stop_nsigma, stop_volts=stop_voltage)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
