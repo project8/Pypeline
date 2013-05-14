@@ -3,7 +3,7 @@ from time import sleep
 from sys import stdout
 # 3rd party
 from numpy import std, mean, array, less, arange, pi, where, diff
-from numpy import sign, polyfit, sqrt
+from numpy import sign, sin, polyfit, sqrt
 from scipy import optimize
 # local
 from ..DripInterface import DripInterface
@@ -25,14 +25,15 @@ def GetLockinValue(interface, freq=25553.440, slptime=2):
     try:
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
         sleep(slptime)
-        out = interface.Get('lockin_out').Wait()
-        return float(out['final'].strip().strip('NDCV'))
+        drip_resp = interface.Get('dpph_magphase').Wait()
+        magphase = [float(val) for val in drip_resp['final'].split(',')]
+        return magphase[0]*sign(sin(magphase[1]*pi/180))
     except KeyError as keyname:
         if keyname[0] == 'result':
-            print('failed to interface with sweeper')
+            print('\n\n' + '*'*60 + 'No response from sweeper' +'\n\n')
             raise
         elif keyname[0] == 'final':
-            print('failed to interface with dvm')
+            print('\n\n' + '*'*60 + 'No response from lock-in' +'\n\n')
             raise
         else:
             raise
@@ -72,6 +73,8 @@ def dpph_lockin(pype, guess=25000):
         Inputs:
             <guess> is an intial guess for the starting frequency
     '''
+    fitline = False
+    dataset = sorted(zip([0],[0]))
     num_stats_freqs = 10
 
     init_step = 2
@@ -91,19 +94,21 @@ def dpph_lockin(pype, guess=25000):
     #find where the structure starts
     interesting_freq = False
     VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
-                      stop_sigma=30, stop_volts=1.5)
+                      stop_sigma=30, stop_volts=9e-7)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
-    else:
-        for pair in zip(freqs, VDC):
-            print(pair)
+    dataset = sorted(zip(VDC_freqs, VDC))
+    #else:
+    #    for pair in zip(freqs, VDC):
+    #        print(pair)
 
     #take a set of fine data points to capture the structure
     try:
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq-25, interesting_freq+20, 2)
         VDC_fine = GetVoltages(pype, fine_freqs)
+        dataset = sorted(zip(fine_freqs, VDC_fine))
         #find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
         max_index = VDC_fine.index(max(VDC_fine))
@@ -123,6 +128,7 @@ def dpph_lockin(pype, guess=25000):
             very_fine_freqs = arange(est-1, est+1, 0.1)
             print('starting very fine grain frequency measurement')
             VDC_very_fine = GetVoltages(pype, very_fine_freqs)
+            dataset = sorted(dataset + zip(very_fine_freqs, VDC_very_fine))
     
             fitfunc = lambda p, x: p[1] * (x - p[0])
             errfunc = lambda p, x, y, err: (y - fitfunc(p, x)) / err
@@ -135,36 +141,11 @@ def dpph_lockin(pype, guess=25000):
             slope = fit[0][1]
             cov = fit[1]
             resonance_err = (0.0002/2.0036)*resonance
-        else:
-            very_fine_freqs = []
-            VDC_very_fine = []
-
-        dataset = sorted(zip(fine_freqs + list(very_fine_freqs),
-                             VDC_fine + VDC_very_fine))
-        if found_crossing:
             fitline = [very_fine_freqs[0],
                        slope * (very_fine_freqs[0]-resonance),
                        very_fine_freqs[-1],
                        slope * (very_fine_freqs[-1]-resonance)]
 
-        plot = Gnuplot()
-        plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
-        plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
-        plot.gp("set style line 11 lc rgb '#808080' lt 1")
-        plot.gp("set border 3 back ls 11")
-        plot.gp("set tics nomirror")
-        plot.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
-        plot.gp("set grid back ls 12")
-        plot.gp("set xlabel \"Sweeper Frequency [MHz]\"")
-        plot.gp("set ylabel \"Lockin Output [V]\"")
-        plot.gp("unset key")
-        if found_crossing:
-            plot.g.stdin.write('set arrow from ' + str(fitline[0]) + ',' +
-                               str(fitline[1]) + ' to ' + str(fitline[2]) + ',' +
-                               str(fitline[3]) + 'nohead\n')
-        plot.plot1d(dataset, '')
-
-        if found_crossing:
             print('Found zero crossing at ' + str(resonance) + ' +/- ' +
                   str(resonance_err) + ' MHz')
             geff = 2.0036
@@ -174,7 +155,6 @@ def dpph_lockin(pype, guess=25000):
                   str(freq_to_field*resonance_err) + ' kGauss')
         else:
             print('crossing not found, displaying ROI')
-        return zip(*dataset)
 
     except AssertionError as e:
         if e[0] == 'interesting_freq':
@@ -182,4 +162,27 @@ def dpph_lockin(pype, guess=25000):
                   '*'*60 + '\n')
         if e[0] == 'zero_crossing':
             print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
+    except IndexError as e:
+        if e[0] == -1:
+            print('\n' + '*'*60 + '\nNo zero question\n' + '*'*60 + '\n')
+    except:
+        print('\n' + '*'*60 + '\nSome other error\n' + '*'*60 + '\n')
         raise
+    
+    plot = Gnuplot()
+    plot.gp("set style line 1 lc rgb '#8b1a0e' pt 1 ps 1 lt 1 lw 2")
+    plot.gp("set style line 2 lc rgb '#5e9c36' pt 6 ps 1 lt 1 lw 2")
+    plot.gp("set style line 11 lc rgb '#808080' lt 1")
+    plot.gp("set border 3 back ls 11")
+    plot.gp("set tics nomirror")
+    plot.gp("set style line 12 lc rgb '#808080' lt 0 lw 1")
+    plot.gp("set grid back ls 12")
+    plot.gp("set xlabel \"Sweeper Frequency [MHz]\"")
+    plot.gp("set ylabel \"Lockin Output [V]\"")
+    plot.gp("unset key")
+    if fitline:
+        plot.g.stdin.write('set arrow from ' + str(fitline[0]) + ',' +
+                           str(fitline[1]) + ' to ' + str(fitline[2]) + ',' +
+                           str(fitline[3]) + 'nohead\n')
+    plot.plot1d(dataset, '')
+    return zip(*dataset)
