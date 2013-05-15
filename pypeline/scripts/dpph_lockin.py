@@ -165,7 +165,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
             result['cal_units'] = 'kG'
             result['cal_val'] = (str(result['cal']) + ' +/- ' +
                                   str(result['cal_err']) + ' ' +
-                                  str(result['cal_Units']))
+                                  str(result['cal_units']))
             print('Field is: ' + result['cal'] + ' +/- ' +
                   result['cal_err'] + result['cal_units'])
         else:
