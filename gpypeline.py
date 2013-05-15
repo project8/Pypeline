@@ -45,16 +45,29 @@ class App:
         self.setchannelvalueVar = DoubleVar()
         #values in loggers
         self.loggers_list = ['bypass_valve_t',
-                        'coldhead_bottom_face_t',
-                        'dpph_field',
-                        'getter_valve_t',
-                        'hall_probe_voltage',
-                        'inlet_pressure',
-                        'left_gas_line_lower_t',
-                        'left_gas_line_upper_t',
-                        'linear_encoder',
-                        'liquid_helium_level',
-                        'liquid_nitrogen_level']
+                             'coldhead_bottom_face_t',
+                             'dpph_field',
+                             'getter_valve_t',
+                             'hall_probe_voltage',
+                             'inlet_pressure',
+                             'left_gas_line_lower_t',
+                             'left_gas_line_upper_t',
+                             'linear_encoder',
+                             'liquid_helium_level',
+                             'liquid_nitrogen_level',
+                             'lower_nrao_amp_t',
+                             'outlet_pressure',
+                             'platinum_rtd_c_t1',
+                             'platinum_rtd_c_t2',
+                             'platinum_rtd_c_t3',
+                             'platinum_rtd_c_t4',
+                             'pump_valve_t',
+                             'right_gas_line_lower_t',
+                             'right_gas_line_upper_t',
+                             'trap_magnet_current',
+                             'upper_nrao_amp_t',
+                             'vent_valve_t',
+                             'waveguide_cell_body_t']
         self.loggers_dict = {}
         for channel in self.loggers_list:
             self.loggers_dict[channel] = StringVar()
@@ -115,7 +128,14 @@ class App:
         for channel in self.loggers_list:
             ch_val = latest[channel].rows[0]['value']['cal_val']
             if ch_val:
-                self.loggers_dict[channel].set(ch_val)
+                entrylist = ch_val.split()
+                update = []
+                for snip in entrylist:
+                    try:
+                        update.append('%.5E'%float(snip))
+                    except ValueError:
+                        update.append(snip)
+                self.loggers_dict[channel].set(" ".join(update))
         self.timeval.after(200, self.update_values)
 
     def GetChannel(self):
