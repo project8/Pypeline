@@ -25,6 +25,7 @@ def GetLockinValue(interface, freq=25553.440, slptime=2):
     try:
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
         drip_resp = interface.Get('dpph_magphase').Wait()
+        sleep(slptime)
         magphase = [float(val) for val in drip_resp['final'].split(',')]
         return magphase[0]*sign(sin(magphase[1]*pi/180))
     except KeyError as keyname:
