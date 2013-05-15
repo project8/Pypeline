@@ -28,7 +28,7 @@ class App:
         '''
             Create the permanent text, should only need to call this once
         '''
-        self.channels=self.pype.Get()
+        self.channels = self.pype.Get()
         # Tkinter Variables
         #########################
         #current time
@@ -114,7 +114,7 @@ class App:
 
         # Data display
         #########################
-        for rowi,channel in enumerate(self.loggers_list):
+        for rowi, channel in enumerate(self.loggers_list):
             Label(self.frame, text=channel).grid(row=rowi, column=3)
             Label(self.frame, textvariable=self.loggers_dict[channel],
                   relief=SUNKEN).grid(row=rowi, column=4, sticky=EW)
@@ -132,11 +132,11 @@ class App:
                 update = []
                 for snip in entrylist:
                     try:
-                        update.append('%.5E'%float(snip))
+                        update.append('%.5E' % float(snip))
                     except ValueError:
                         update.append(snip)
                 self.loggers_dict[channel].set(" ".join(update))
-        self.timeval.after(200, self.update_values)
+        self.timeval.after(2000, self.update_values)
 
     def GetChannel(self):
         result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
@@ -160,12 +160,13 @@ class App:
         script_popup.grid()
 
         script_fun = getattr(scripts, script_name)
-        arg_names,_,_,default_vals = getargspec(script_fun)
+        arg_names, _, _, default_vals = getargspec(script_fun)
         initial_vals = [None] * len(arg_names)
         if default_vals:
             initial_vals[-len(default_vals):] = default_vals
         self.gui_input_dict = {}
-        for rowi,(keyname,initval) in enumerate(zip(arg_names, initial_vals)):
+        for rowi, (keyname, initval) in enumerate(zip(arg_names,
+                                                      initial_vals)):
             if keyname == 'pype':
                 continue
             self.gui_input_dict[keyname] = StringVar(value=str(initval))
@@ -174,7 +175,7 @@ class App:
                   textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
                                                                   column=1)
         startbt = Button(script_popup, text="Start Script",
-                         command=lambda:self.exec_script(script_fun))
+                         command=lambda: self.exec_script(script_fun))
         startbt.grid(row=len(self.gui_input_dict.keys())+1, columnspan=2)
 
     def exec_script(self, script):
@@ -208,7 +209,8 @@ class App:
         nsigmaentry = Entry(dpph_popup, textvariable=self.nsigmavar)
         nsigmaentry.grid(row=1, column=1, sticky=EW)
         Label(dpph_popup, text='(a real)', justify=LEFT).grid(row=1, column=2)
-        Label(dpph_popup, text='Voltage limit').grid(row=2, column=0, sticky=EW)
+        Label(dpph_popup, text='Voltage limit').grid(row=2, column=0,
+                                                     sticky=EW)
         nvoltsentry = Entry(dpph_popup, textvariable=self.nvoltsvar)
         nvoltsentry.grid(row=2, column=1, sticky=EW)
         Label(dpph_popup, text='[V]', justify=LEFT).grid(row=2, column=2)
@@ -222,7 +224,8 @@ class App:
         savebutton = Button(dpph_popup, text="Save Plot Data",
                             command=self.store_dpph_data_json)
         savebutton.grid(row=3, column=1)
-        logresult = Button(dpph_popup, text="Log Result", command=self.log_dpph)
+        logresult = Button(dpph_popup, text="Log Result",
+                           command=self.log_dpph)
         logresult.grid(row=3, column=2)
 
     def checkhallprobe(self):
@@ -237,18 +240,20 @@ class App:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get()/freq_to_field)
             self.guessunits.set("MHz")
-        self.dpph_result,self.dpph_dataset = scripts.dpph_lockin(self.pype,
-                                             guess=self.guessval.get(),
-                                             stop_nsigma=self.nsigmavar.get(),
-                                             stop_voltage=self.nvoltsvar.get())
+        dpph_result, dpph_dataset = (scripts.dpph_lockin(self.pype,
+                                     guess=self.guessval.get(),
+                                     stop_nsigma=self.nsigmavar.get(),
+                                     stop_voltage=self.nvoltsvar.get()))
+        self.dpph_result = dpph_result
+        self.dpph_dataset = dpph_dataset
 
     def store_dpph_data_json(self):
         if not self.dpph_dataset:
             print('no dpph_dataset stored')
             return
         outfile = asksaveasfile(defaultextension='.json')
-        dump({"frequencies":self.dpph_dataset[0],
-              "voltages":self.dpph_dataset[1]},
+        dump({"frequencies": self.dpph_dataset[0],
+              "voltages": self.dpph_dataset[1]},
              outfile, indent=4)
         outfile.close()
 
