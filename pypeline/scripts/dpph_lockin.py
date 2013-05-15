@@ -147,7 +147,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
             result['uncal_units'] = 'MHz'
             result['uncal_val'] = (str(result['uncal']) + ' +/- ' +
                                   str(result['uncal_err']) + ' ' +
-                                  str(result['uncal_Units']))
+                                  str(result['uncal_units']))
             slope = fit[0][1]
             cov = fit[1]
             fitline = [very_fine_freqs[0],
