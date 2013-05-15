@@ -46,6 +46,7 @@ class App:
         #values in loggers
         self.loggers_list = ['bypass_valve_t',
                         'coldhead_bottom_face_t',
+                        'dpph_field',
                         'getter_valve_t',
                         'hall_probe_voltage',
                         'inlet_pressure',
