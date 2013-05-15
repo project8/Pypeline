@@ -5,6 +5,7 @@
 #standard imports
 from time import sleep
 from uuid import uuid4
+from datetime import datetime
 
 #3rd party imports
 from couchdb import Server as CouchServer
@@ -22,6 +23,10 @@ try:
     from .ConfInterface import _ConfInterface
 except ImportError:
     from ConfInterface import _ConfInterface
+try:
+    from .LogInterface import _LogInterface
+except ImportError:
+    from LogInterface import _LogInterface
 
 class DripInterface:
     '''
@@ -53,17 +58,17 @@ class DripInterface:
         self._wait_state = {}
         if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
-            self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
+            self._cmd_interface = _CmdInterface(self._cmd_database)
         else:
             raise UserWarning('The dripline command database was not found!')
         if (self._server.__contains__('dripline_conf')):
             self._conf_database = self._server['dripline_conf']
-            self._conf_interface = _ConfInterface(self._server['dripline_conf'])
+            self._conf_interface = _ConfInterface(self._conf_database)
         else:
             raise UserWarning('The dripline conf database was not found!')
         if (self._server.__contains__('dripline_logged_data')):
             self._log_database = self._server['dripline_logged_data']
-            #self._log_interface = _ConfInterface(self._server['dripline_conf'])
+            self._log_interface = _LogInterface(self._log_database)
         else:
             raise UserWarning('The dripline conf database was not found!')
 
@@ -238,8 +243,25 @@ class DripInterface:
         '''
         if not filename:
             filename = '/data/' + uuid4().hex + '.egg'
-        result = self._cmd_interface.Run(duration, rate, filename, channels)
-        return result
+        return self._cmd_interface.Run(duration, rate, filename, channels)
+
+    def LogValue(self, sensor, uncal_val, cal_val, timestamp=datetime.now()):
+        '''
+            Posts a document to the logged data database, logging a channel reading.
+
+            This being put in for the B field measured by dpph but the result of any other scripted measurement could also be logged in this way
+
+            Inputs:
+                <sensor> is the atom for the sensor being logged
+                <uncal_val> is the uncalibrated value string
+                <cal_val> is the calibrated value string
+                <timestamp> is a datetime object
+            Returns:
+                An instance of pypeline.DripResponse
+
+            NOTE: Dripline doesn't listen to the log database so DripResponse should NOT get a response
+        '''
+        return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
 
     def CreatePowerSpectrum(self, dripresponse, sp):
         '''
