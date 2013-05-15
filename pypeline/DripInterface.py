@@ -245,7 +245,7 @@ class DripInterface:
             filename = '/data/' + uuid4().hex + '.egg'
         return self._cmd_interface.Run(duration, rate, filename, channels)
 
-    def LogValue(self, sensor, uncal_val, cal_val, timestamp=datetime.now()):
+    def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
         '''
             Posts a document to the logged data database, logging a channel reading.
 
@@ -260,7 +260,10 @@ class DripInterface:
                 An instance of pypeline.DripResponse
 
             NOTE: Dripline doesn't listen to the log database so DripResponse should NOT get a response
+                  **extras allows a unpacking a dict with extra keys
         '''
+        if not timestamp:
+            timestamp = datetime.now()
         return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
 
     def CreatePowerSpectrum(self, dripresponse, sp):

@@ -176,7 +176,7 @@ class App:
 
         dpph_popup = Toplevel()
         dpph_popup.grid()
-        #guess
+        #user guess
         Label(dpph_popup, text="guess").grid(row=0, column=0, sticky=EW)
         guessentry = Entry(dpph_popup, textvariable=self.guessval)
         guessentry.grid(row=0, column=1, sticky=EW)
@@ -191,15 +191,18 @@ class App:
         nvoltsentry = Entry(dpph_popup, textvariable=self.nvoltsvar)
         nvoltsentry.grid(row=2, column=1, sticky=EW)
         Label(dpph_popup, text='[V]', justify=LEFT).grid(row=2, column=2)
-
-        checkhall = Button(dpph_popup, text="Use Hall Probe",
+        #get hall probe guses
+        checkhall = Button(dpph_popup, text="Hall Probe",
                            command=self.checkhallprobe)
-        checkhall.grid(row=3, column=0)
+        checkhall.grid(row=0, column=3)
+        #buttons to do the run etc
         dorun = Button(dpph_popup, text="Start Scan", command=self.dpph_lockin)
-        dorun.grid(row=3, column=1)
-        savebutton = Button(dpph_popup, text="Save",
-                            command=self.store_dpph_data)
-        savebutton.grid(row=3, column=2)
+        dorun.grid(row=3, column=0)
+        savebutton = Button(dpph_popup, text="Save Plot Data",
+                            command=self.store_dpph_data_json)
+        savebutton.grid(row=3, column=1)
+        logresult = Button(dpph_popup, text="Log Result", command=self.log_dpph)
+        logresult.grid(row=3, column=2)
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()
@@ -213,20 +216,26 @@ class App:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get()/freq_to_field)
             self.guessunits.set("MHz")
-        self.dpph_result = scripts.dpph_lockin(self.pype,
+        self.dpph_result,self.dpph_dataset = scripts.dpph_lockin(self.pype,
                                              guess=self.guessval.get(),
                                              stop_nsigma=self.nsigmavar.get(),
                                              stop_voltage=self.nvoltsvar.get())
 
-    def store_dpph_data(self):
+    def store_dpph_data_json(self):
+        if not self.dpph_dataset:
+            print('no dpph_dataset stored')
+            return
+        outfile = asksaveasfile(defaultextension='.json')
+        dump({"frequencies":self.dpph_dataset[0],
+              "voltages":self.dpph_dataset[1]},
+             outfile, indent=4)
+        outfile.close()
+
+    def log_dpph(self):
         if not self.dpph_result:
             print('no dpph_result stored')
             return
-        outfile = asksaveasfile(defaultextension='.json')
-        dump({"frequencies":self.dpph_result[0],
-              "voltages":self.dpph_result[1]},
-             outfile, indent=4)
-        outfile.close()
+        self.pype.LogValue(sensor='dpph_field', **self.dpph_result)
 
     def check_pulse(self):
         '''

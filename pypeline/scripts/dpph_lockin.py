@@ -77,6 +77,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
         Inputs:
             <guess> is an intial guess for the starting frequency
     '''
+    result = {}
     fitline = False
     dataset = sorted(zip([0],[0]))
     num_stats_freqs = 10
@@ -88,7 +89,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
     freqs.sort(key=lambda value: abs(value-guess))
 
     #determine a mean and standard deviation
-    print('determine mean and standard deviation')
+    print('determining mean and standard deviation')
     VDC = GetVoltages(pype, freqs[-num_stats_freqs:])
     VDC_freqs = freqs[-num_stats_freqs:]
     VDC_std = std(VDC)
@@ -98,16 +99,13 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
 
     #find where the structure starts
     interesting_freq = False
-    print('look for structure')
+    print('looking for structure')
     VDC = GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
                       stop_sigma=stop_nsigma, stop_volts=stop_voltage)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
     dataset = sorted(zip(VDC_freqs, VDC))
-    #else:
-    #    for pair in zip(freqs, VDC):
-    #        print(pair)
 
     #take a set of fine data points to capture the structure
     try:
@@ -144,22 +142,32 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
                                    args=(array(very_fine_freqs),
                                          array(VDC_very_fine),
                                          array([1e-5] * len(very_fine_freqs))))
-            resonance = fit[0][0]
+            result['uncal'] = fit[0][0]
+            result['uncal_err'] = result['uncal']*(0.0002/2.0036)
+            result['uncal_units'] = 'MHz'
+            result['uncal_val'] = (str(result['uncal']) + ' +/- ' +
+                                  str(result['uncal_err']) + ' ' +
+                                  str(result['uncal_Units']))
             slope = fit[0][1]
             cov = fit[1]
-            resonance_err = (0.0002/2.0036)*resonance
             fitline = [very_fine_freqs[0],
-                       slope * (very_fine_freqs[0]-resonance),
+                       slope * (very_fine_freqs[0]-result['uncal']),
                        very_fine_freqs[-1],
-                       slope * (very_fine_freqs[-1]-resonance)]
+                       slope * (very_fine_freqs[-1]-result['uncal'])]
 
-            print('Found zero crossing at ' + str(resonance) + ' +/- ' +
-                  str(resonance_err) + ' MHz')
+            print('Found zero crossing at ' + str(result['uncal']) + ' +/- ' +
+                  str(result['uncal_err']) + ' MHz')
             geff = 2.0036
             chargemass = 1.758e11
             freq_to_field = 4*pi*10**7/(geff*chargemass)
-            print('Field is: ' + str(freq_to_field*resonance) + ' +/- ' +
-                  str(freq_to_field*resonance_err) + ' kGauss')
+            result['cal'] = freq_to_field*result['uncal']
+            result['cal_err'] = freq_to_field*result['uncal_err']
+            result['cal_units'] = 'kG'
+            result['cal_val'] = (str(result['cal']) + ' +/- ' +
+                                  str(result['cal_err']) + ' ' +
+                                  str(result['cal_Units']))
+            print('Field is: ' + result['cal'] + ' +/- ' +
+                  result['cal_err'] + result['cal_units'])
         else:
             print('crossing not found, displaying ROI')
 
@@ -191,5 +199,6 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
         plot.g.stdin.write('set arrow from ' + str(fitline[0]) + ',' +
                            str(fitline[1]) + ' to ' + str(fitline[2]) + ',' +
                            str(fitline[3]) + 'nohead\n')
+
     plot.plot1d(dataset, '')
-    return zip(*dataset)
+    return result,zip(*dataset)
