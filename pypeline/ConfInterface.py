@@ -14,7 +14,9 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 
+
 class _ConfInterface:
+
     '''
         Class for interactions with the configurations database
 
@@ -49,17 +51,18 @@ class _ConfInterface:
         '''
             Add each element of instruments to the configuration database as a logger
         '''
-        for (instrument,interval) in zip(instruments,intervals):
+        for (instrument, interval) in zip(instruments, intervals):
             match = False
-            match = sum([instrument == row.key for row in self._conf_database.view('objects/loggers')])
+            match = sum([instrument == row.key for row in self._conf_database.view(
+                'objects/loggers')])
             if match:
                 print(instruments[i] + " already added")
                 continue
             add_doc = {
-                '_id':uuid4().hex,
-                'channel':instruments[i],
-                'interval':intervals[i],
-                'type':'logger',
+                '_id': uuid4().hex,
+                'channel': instruments[i],
+                'interval': intervals[i],
+                'type': 'logger',
             }
             self._conf_database.save(add_doc)
 
@@ -67,7 +70,7 @@ class _ConfInterface:
         '''
             Remove each element of instruments from the configuration database as a logger
         '''
-        #for inst in instruments:
+        # for inst in instruments:
         for row in self._conf_database.view('objects/loggers'):
             if instruments.count(row.key):
                 self._conf_database.delete(self._conf_database.get(row.id))

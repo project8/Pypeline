@@ -4,9 +4,8 @@ from numpy import arange
 # Local
 
 
-
 def compression_test(pype, power_start=-80, power_stop=-10, power_step=5,
-                     sweep_frequency= 25500, lo_frequency=50,
+                     sweep_frequency=25500, lo_frequency=50,
                      digitization_time=10):
     '''
         Execute a compression test
@@ -27,9 +26,8 @@ def compression_test(pype, power_start=-80, power_stop=-10, power_step=5,
     for power in arange(power_start, power_stop, power_step):
         pype.Set('hf_sweeper_power', power)
         run_out = pype.Run(filename=tempfile, durration=digitization_time)
-        #something to run powerline and get the power back
-        #further processing of powerline output
-        #something to append the power list
+        # something to run powerline and get the power back
+        # further processing of powerline output
+        # something to append the power list
 
-    #something to plot the two sets of data
-
+    # something to plot the two sets of data

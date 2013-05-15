@@ -2,15 +2,16 @@
     File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
 '''
 
-#standard imports
+# standard imports
 from time import sleep
 from uuid import uuid4
 from datetime import datetime
 
-#3rd party imports
+# 3rd party imports
 from couchdb import Server as CouchServer
 
-#local imports (the try is python 3 syntax, the cought exceptions try python 2 syntax)
+# local imports (the try is python 3 syntax, the cought exceptions try
+# python 2 syntax)
 try:
     from .DripResponse import DripResponse
 except ImportError:
@@ -28,23 +29,25 @@ try:
 except ImportError:
     from LogInterface import _LogInterface
 
+
 class DripInterface:
+
     '''
-        Class to facilitate user interact with Dripline via couchDB. The 
-        actual database manipulations are contained in _CmdInterface and 
-        _ConfInterface. Scripting tasts will involve primarily an 
-        instance of this class and those python.DripResponse instances 
+        Class to facilitate user interact with Dripline via couchDB. The
+        actual database manipulations are contained in _CmdInterface and
+        _ConfInterface. Scripting tasts will involve primarily an
+        instance of this class and those python.DripResponse instances
         which it creates.
     '''
 
-    def __init__( self, dripline_url = "http://127.0.0.1:5984" ):
+    def __init__(self, dripline_url="http://127.0.0.1:5984"):
         '''
             Internal: Initializes each instance by doing the following:
                 1) connecting to the provided dripline couchdb (default is localhost)
                 2) sets initial/default value for attributes
                 3) finds the command and configuration databases within the server
                 4) checks the status of dripline for checking for a heartbeat
-    
+
             Inputs:
                 <dripline_url> is the url to use when connecting to the couch.
                     (default is http://127.0.0.1:5984 ie. localhost).
@@ -52,16 +55,16 @@ class DripInterface:
             Returns:
                 no return
         '''
-        self._server = CouchServer( dripline_url )
-        self._timeout = 15 #timeout is 15 seconds...
-        self._sleep_time = .1 #number of seconds to sleep while waiting
+        self._server = CouchServer(dripline_url)
+        self._timeout = 15  # timeout is 15 seconds...
+        self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
-        if ( self._server.__contains__( 'dripline_cmd' ) ):
+        if (self._server.__contains__('dripline_cmd')):
             self._cmd_database = self._server['dripline_cmd']
             self._cmd_interface = _CmdInterface(self._cmd_database)
         else:
-            raise UserWarning( 'The dripline command database was not found!' )
-        if ( self._server.__contains__( 'dripline_conf' ) ):
+            raise UserWarning('The dripline command database was not found!')
+        if (self._server.__contains__('dripline_conf')):
             self._conf_database = self._server['dripline_conf']
             self._conf_interface = _ConfInterface(self._conf_database)
         else:
@@ -72,7 +75,7 @@ class DripInterface:
         else:
             raise UserWarning('The dripline conf database was not found!')
 
-    def Get( self, channel = '', wait = False ):
+    def Get(self, channel='', wait=False):
         '''
             Post a document to the command database using the get verb for a specific channel.
 
@@ -90,12 +93,12 @@ class DripInterface:
         if not channel:
             result = self._conf_interface.EligibleChannels()
         else:
-            result = self._cmd_interface.Get( channel )
+            result = self._cmd_interface.Get(channel)
             if wait:
                 result.Wait()
         return result
 
-    def Set( self, channel = None, value = None, wait = False ):
+    def Set(self, channel=None, value=None, wait=False):
         '''
             Post a document to the command database using the set verb for a specific channel.
 
@@ -115,15 +118,15 @@ class DripInterface:
         if not channel:
             result = self._conf_interface.EligibleChannels()
         elif not value:
-            print( "Please input value to assign to channel" )
+            print("Please input value to assign to channel")
             result = False
         else:
-            result = self._cmd_interface.Set( channel, value )
+            result = self._cmd_interface.Set(channel, value)
             if wait:
                 result.Wait()
         return result
 
-    def StartLoggers( self, instruments = False, wait = False ):
+    def StartLoggers(self, instruments=False, wait=False):
         '''
             Posts a document to the command database to start the logging one or more instruments.
 
@@ -140,13 +143,13 @@ class DripInterface:
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StartLoggers( instruments )
+            result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
         return result
 
-    def StopLoggers( self, instruments = False, wait = False ):
-        ''' 
+    def StopLoggers(self, instruments=False, wait=False):
+        '''
             Posts a document to the command database to stop the logging one or more instruments.
 
             Inputs:
@@ -165,12 +168,12 @@ class DripInterface:
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StopLoggers( instruments )
+            result = self._cmd_interface.StopLoggers(instruments)
             if wait:
                 result.Wait()
         return result
 
-    def CurrentLoggers( self, wait = False ):
+    def CurrentLoggers(self, wait=False):
         '''
             Posts a document to the command database which requests the list of channels currently being logged.
 
@@ -187,8 +190,8 @@ class DripInterface:
         if wait:
             result.Wait()
         return result
-    
-    def AddLoggers( self, instruments = False, intervals = False ):
+
+    def AddLoggers(self, instruments=False, intervals=False):
         '''
             Posts a document to the configuration database making an instrument into a potential logger.
 
@@ -201,15 +204,15 @@ class DripInterface:
         '''
         if not instruments:
             return self._conf_interface.EligibleChannels()
-        if type( instruments ) == type( '' ):
+        if isinstance(instruments, str):
             instruments = [instruments]
         if not intervals:
-            intervals = ['10' for i in range( len( instruments ) )]
-        elif type( intervals ) == type( '' ):
+            intervals = ['10' for i in range(len(instruments))]
+        elif isinstance(intervals, str):
             intervals = [intervals]
-        self._conf_iterface.AddLoggers( instruments, intervals )
+        self._conf_iterface.AddLoggers(instruments, intervals)
 
-    def RemoveLoggers( self, instruments = '' ):
+    def RemoveLoggers(self, instruments=''):
         '''
             Removes the docuemnt(s) from the configuration database which makes <instruments> (a) potential logger(s)
 
@@ -219,13 +222,13 @@ class DripInterface:
             Returns:
                 nothing is returned
         '''
-        if not instruments and not instruments == False:
+        if not instruments:
             return self._conf_interface.EligibleLoggers()
-        elif type( instruments ) == type( '' ):
+        elif isinstance(instruments, str):
             instruments = [instruments]
-        self._conf_interface.RemoveLoggers( instruments )
+        self._conf_interface.RemoveLoggers(instruments)
 
-    def RunMantis( self, output = "/data/temp.egg", rate = 500, duration = 1000, mode = 2, length = 2097152, count = 640 ):
+    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000, mode=2, length=2097152, count=640):
         '''
             Posts a document to the command database instructing dripline to start a mantis run.
 
@@ -242,7 +245,8 @@ class DripInterface:
         '''
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
-        result = self._cmd_interface.RunMantis( output, rate, duration, mode, length, count )
+        result = self._cmd_interface.RunMantis(
+            output, rate, duration, mode, length, count)
         return result
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
@@ -266,7 +270,7 @@ class DripInterface:
             timestamp = datetime.now()
         return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
 
-    def RunPowerline( self, points = 4096, events = 1024, input = "/data/temp.egg" ):
+    def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''
             Posts a document to the command database instructing dripline to start a powerline run.
 
@@ -278,10 +282,10 @@ class DripInterface:
             Returns:
                 A pypeline.DripResponse instance.
         '''
-        result = self._cmd_interface.RunPowerline( points, events, input ) 
+        result = self._cmd_interface.RunPowerline(points, events, input)
         return result
-        
-    def CheckHeartbeat( self ):
+
+    def CheckHeartbeat(self):
         '''
             Checks to see if dripline is listing and responding to the command database.
 
@@ -291,9 +295,9 @@ class DripInterface:
             Returns:
                 The 'final' field fron the couch document produced by calling pypeline.DripInterface.Get("heartbeat")
         '''
-        status = self.Get( "heartbeat" )
+        status = self.Get("heartbeat")
         status.Wait()
         if not status['final'] == 'thump':
-           raise UserWarning( 'Could not find dripline pulse. Make sure it is running.' )
+            raise UserWarning(
+                'Could not find dripline pulse. Make sure it is running.')
         return status['final']
-

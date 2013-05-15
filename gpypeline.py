@@ -13,6 +13,7 @@ from pypeline import DripInterface, scripts
 
 
 class App:
+
     def __init__(self, master):
         self.master = master
 
@@ -30,20 +31,20 @@ class App:
         '''
         self.channels = self.pype.Get()
         # Tkinter Variables
-        #########################
-        #current time
+        #
+        # current time
         self.time = StringVar(value=datetime.now())
-        #which script to run
+        # which script to run
         self.which_script = StringVar(value="check_pulse")
-        #which channel to get
+        # which channel to get
         self.getchannelVar = StringVar()
-        #get return
+        # get return
         self.getchannelvalueVar = StringVar()
-        #which channel to set
+        # which channel to set
         self.setchannelVar = StringVar()
-        #value to set
+        # value to set
         self.setchannelvalueVar = DoubleVar()
-        #values in loggers
+        # values in loggers
         self.loggers_list = ['bypass_valve_t',
                              'coldhead_bottom_face_t',
                              'dpph_field',
@@ -79,7 +80,7 @@ class App:
         self.timeval.grid(row=0, column=1)
 
         # Buttons
-        #########################
+        #
         # Get interface
         self.get_button = Button(self.frame, text="Get",
                                  command=self.GetChannel)
@@ -113,7 +114,7 @@ class App:
         self.script_selection.grid(row=3, column=1, sticky=EW)
 
         # Data display
-        #########################
+        #
         for rowi, channel in enumerate(self.loggers_list):
             Label(self.frame, text=channel).grid(row=rowi, column=3)
             Label(self.frame, textvariable=self.loggers_dict[channel],
@@ -176,7 +177,7 @@ class App:
                                                                   column=1)
         startbt = Button(script_popup, text="Start Script",
                          command=lambda: self.exec_script(script_fun))
-        startbt.grid(row=len(self.gui_input_dict.keys())+1, columnspan=2)
+        startbt.grid(row=len(self.gui_input_dict.keys()) + 1, columnspan=2)
 
     def exec_script(self, script):
         args_dict = {}
@@ -198,13 +199,13 @@ class App:
 
         dpph_popup = Toplevel()
         dpph_popup.grid()
-        #user guess
+        # user guess
         Label(dpph_popup, text="guess").grid(row=0, column=0, sticky=EW)
         guessentry = Entry(dpph_popup, textvariable=self.guessval)
         guessentry.grid(row=0, column=1, sticky=EW)
         unitsoption = OptionMenu(dpph_popup, self.guessunits, *["MHz", "kG"])
         unitsoption.grid(row=0, column=2, sticky=EW)
-        #stop conditions
+        # stop conditions
         Label(dpph_popup, text='Sigma limit').grid(row=1, column=0, sticky=EW)
         nsigmaentry = Entry(dpph_popup, textvariable=self.nsigmavar)
         nsigmaentry.grid(row=1, column=1, sticky=EW)
@@ -214,11 +215,11 @@ class App:
         nvoltsentry = Entry(dpph_popup, textvariable=self.nvoltsvar)
         nvoltsentry.grid(row=2, column=1, sticky=EW)
         Label(dpph_popup, text='[V]', justify=LEFT).grid(row=2, column=2)
-        #get hall probe guses
+        # get hall probe guses
         checkhall = Button(dpph_popup, text="Hall Probe",
                            command=self.checkhallprobe)
         checkhall.grid(row=0, column=3)
-        #buttons to do the run etc
+        # buttons to do the run etc
         dorun = Button(dpph_popup, text="Start Scan", command=self.dpph_lockin)
         dorun.grid(row=3, column=0)
         savebutton = Button(dpph_popup, text="Save Plot Data",
@@ -236,9 +237,9 @@ class App:
     def dpph_lockin(self):
         geff = 2.0036
         chargemass = 1.758e11
-        freq_to_field = 4*pi*10**7/(geff*chargemass)
+        freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
         if self.guessunits.get() == "kG":
-            self.guessval.set(self.guessval.get()/freq_to_field)
+            self.guessval.set(self.guessval.get() / freq_to_field)
             self.guessunits.set("MHz")
         dpph_result, dpph_dataset = (scripts.dpph_lockin(self.pype,
                                      guess=self.guessval.get(),

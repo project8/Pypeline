@@ -14,7 +14,9 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 
+
 class _LogInterface:
+
     '''
         Class for interactions with the logged data database
 
@@ -36,11 +38,11 @@ class _LogInterface:
         '''
         result = DripResponse(self._log_database, uuid4().hex)
         log_doc = {
-            '_id':result['_id'],
-            'sensor_name':sensor,
-            'timestamp_localstring':timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            'uncalibrated_value':str(uncal_val),
-            'calibrated_value':str(cal_val),
+            '_id': result['_id'],
+            'sensor_name': sensor,
+            'timestamp_localstring': timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'uncalibrated_value': str(uncal_val),
+            'calibrated_value': str(cal_val),
         }
         self._log_database.save(log_doc)
         return result

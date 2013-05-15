@@ -4,25 +4,26 @@
     This module/class has many more dependencies than the rest of pypeline.
 '''
 
-#Standard libs
+# Standard libs
 from warnings import warn
 from datetime import datetime, timedelta
 import time
 
-#3rd party libs
+# 3rd party libs
 from couchdb import Server as CouchServer
 import numpy as np
 from scipy import optimize
-#import Gnuplot
+# import Gnuplot
 import usegnuplot
 
+
 class LoggedDataHandler_Gnuplot:
+
     '''
         Class to plot data logged on CouchDB. The constructor requires the URL
         of the CouchDB server. See plotting_example.py in scripts/examples for
         more help.
     '''
-            
 
     def __init__(self, couch_url="http://127.0.0.1:5984"):
         '''
@@ -31,7 +32,7 @@ class LoggedDataHandler_Gnuplot:
             Inputs:
             <couch_url> (string) URL of CouchDB server
         '''
-        self.g=usegnuplot.Gnuplot()
+        self.g = usegnuplot.Gnuplot()
         self._server = CouchServer(couch_url)
         self.times = {}
         self.values = {}
@@ -39,7 +40,8 @@ class LoggedDataHandler_Gnuplot:
         if (self._server.__contains__('dripline_logged_data')):
             self._logged_data = self._server['dripline_logged_data']
         else:
-            raise UserWarning('The dripline logged data database was not found!')
+            raise UserWarning(
+                'The dripline logged data database was not found!')
 
     def Get(self, start, stop):
         '''
@@ -58,20 +60,21 @@ class LoggedDataHandler_Gnuplot:
         values = {}
         units = {}
         for row in self._logged_data.view('log_access/all_logged_data', startkey=start, endkey=stop):
-            sensor=row.value['sensor_name']
-            if times.get(sensor)==None:
-                times[sensor]=[]
-                values[sensor]=[]
-                units[sensor]=[]
-            #timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
-            #times[sensor].append(time.mktime(timestamp.timetuple()))
+            sensor = row.value['sensor_name']
+            if times.get(sensor) is None:
+                times[sensor] = []
+                values[sensor] = []
+                units[sensor] = []
+            # timestamp = datetime.strptime(row.value['timestamp_localstring'], "%Y-%m-%d %H:%M:%S")
+            # times[sensor].append(time.mktime(timestamp.timetuple()))
             times[sensor].append(row.value['timestamp_localstring'])
-            values[sensor].append(float(row.value['calibrated_value'].split()[0]))
+            values[sensor].append(float(row.value[
+                                  'calibrated_value'].split()[0]))
             units[sensor].append(str(row.value['calibrated_value'].split()[1]))
         result = [times, values, units]
         return result
 
-    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today()-timedelta(hours=3), stop=False):
+    def Plot(self, sensors=False, dynamupdate=True, start=datetime.today() - timedelta(hours=3), stop=False):
         '''
             Creates a plot of logged data.
 
@@ -109,13 +112,13 @@ class LoggedDataHandler_Gnuplot:
             plotsets = []
             argsets = []
             for sensor in sensors:
-                plotsets.append(zip(data[0][sensor],data[1][sensor]))
-                argsets.append("using 1:3 with lines title \""+sensor+"\"")
+                plotsets.append(zip(data[0][sensor], data[1][sensor]))
+                argsets.append("using 1:3 with lines title \"" + sensor + "\"")
 
             self.g.gp("set xdata time")
             self.g.gp("set timefmt \"%Y-%m-%d %H:%M:%S\"")
             self.g.gp("set format x \"%H:%M\"")
-            self.g.gp("set ylabel \""+data[2][sensors[0]][0]+"\"")
+            self.g.gp("set ylabel \"" + data[2][sensors[0]][0] + "\"")
 #           self.g.gp("set xlabel \"Time\"")
 #            self.g.plotMany(plotsets,argsets)
 
@@ -148,18 +151,19 @@ class LoggedDataHandler_Gnuplot:
             <p0> (list) A list of guess values for the fit parameters
         '''
         if not fitfunc or fitfunc == 'linear':
-            fitfunc = lambda p,x: p[0]+p[1]*x
+            fitfunc = lambda p, x: p[0] + p[1] * x
             print('fitfunc = lambda p,x: p[0]+p[1]*x')
-            p0 = [0,1]
+            p0 = [0, 1]
         if fitfunc == 'exponential':
-            fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)
+            fitfunc = lambda p, x: p[0] + p[1] * np.exp(p[2] * x)
             print('fitfunc = lambda p,x: p[0]+p[1]*np.exp(p[2]*x)')
             p0 = [1, -1, -1]
-        errfunc = lambda p,x,y: fitfunc(p, x) - y
+        errfunc = lambda p, x, y: fitfunc(p, x) - y
         x = []
         temp = self.times[sensor]
         for i in range(len(self.times[sensor])):
-            x.append(temp[i].hour + temp[i].minute/60.0 + temp[i].second/3600.0)
+            x.append(temp[i].hour + temp[
+                     i].minute / 60.0 + temp[i].second / 3600.0)
         x = np.array(x)
         y = np.array(self.values[sensor])
         p1, success = optimize.leastsq(errfunc, p0[:], args=(x, y))
@@ -167,11 +171,11 @@ class LoggedDataHandler_Gnuplot:
         ax = fig.add_subplot(111)
         points = plt.plot(x, y, "bo", label=sensor)
         fit = plt.plot(x, fitfunc(p1, x), "r-", label='fit')
-        self.FormatPlots(sensor,fig,ax)
+        self.FormatPlots(sensor, fig, ax)
         print(p1)
         plt.show()
 
-    def EligibleLoggers(self, start=datetime.today()-timedelta(hours=3), stop=datetime.today()):
+    def EligibleLoggers(self, start=datetime.today() - timedelta(hours=3), stop=datetime.today()):
         '''
             Print names of sensors with logged data in a certain timeframe.
             Searches the last three hours by default.
@@ -181,7 +185,7 @@ class LoggedDataHandler_Gnuplot:
                     beginning of the search window. If set to False, this method
                     will print out all loggers which have logged data.
             <stop> (datetime object or a CouchDB formatted timestamp) Sets the
-                   end of the search window. 
+                   end of the search window.
         '''
         if not start:
             sensors = []
@@ -199,7 +203,7 @@ class LoggedDataHandler_Gnuplot:
                     sensors.append(row.value['sensor_name'])
             return sensors
 
-    def FormatPlots(self,sensor,fig,ax):
+    def FormatPlots(self, sensor, fig, ax):
         '''
             Internal
         '''
@@ -217,13 +221,11 @@ class LoggedDataHandler_Gnuplot:
         '''
             start getting data so I can update plots
         '''
-        #get the last update sequence
-        self.recent=self._logged_data.info()['update_seq']
+        # get the last update sequence
+        self.recent = self._logged_data.info()['update_seq']
 
     def UpdatePlots(self):
-        changes=self._logged_data.changes(since=self.recent)
-        self.recent=changes['last_seq']
+        changes = self._logged_data.changes(since=self.recent)
+        self.recent = changes['last_seq']
         for changeset in changes['results']:
-            doc=self._logged_data[changeset['id']]
-
-
+            doc = self._logged_data[changeset['id']]

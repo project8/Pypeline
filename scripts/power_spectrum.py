@@ -1,12 +1,13 @@
-#standard libs
+# standard libs
 import sys
 from uuid import uuid4
 from math import log
-#3rd party
+# 3rd party
 import numpy as np
 import matplotlib.pyplot as plt
-#custom
+# custom
 from pypeline import DripInterface, peakdet
+
 
 def power_spectrum(d='250', r='500', f='/data/' + uuid4().hex + '.egg', c='1', subprocess='powerline', args=False):
     '''
@@ -42,15 +43,16 @@ def power_spectrum(d='250', r='500', f='/data/' + uuid4().hex + '.egg', c='1', s
     if '-sp' in args:
         subprocess = args[args.index('-sp') + 1]
     if lo:
-        drip.Set('lo_cw_freq',lo)
+        drip.Set('lo_cw_freq', lo)
 
-    run = eval(drip.CreatePowerSpectrum(drip.Run(rate=r,duration=d,filename=f).Wait(),sp=subprocess).Wait()['result'])
-    
+    run = eval(drip.CreatePowerSpectrum(drip.Run(
+        rate=r, duration=d, filename=f).Wait(), sp=subprocess).Wait()['result'])
+
     y = run['data']
-    x = np.linspace(0,run['sampling_rate']/2,len(y))
+    x = np.linspace(0, run['sampling_rate'] / 2, len(y))
     y = y[1:-1]
     x = x[1:-1]
-    dbm = [10*log(a,10) for a in y]
+    dbm = [10 * log(a, 10) for a in y]
     if subprocess == 'sweepline':
         for i in range(len(x)):
             if x[i] > 90:
@@ -62,11 +64,12 @@ def power_spectrum(d='250', r='500', f='/data/' + uuid4().hex + '.egg', c='1', s
                 break
         dbm = dbm[start:stop]
         x = x[start:stop]
-    plt.plot(x,dbm)
-    plt.title("Power Spectrum (Sampling Rate = " + r + " MHz, Duration = " + d + " ms)")
+    plt.plot(x, dbm)
+    plt.title("Power Spectrum (Sampling Rate = " +
+              r + " MHz, Duration = " + d + " ms)")
     plt.xlabel("Frequency (MHz)")
     plt.ylabel("Power (dBm)")
     plt.show()
 
 if __name__ == '__main__':
-    power_spectrum(args=sys.argv) 
+    power_spectrum(args=sys.argv)

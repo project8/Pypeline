@@ -19,9 +19,9 @@ def transfer_function_2nd_stage(pype, lo_start_freq, lo_stop_freq, lo_step,
             <dig_time>: duration of mantis run in ms
     '''
 
-
     for lo_val in arange(lo_start_freq, lo_stop_freq, lo_step):
         pype.Set('lo_cw_freq', lo_val)
         pype.Run(duration=dig_time)
-        #more powerline steps to get the powers
-    #plot power of each channel against lo freq and/or save as locust_mc .json input
+        # more powerline steps to get the powers
+    # plot power of each channel against lo freq and/or save as locust_mc
+    # .json input
