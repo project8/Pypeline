@@ -5,7 +5,7 @@ from Tkinter import *
 from tkFileDialog import asksaveasfile
 from datetime import datetime
 from json import dump
-from inspect import getargspec, getmembers, isclass
+from inspect import getargspec, getmembers, isclass, isfunction
 # 3rd party Libs
 from numpy import pi
 # internal Libs
@@ -149,16 +149,20 @@ class App:
         self.setchannelvalueVar.set(result)
 
     def ScriptDialog(self):
-        graphic_scripts = ['run_dpph']#, 'run_mantis']
+        #### this section should be added to the later parts asap
+        special_scripts = ['run_dpph']
+        ####################
+        func_scripts = [name[0] for name in getmembers(scripts, isfunction)]
         class_scripts = [line[0] for line in getmembers(scripts, isclass)]
         script_name = self.which_script.get()
-        if script_name in graphic_scripts:
-            getattr(self, script_name)()
+        if script_name in func_scripts:
+            self.generic_function_script_popup(script_name)
         elif script_name in class_scripts:
             self.generic_class_script_popup(script_name)
+        elif script_name in special_scripts:
+            self.run_dpph
         else:
-            self.generic_function_script_popup(script_name)
-
+            print('\n\n' + '*' * 60 + '\nscript not found\n' + '*' * 60)
 
     def generic_class_script_popup(self, script_name):
         script_popup = Toplevel()
