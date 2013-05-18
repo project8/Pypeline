@@ -109,8 +109,11 @@ class App:
         self.run_script = Button(self.frame, text="Run",
                                  command=self.ScriptDialog)
         self.run_script.grid(row=3, column=0, sticky=EW)
+        scriptlist = [name[0] for name in getmembers(scripts, isfunction)]
+        scriptlist += [name[0] for name in getmembers(scripts, isclass)]
+        scriptlist += ['run_dpph']
         self.script_selection = OptionMenu(self.frame, self.which_script,
-                                           *['check_pulse', 'run_dpph', 'run_mantis'])
+                                           *scriptlist)
         self.script_selection.grid(row=3, column=1, sticky=EW)
 
         # Data display
