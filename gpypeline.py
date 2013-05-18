@@ -160,7 +160,7 @@ class App:
         elif script_name in class_scripts:
             self.generic_class_script_popup(script_name)
         elif script_name in special_scripts:
-            self.run_dpph
+            self.run_dpph()
         else:
             print('\n\n' + '*' * 60 + '\nscript not found\n' + '*' * 60)
 
