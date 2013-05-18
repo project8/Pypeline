@@ -110,7 +110,7 @@ class App:
                                  command=self.ScriptDialog)
         self.run_script.grid(row=3, column=0, sticky=EW)
         self.script_selection = OptionMenu(self.frame, self.which_script,
-                                           *['check_pulse', 'run_dpph'])
+                                           *['check_pulse', 'run_dpph', 'run_mantis'])
         self.script_selection.grid(row=3, column=1, sticky=EW)
 
         # Data display
@@ -149,12 +149,17 @@ class App:
         self.setchannelvalueVar.set(result)
 
     def ScriptDialog(self):
-        graphic_scripts = ['run_dpph']
+        graphic_scripts = ['run_dpph', 'run_mantis']
         script_name = self.which_script.get()
         if script_name in graphic_scripts:
             getattr(self, script_name)()
         else:
             self.generic_script_popup(script_name)
+
+    def run_mantis(self):
+        script_popup = Toplevel()
+        script_popup.grid()
+        scripts.run_mantis(self.pype, script_popup)
 
     def generic_script_popup(self, script_name):
         script_popup = Toplevel()
