@@ -18,7 +18,7 @@ except ImportError:
 class _ConfInterface:
 
     '''
-        Class for interactions with the configurations database
+        Class for interactions with the dripline configurations database
 
         This class is meant to be internal to pypeline and should NOT be used directly.
     '''
