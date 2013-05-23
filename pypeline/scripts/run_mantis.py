@@ -50,9 +50,10 @@ class run_mantis:
                 self.runargs[key]=self.gui_input_dict[key].get()
         except:
             pass
+        response = self.pype.RunMantis(**self.runargs)
         if self.dodump.get():
-            self.pype.DumpSensors()
-        response = self.pype.RunMantis(**self.runargs).Wait()
+            self.pype.DumpSensors(field_dict={'run_id':response['_id']})
+        response.Wait()
         filename = [line.split()[-1] for line in response['final'].split('\n') 
                     if line.startswith('  *output')]
         self.status.set(filename[0] + ' written')

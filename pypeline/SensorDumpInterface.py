@@ -21,13 +21,15 @@ class _SensorDumpInterface:
         '''
         self._sensor_dump_database = sensor_dump_database
 
-    def _StoreDump(self, dumplist):
+    def _StoreDump(self, dumplist, field_dict):
         '''
             <dumplist> is either a drip response, or a list there of
+            <field_dict> is a dict of extra data to include in the dump doc
         '''
         if not isinstance(dumplist, list):
             dumplist = [dumplist]
         dump_doc = {'timestamp':datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        dump_doc.update(field_dict)
         for response in dumplist:
             dump_doc[response['command']['channel']] = response
         self._sensor_dump_database.save(dump_doc)
