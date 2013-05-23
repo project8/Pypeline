@@ -128,7 +128,7 @@ class App:
             Update displayed values
         '''
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
-        latest = self.pype._log_database.view('pypeline_view/latest_values')
+        latest = self.pype._log_interface._log_database.view('pypeline_view/latest_values')
         for channel in self.loggers_list:
             ch_val = latest[channel].rows[0]['value']['cal_val']
             if ch_val:
