@@ -28,6 +28,10 @@ try:
     from .LogInterface import _LogInterface
 except ImportError:
     from LogInterface import _LogInterface
+try:
+    from .PypeConfInterface import _PypeConfInterface
+except ImportError:
+    from PypeConfInterface import _PypeConfInterface
 
 
 class DripInterface:
@@ -59,21 +63,11 @@ class DripInterface:
         self._timeout = 15  # timeout is 15 seconds...
         self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
-        if (self._server.__contains__('dripline_cmd')):
-            self._cmd_database = self._server['dripline_cmd']
-            self._cmd_interface = _CmdInterface(self._cmd_database)
-        else:
-            raise UserWarning('The dripline command database was not found!')
-        if (self._server.__contains__('dripline_conf')):
-            self._conf_database = self._server['dripline_conf']
-            self._conf_interface = _ConfInterface(self._conf_database)
-        else:
-            raise UserWarning('The dripline conf database was not found!')
-        if (self._server.__contains__('dripline_logged_data')):
-            self._log_database = self._server['dripline_logged_data']
-            self._log_interface = _LogInterface(self._log_database)
-        else:
-            raise UserWarning('The dripline conf database was not found!')
+        self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
+        self._conf_interface = _ConfInterface(self._server['dripline_conf'])
+        self._log_interface = _LogInterface(self._server['dripline_logged_data'])
+        self._pype_conf_interface = _PypeConfInterface(self._server['pypeline_conf'])
+
 
     def Get(self, channel='', wait=False):
         '''

@@ -39,8 +39,9 @@ class _PypeConfInterface:
             Return the description field for <channel_name>
         '''
         return_str = "Channel " + channel_name + " not found"
-        for row in self._pype_conf_db.view('channel_list/all'):
-            if row['key'] is channel_name:
+        for row in self._pype_conf_db.view('channel_lists/all'):
+            print(row['key'])
+            if row['key'] == channel_name:
                 try:
                     return_str = self._pype_conf_db[row['id']]['description']
                 except KeyError as e:
