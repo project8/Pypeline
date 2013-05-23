@@ -29,12 +29,16 @@ try:
 except ImportError:
     from LogInterface import _LogInterface
 try:
-    from .PypeConfInterface import _PypeConfInterface
+    from .PypelineConfInterface import _PypelineConfInterface
 except ImportError:
-    from PypeConfInterface import _PypeConfInterface
+    from PypelineConfInterface import _PypelineConfInterface
+try:
+    from .SensorDumpInterface import _SensorDumpInterface
+except ImportError:
+    from SensorDumpInterface import _SensorDumpInterface
 
 
-class DripInterface:
+class DripInterface(_PypelineConfInterface, _SensorDumpInterface):
 
     '''
         Class to facilitate user interact with Dripline via couchDB. The
@@ -60,14 +64,14 @@ class DripInterface:
                 no return
         '''
         self._server = CouchServer(dripline_url)
+        _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
+        _SensorDumpInterface.__init__(self, self._server['pypeline_sensor_dump'])
         self._timeout = 15  # timeout is 15 seconds...
         self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
         self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         self._conf_interface = _ConfInterface(self._server['dripline_conf'])
         self._log_interface = _LogInterface(self._server['dripline_logged_data'])
-        self._pype_conf_interface = _PypeConfInterface(self._server['pypeline_conf'])
-
 
     def Get(self, channel='', wait=False):
         '''
@@ -263,6 +267,14 @@ class DripInterface:
         if not timestamp:
             timestamp = datetime.now()
         return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
+
+    def DumpSensors(self):
+        '''
+            Read all sensors with the property 'dump' and store to the sensor dump database
+        '''
+        dumps = [self.Get(ch).Wait() for ch in self.ListWithProperty('dump')]
+        dumplist = [resp for resp in dumps if resp.has_key('final')]
+        self._StoreDump(dumplist)
 
     def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''

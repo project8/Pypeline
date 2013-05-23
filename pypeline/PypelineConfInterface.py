@@ -5,13 +5,9 @@
 # standard imports
 # 3rd party imports
 # local imports
-try:
-    from .DripResponse import DripResponse
-except ImportError:
-    from DripResponse import DripResponse
 
 
-class _PypeConfInterface:
+class _PypelineConfInterface:
     '''
         Class for interactions with the pypeline configurations database.
 
@@ -40,7 +36,6 @@ class _PypeConfInterface:
         '''
         return_str = "Channel " + channel_name + " not found"
         for row in self._pype_conf_db.view('channel_lists/all'):
-            print(row['key'])
             if row['key'] == channel_name:
                 try:
                     return_str = self._pype_conf_db[row['id']]['description']
