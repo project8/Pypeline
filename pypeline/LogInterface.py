@@ -59,6 +59,24 @@ class _LogInterface:
                 unitlist.append(str(row.value['calibrated_value'].split()[1]))
         return (timelist, valuelist, unitlist)
 
+    def GetLatestValues(self):
+        '''
+        '''
+        loggers_dict = {}
+        latest = self._log_database.view('pypeline_view/latest_values')
+        for channel in self.ListWithProperty('logging'):
+            ch_val = latest[channel].rows[0]['value']['cal_val']
+            if ch_val:
+                entrylist = ch_val.split()
+                update = []
+                for snip in entrylist:
+                    try:
+                        update.append('%.5E' % float(snip))
+                    except ValueError:
+                        update.append(snip)
+                loggers_dict[channel]=(" ".join(update))
+        return loggers_dict
+
     def LogValue(self, sensor, uncal_val, cal_val, timestamp):
         '''
             <sensor> is the atom for the sensor being logged
