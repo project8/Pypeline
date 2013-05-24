@@ -38,7 +38,7 @@ except ImportError:
     from SensorDumpInterface import _SensorDumpInterface
 
 
-class DripInterface(_PypelineConfInterface, _SensorDumpInterface):
+class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface):
 
     '''
         Class to facilitate user interact with Dripline via couchDB. The
@@ -66,12 +66,13 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface):
         self._server = CouchServer(dripline_url)
         _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
         _SensorDumpInterface.__init__(self, self._server['pypeline_sensor_dump'])
+        _LogInterface.__init__(self, self._server['dripline_logged_data'])
         self._timeout = 15  # timeout is 15 seconds...
         self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
         self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         self._conf_interface = _ConfInterface(self._server['dripline_conf'])
-        self._log_interface = _LogInterface(self._server['dripline_logged_data'])
+        #self._log_interface = _LogInterface(self._server['dripline_logged_data'])
 
     def Get(self, channel='', wait=False):
         '''
