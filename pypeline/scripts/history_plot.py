@@ -8,9 +8,10 @@ if version_info[0] < 3:
 else:
     import tkinter as Tk
 #3rd party libs
-from numpy import arange, sin, pi
+from numpy import arange, sin, cos, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from matplotlib.legend import Legend
 #local libs
 
 
@@ -28,29 +29,9 @@ class history_plot:
         '''
         if toplevel:
             self.toplevel = toplevel
-
-        f = Figure(figsize=(5,4), dpi=100)
-        a = f.add_subplot(111)
-        t = arange(0.0,3.0,0.01)
-        s = sin(2*pi*t)
-        
-        a.plot(t,s)
-        a.set_title('Tk embedding')
-        a.set_xlabel('X axis label')
-        a.set_ylabel('Y label')
-
-        # a tk.DrawingArea
-        canvas = FigureCanvasTkAgg(f, master=root)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-        
-        #toolbar = NavigationToolbar2TkAgg( canvas, root )
-        #toolbar.update()
-        canvas._tkcanvas.pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
-        
-        button = Tk.Button(master=root, text='Quit', command=exit)
-        button.pack(side=Tk.BOTTOM)
-        if toplevel:
+        else:
+            self.toplevel = Tk.Tk()
+        self.MakePlot()
             
 
     def MakePlot(self):
@@ -58,19 +39,28 @@ class history_plot:
         '''
         xdata = arange(0,1,.1)
         ydata = [sin(2*pi*x) for x in xdata]
+        y2data = [cos(2*pi*x) for x in xdata]
 
-        figurething = Figure(figsize=(5,4), dpi=100)
+        figurething = Figure()
         subfig = figurething.add_subplot(1,1,1)
-        subfig.plot(xdata, ydata)
+        plot1=subfig.plot(xdata, ydata)
         subfig.set_title('ydata vs xdata')
         subfig.set_xlabel('xdata')
         subfig.set_ylabel('ydata')
+        plot2=subfig.plot(xdata, y2data)
+        #leg = Legend(subfig,[plot1,plot2],['a','b'])
 
         canvas = FigureCanvasTkAgg(figurething, master=self.toplevel)
         canvas.show()
         canvas.get_tk_widget().grid(row=0, column=0)
         Tk.Label(self.toplevel, text="This is just something").grid(row=0, column=1)
         Tk.Label(self.toplevel, text="This is another something").grid(row=1, column=0)
+
+    def Update(self):
+        '''
+        '''
+        #Figure.clf() clears the window so that can draw updated
+        pass
 
 
 if __name__ == "__main__":
