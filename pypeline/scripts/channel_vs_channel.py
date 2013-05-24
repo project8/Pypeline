@@ -6,9 +6,11 @@ from sys import version_info, exit
 if version_info[0] < 3:
     import Tkinter as Tk
     from Tkinter import StringVar, Label, OptionMenu, Entry, Button
+    from tkFileDialog import asksaveasfilename
 else:
     import tkinter as Tk
     from tkinter import StringVar, Label, OptionMenu, Entry, Button
+    from tkFileDialog import asksaveasfilename
 from datetime import datetime, timedelta
 
 #3rd party libs
@@ -51,6 +53,7 @@ class channel_vs_channel:
             self.toplevel = toplevel
         else:
             self.toplevel = Tk.Tk()
+        self.status_var = StringVar(value='initializing')
         self.SetupCanvas()
         self.UpdateData()
         self.BuildGui()
@@ -90,27 +93,40 @@ class channel_vs_channel:
         '''
         Label(self.toplevel, text='X Channel').grid(row=0, column =1)
         OptionMenu(self.toplevel, self.channelx,
-                   *self.pype.ListWithProperty('logging')).grid(row=0, column=2)
+                   *self.pype.ListWithProperty('logging')
+                   ).grid(row=0, column=2, sticky='ew')
 
         Label(self.toplevel, text='Y Channel').grid(row=1, column =1)
         OptionMenu(self.toplevel, self.channely,
-                   *self.pype.ListWithProperty('logging')).grid(row=1, column=2)
+                   *self.pype.ListWithProperty('logging')
+                   ).grid(row=1, column=2, sticky='ew')
 
         Label(self.toplevel, text='Start Time').grid(row=2, column =1)
         Entry(self.toplevel, textvariable=self.start_t).grid(row=2, column=2)
 
         Label(self.toplevel, text='Stop Time').grid(row=3, column =1)
         Entry(self.toplevel, textvariable=self.stop_t).grid(row=3, column=2)
-        #self.MakePlot()
+
+        Label(self.toplevel, textvariable=self.status_var).grid(row=11, column=2)
 
         Button(self.toplevel, text="Update", command=self.UpdateData
                ).grid(row=4, column=1)
+        Button(self.toplevel, text="Save", command=self.SaveFigure
+               ).grid(row=4, column=2)
+        self.status_var.set('done')
 
     def SetupCanvas(self):
         '''
         '''
         self.figure = Figure()
         self.subfigure = self.figure.add_subplot(1,1,1)
+
+    def SaveFigure(self):
+        '''
+        '''
+        file_extensions = [('vectorized','.eps'),('adobe','.pdf'),('image','.png'),('all','.*')]
+        outfile = asksaveasfilename(defaultextension='.pdf', filetypes=file_extensions)
+        self.figure.savefig(outfile)
 
     def MakePlot(self):
         '''
@@ -131,11 +147,12 @@ class channel_vs_channel:
     def UpdateData(self):
         '''
         '''
+        self.status_var.set('updating')
         self.subfigure.cla()
-        self.xchdat = self.pype.GetTimeSeries(self.channelx,
+        self.xchdat = self.pype.GetTimeSeries(self.channelx.get(),
                                          self.start_t.get(),
                                          self.stop_t.get())
-        self.ychdat = self.pype.GetTimeSeries(self.channely,
+        self.ychdat = self.pype.GetTimeSeries(self.channely.get(),
                                          self.start_t.get(),
                                          self.stop_t.get())
         self.xdata = []
@@ -155,3 +172,4 @@ class channel_vs_channel:
         if self.xdata and self.ydata:
             [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
         self.MakePlot()
+        self.status_var.set('done')
