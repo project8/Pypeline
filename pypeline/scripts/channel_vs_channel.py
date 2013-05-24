@@ -5,8 +5,10 @@ matplotlib.use('TkAgg')
 from sys import version_info, exit
 if version_info[0] < 3:
     import Tkinter as Tk
+    from Tkinter import StringVar, Label, OptionMenu, Entry, Button
 else:
     import tkinter as Tk
+    from tkinter import StringVar, Label, OptionMenu, Entry, Button
 from datetime import datetime, timedelta
 
 #3rd party libs
@@ -29,17 +31,29 @@ class channel_vs_channel:
         '''
         self.pype = interface
         self.formatstr = '%Y-%m-%d %H:%M:%S'
-        self.channelx = channelx
-        self.channely = channely
-        self.start_t = start_t
-        self.stop_t = stop_t
+        self.channelx = StringVar(value=channelx)
+        self.channely = StringVar(value=channely)
+        if isinstance(start_t, datetime):
+            self.start_t = StringVar(value=start_t.strftime(self.formatstr))
+        elif isinstance(start_t, str):
+            self.start_t = StringVar(value=start_t)
+        else:
+            raise TypeError('start_t must be string or datetime')
+        if isinstance(stop_t, datetime):
+            self.stop_t = StringVar(value=stop_t.strftime(self.formatstr))
+        elif isinstance(stop_t, str):
+            self.stop_t = StringVar(value=stop_t)
+        else:
+            raise TypeError('stop_t must be string or datetime')
+        #self.start_t = start_t
+        #self.stop_t = stop_t
         if toplevel:
             self.toplevel = toplevel
         else:
             self.toplevel = Tk.Tk()
         self.SetupCanvas()
         self.UpdateData()
-        self.MakePlot()
+        self.BuildGui()
         if not toplevel:
             Tk.mainloop()
 
@@ -48,10 +62,13 @@ class channel_vs_channel:
         '''
         if not start_time:
             start_time = datetime.now() - timedelta(hours=3)
-        if start_time > self.stop_t:
+        if isinstance(start_time, str):
+            start_time = datetime.strptime(start_time, self.formatstr)
+        stop = datetime.strptime(self.stop_t.get(), self.formatstr)
+        if start_time > stop:
             print('start time must be before stop time')
             return
-        self.start_t = start_time
+        self.start_t.set(start_time.strftime(self.formatstr))
         self.UpdateData()
 
     def SetStop(self, stop_time=False):
@@ -59,11 +76,35 @@ class channel_vs_channel:
         '''
         if not stop_time:
             stop_time = datetime.now()
-        if stop_time < self.start_t:
+        if isinstance(stop_time, str):
+            stop_time = datetime.strptime(stop_time, self.formatstr)
+        start = datetime.strptime(self.start_t.get(), self.formatstr)
+        if stop_time < start:
             print('stop time must be after start time')
             return
-        self.stop_t = stop_time
+        self.stop_t.set(stop_time.strftime(self.formatstr))
         self.UpdateData()
+
+    def BuildGui(self):
+        '''
+        '''
+        Label(self.toplevel, text='X Channel').grid(row=0, column =1)
+        OptionMenu(self.toplevel, self.channelx,
+                   *self.pype.ListWithProperty('logging')).grid(row=0, column=2)
+
+        Label(self.toplevel, text='Y Channel').grid(row=1, column =1)
+        OptionMenu(self.toplevel, self.channely,
+                   *self.pype.ListWithProperty('logging')).grid(row=1, column=2)
+
+        Label(self.toplevel, text='Start Time').grid(row=2, column =1)
+        Entry(self.toplevel, textvariable=self.start_t).grid(row=2, column=2)
+
+        Label(self.toplevel, text='Stop Time').grid(row=3, column =1)
+        Entry(self.toplevel, textvariable=self.stop_t).grid(row=3, column=2)
+        #self.MakePlot()
+
+        Button(self.toplevel, text="Update", command=self.UpdateData
+               ).grid(row=4, column=1)
 
     def SetupCanvas(self):
         '''
@@ -75,34 +116,28 @@ class channel_vs_channel:
         '''
         '''
         self.subfigure.cla()
-#        xdata = arange(0,1,.1)
-#        ydata = [sin(2*pi*x) for x in xdata]
-#        y2data = [cos(2*pi*x) for x in xdata]
 
         self.subfigure.plot(self.xdata, self.ydata)
-        self.subfigure.set_title(self.channely + ' vs ' + self.channelx +
-                                 '\n from ' +
-                                 self.start_t.strftime(self.formatstr) +
-                                 ' to ' +
-                                 self.stop_t.strftime(self.formatstr))
-        self.subfigure.set_xlabel(self.channelx.replace('_',' '))
-        self.subfigure.set_ylabel(self.channely.replace('_',' '))
-#        self.subfigure.plot(xdata, y2data)
+        self.subfigure.set_title(self.channely.get() + ' vs ' + self.channelx.get() +
+                                 '\n from ' + self.start_t.get() +
+                                 ' to ' + self.stop_t.get())
+        self.subfigure.set_xlabel(self.channelx.get().replace('_',' '))
+        self.subfigure.set_ylabel(self.channely.get().replace('_',' '))
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
-        self.canvas.get_tk_widget().grid(row=0, column=0)
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=10)
 
     def UpdateData(self):
         '''
         '''
         self.subfigure.cla()
         self.xchdat = self.pype.GetTimeSeries(self.channelx,
-                                         self.start_t.strftime(self.formatstr),
-                                         self.stop_t.strftime(self.formatstr))
+                                         self.start_t.get(),
+                                         self.stop_t.get())
         self.ychdat = self.pype.GetTimeSeries(self.channely,
-                                         self.start_t.strftime(self.formatstr),
-                                         self.stop_t.strftime(self.formatstr))
+                                         self.start_t.get(),
+                                         self.stop_t.get())
         self.xdata = []
         self.ydata = []
         for tx, x in zip(self.xchdat[0], self.xchdat[1]):
@@ -117,4 +152,6 @@ class channel_vs_channel:
             if xtmp and ytmp:
                 self.xdata.append(xtmp)
                 self.ydata.append(ytmp)
-        [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
+        if self.xdata and self.ydata:
+            [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
+        self.MakePlot()
