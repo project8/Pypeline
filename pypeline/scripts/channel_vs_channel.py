@@ -33,8 +33,8 @@ class channel_vs_channel:
         '''
         self.pype = interface
         self.formatstr = '%Y-%m-%d %H:%M:%S'
-        self.channelx = StringVar(value=channelx)
-        self.channely = StringVar(value=channely)
+        self.channelx = [StringVar(value=channelx)]
+        self.channely = [StringVar(value=channely)]
         if isinstance(start_t, datetime):
             self.start_t = StringVar(value=start_t.strftime(self.formatstr))
         elif isinstance(start_t, str):
@@ -92,12 +92,12 @@ class channel_vs_channel:
         '''
         '''
         Label(self.toplevel, text='X Channel').grid(row=0, column =1)
-        OptionMenu(self.toplevel, self.channelx,
+        OptionMenu(self.toplevel, self.channelx[0],
                    *self.pype.ListWithProperty('logging')
                    ).grid(row=0, column=2, sticky='ew')
 
         Label(self.toplevel, text='Y Channel').grid(row=1, column =1)
-        OptionMenu(self.toplevel, self.channely,
+        OptionMenu(self.toplevel, self.channely[0],
                    *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=2, sticky='ew')
 
@@ -109,7 +109,7 @@ class channel_vs_channel:
 
         Label(self.toplevel, textvariable=self.status_var).grid(row=11, column=2)
 
-        Button(self.toplevel, text="Update", command=self.UpdateData
+        Button(self.toplevel, text="Update", command=self.Update
                ).grid(row=4, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
                ).grid(row=4, column=2)
@@ -121,12 +121,14 @@ class channel_vs_channel:
         self.figure = Figure()
         self.subfigure = self.figure.add_subplot(1,1,1)
 
-    def SaveFigure(self):
+    def Update(self):
         '''
+            Call whatever sequence is needed to update local data and redraw the plot
         '''
-        file_extensions = [('vectorized','.eps'),('adobe','.pdf'),('image','.png'),('all','.*')]
-        outfile = asksaveasfilename(defaultextension='.pdf', filetypes=file_extensions)
-        self.figure.savefig(outfile)
+        self.status_var.set('updating')
+        self.UpdateData()
+        self.MakePlot()
+        self.status_var.set('done')
 
     def MakePlot(self):
         '''
@@ -134,11 +136,11 @@ class channel_vs_channel:
         self.subfigure.cla()
 
         self.subfigure.plot(self.xdata, self.ydata)
-        self.subfigure.set_title(self.channely.get() + ' vs ' + self.channelx.get() +
+        self.subfigure.set_title(self.channely[0].get() + ' vs ' + self.channelx[0].get() +
                                  '\n from ' + self.start_t.get() +
                                  ' to ' + self.stop_t.get())
-        self.subfigure.set_xlabel(self.channelx.get().replace('_',' '))
-        self.subfigure.set_ylabel(self.channely.get().replace('_',' '))
+        self.subfigure.set_xlabel(self.channelx[0].get().replace('_',' '))
+        self.subfigure.set_ylabel(self.channely[0].get().replace('_',' '))
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
@@ -147,12 +149,11 @@ class channel_vs_channel:
     def UpdateData(self):
         '''
         '''
-        self.status_var.set('updating')
         self.subfigure.cla()
-        self.xchdat = self.pype.GetTimeSeries(self.channelx.get(),
+        self.xchdat = self.pype.GetTimeSeries(self.channelx[0].get(),
                                          self.start_t.get(),
                                          self.stop_t.get())
-        self.ychdat = self.pype.GetTimeSeries(self.channely.get(),
+        self.ychdat = self.pype.GetTimeSeries(self.channely[0].get(),
                                          self.start_t.get(),
                                          self.stop_t.get())
         self.xdata = []
@@ -171,5 +172,10 @@ class channel_vs_channel:
                 self.ydata.append(ytmp)
         if self.xdata and self.ydata:
             [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
-        self.MakePlot()
-        self.status_var.set('done')
+
+    def SaveFigure(self):
+        '''
+        '''
+        file_extensions = [('vectorized','.eps'),('adobe','.pdf'),('image','.png'),('all','.*')]
+        outfile = asksaveasfilename(defaultextension='.pdf', filetypes=file_extensions)
+        self.figure.savefig(outfile)
