@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 from numpy import arange, sin, cos, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+from matplotlib import dates
 
 #local libs
 
@@ -65,6 +66,7 @@ class channel_vs_channel:
         '''
         '''
         self.figure = Figure()
+        self.figure.subplots_adjust(left=0.15, bottom=0.2)
         self.subfigure = []
         self.notebook = Notebook(self.toplevel)
         self.notebook.grid(row=1, column=1, rowspan=3, columnspan=3,
@@ -84,10 +86,10 @@ class channel_vs_channel:
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
         OptionMenu(frame, self.channelx[plotnum],
-                   *self.pype.ListWithProperty('logging')
+                   "None", "time", *self.pype.ListWithProperty('logging')
                    ).grid(row=0, column=1, sticky='ew')
         OptionMenu(frame, self.channely[plotnum],
-                   *self.pype.ListWithProperty('logging')
+                   "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
         Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
                ).grid(row=2, column=0, sticky='ew')
@@ -107,7 +109,7 @@ class channel_vs_channel:
     def _SetStop(self, stop_time=False):
         '''
         '''
-        stop_time = datetime.strptime(self.stop_time.get(), self.formatstr)
+        stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
         start = datetime.strptime(self.start_t.get(), self.formatstr)
         if stop_time < start:
             print('stop time must be after start time')
@@ -164,8 +166,15 @@ class channel_vs_channel:
     def _MakePlot(self, tab=0):
         '''
         '''
-        self.subfigure[tab].plot(self.xdata, self.ydata)
-        self.subfigure[tab].set_title(self.channely[tab].get() + ' vs ' + self.channelx[tab].get() +
+        if self.channelx[tab].get() == 'time':
+            self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
+            self.subfigure[tab].set_xticklabels(self.subfigure[tab].get_xticklabels(), rotation=-45)
+            self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
+                self.formatstr.split()[-1]))
+        else:
+            self.subfigure[tab].plot(self.xdata, self.ydata)
+        self.subfigure[tab].set_title(self.channely[tab].get() + ' vs ' +
+                                 self.channelx[tab].get() +
                                  '\n from ' + self.time_interval[0] +
                                  ' to ' + self.time_interval[1])
         self.subfigure[tab].set_xlabel(self.channelx[tab].get().replace('_',' '))
@@ -178,12 +187,17 @@ class channel_vs_channel:
     def _UpdateData(self, tab=0):
         '''
         '''
-        self.xchdat = self.pype.GetTimeSeries(self.channelx[tab].get(),
-                                         self.time_interval[0],
-                                         self.time_interval[1])
         self.ychdat = self.pype.GetTimeSeries(self.channely[tab].get(),
                                          self.time_interval[0],
                                          self.time_interval[1])
+        if self.channelx[tab].get() == 'time':
+            times = self.ychdat[0]#[dates.date2num(t) for t in self.ychdat[0]]
+            self.xchdat = (self.ychdat[0], times,
+                           'time' * len(self.ychdat[0]))
+        else:
+            self.xchdat = self.pype.GetTimeSeries(self.channelx[tab].get(),
+                                             self.time_interval[0],
+                                             self.time_interval[1])
         self.xdata = []
         self.ydata = []
         for tx, x in zip(self.xchdat[0], self.xchdat[1]):
