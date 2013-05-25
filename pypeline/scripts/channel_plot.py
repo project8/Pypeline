@@ -57,7 +57,6 @@ class channel_plot:
             self.toplevel = Tk.Tk()
         self.status_var = StringVar(value='initializing')
         self._SetupCanvas()
-        #self._UpdateData()
         self.BuildGui()
         if not toplevel:
             Tk.mainloop()
@@ -92,7 +91,7 @@ class channel_plot:
                    "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
         Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
-               ).grid(row=2, column=0, sticky='ew')
+               ).grid(row=2, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
     def _SetStart(self, event):
@@ -170,7 +169,7 @@ class channel_plot:
             self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
             self.subfigure[tab].set_xticklabels(self.subfigure[tab].get_xticklabels(), rotation=-45)
             self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
-                self.formatstr.split()[-1]))
+                "%m/%d %H:%M"))#self.formatstr.split()[-1])) self.formatstr = '%Y-%m-%d %H:%M:%S'
         else:
             self.subfigure[tab].plot(self.xdata, self.ydata)
         self.subfigure[tab].set_title(self.channely[tab].get() + ' vs ' +
