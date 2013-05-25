@@ -4,4 +4,4 @@ except ImportError:
     from check_pulse import check_pulse
 from dpph_lockin import dpph_lockin
 from run_mantis import run_mantis
-from channel_vs_channel import channel_vs_channel
+from channel_plot import channel_plot

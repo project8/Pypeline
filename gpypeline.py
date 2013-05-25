@@ -35,7 +35,7 @@ class App:
         # current time
         self.time = StringVar(value=datetime.now())
         # which script to run
-        self.which_script = StringVar(value="check_pulse")
+        self.which_script = StringVar(value="channel_plot")
         # which channel to get
         self.getchannelVar = StringVar()
         # get return
