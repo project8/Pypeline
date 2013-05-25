@@ -169,7 +169,7 @@ class channel_plot:
             self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
             self.subfigure[tab].set_xticklabels(self.subfigure[tab].get_xticklabels(), rotation=-45)
             self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
-                self.formatstr.split()[-1]))
+                "%m/%d %H:%M"))#self.formatstr.split()[-1])) self.formatstr = '%Y-%m-%d %H:%M:%S'
         else:
             self.subfigure[tab].plot(self.xdata, self.ydata)
         self.subfigure[tab].set_title(self.channely[tab].get() + ' vs ' +
