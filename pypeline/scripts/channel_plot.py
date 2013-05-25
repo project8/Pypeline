@@ -57,7 +57,6 @@ class channel_plot:
             self.toplevel = Tk.Tk()
         self.status_var = StringVar(value='initializing')
         self._SetupCanvas()
-        #self._UpdateData()
         self.BuildGui()
         if not toplevel:
             Tk.mainloop()
@@ -92,7 +91,7 @@ class channel_plot:
                    "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
         Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
-               ).grid(row=2, column=0, sticky='ew')
+               ).grid(row=2, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
     def _SetStart(self, event):
