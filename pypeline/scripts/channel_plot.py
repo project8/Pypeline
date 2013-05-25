@@ -23,7 +23,7 @@ from matplotlib import dates
 
 #local libs
 
-class channel_vs_channel:
+class channel_plot:
     '''
     '''
 
