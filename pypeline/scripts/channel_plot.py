@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import matplotlib
 matplotlib.use('TkAgg')
 
@@ -36,9 +38,7 @@ class channel_plot:
         '''
         self.pype = interface
         self.formatstr = '%Y-%m-%d %H:%M:%S'
-        self.plot_dicts = []
-#        self.channelx = []
-#        self.channely = []
+        self.plot_dicts = {}
         if isinstance(start_t, datetime):
             self.start_t = StringVar(value=start_t.strftime(self.formatstr))
         elif isinstance(start_t, str):
@@ -76,22 +76,21 @@ class channel_plot:
     def _AddSubplot(self):
         '''
         '''
-        self.plot_dicts.append({})
         plotnum = len(self.notebook.tabs())
-#        self.removei.set(plotnum+1)
+        self.plot_dicts[plotnum]={}
         frame = Frame(self.notebook)
         frame.pack(side='top', fill='both', expand='y')
         self.plot_dicts[plotnum]['xname']=StringVar(value='None')
+        self.plot_dicts['xunits'] = False
         self.plot_dicts[plotnum]['yname']=StringVar(value='None')
-#        self.channelx.append(StringVar(value='None'))
-#        self.channely.append(StringVar(value='None'))
+        self.plot_dicts['yunits'] = False
         self.subfigure.append(self.figure.add_subplot(1,1,1))
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
-        OptionMenu(frame, self.plot_dicts[plotnum]['xname'],#self.channelx[plotnum],
+        OptionMenu(frame, self.plot_dicts[plotnum]['xname'],
                    "None", "time", *self.pype.ListWithProperty('logging')
                    ).grid(row=0, column=1, sticky='ew')
-        OptionMenu(frame, self.plot_dicts[plotnum]['yname'],#self.channely[plotnum],
+        OptionMenu(frame, self.plot_dicts[plotnum]['yname'],
                    "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
         Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
@@ -206,32 +205,40 @@ class channel_plot:
     def _UpdateData(self, tab=0):
         '''
         '''
-        self.ychdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['yname'].get(),
-                                         self.time_interval[0],
-                                         self.time_interval[1])
-        if self.plot_dicts[tab]['xname'].get() == 'time':
-            times = self.ychdat[0]
-            self.xchdat = (self.ychdat[0], times, 'time' * len(self.ychdat[0]))
-        else:
-            self.xchdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['xname'].get(),
+        try:
+            ychdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['yname'].get(),
                                              self.time_interval[0],
                                              self.time_interval[1])
-        self.xdata = []
-        self.ydata = []
-        for tx, x in zip(self.xchdat[0], self.xchdat[1]):
-            xtmp = False
-            ytmp = False
-            dt = timedelta(seconds=60)
-            for ty, y in zip(self.ychdat[0], self.ychdat[1]):
-                if abs(ty - tx) < dt:
-                    dt = abs(ty - tx)
-                    xtmp = x
-                    ytmp = y
-            if xtmp and ytmp:
-                self.xdata.append(xtmp)
-                self.ydata.append(ytmp)
-        if self.xdata and self.ydata:
-            [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
+            if self.plot_dicts[tab]['xname'].get() == 'time':
+                xchdat = (ychdat[0], ychdat[0], 'time' * len(ychdat[0]))
+            else:
+                xchdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['xname'].get(),
+                                                 self.time_interval[0],
+                                                 self.time_interval[1])
+            if tab > 0 and ychdat[0]:
+                assert xchdat[2][0] == self.plot_dicts['xunit'], 'x units'
+                assert ychdat[2][0] == self.plot_dicts['yunit'], 'y units'
+           
+            self.xdata = []
+            self.ydata = []
+            if ychdat[0]:
+                for tx, x in zip(xchdat[0], xchdat[1]):
+                    xtmp = False
+                    ytmp = False
+                    dt = timedelta(seconds=60)
+                    for ty, y in zip(ychdat[0], ychdat[1]):
+                        if abs(ty - tx) < dt:
+                            dt = abs(ty - tx)
+                            xtmp = x
+                            ytmp = y
+                    if xtmp and ytmp:
+                        self.xdata.append(xtmp)
+                        self.ydata.append(ytmp)
+                [self.xdata, self.ydata] = zip(*sorted(zip(self.xdata, self.ydata)))
+                self.plot_dicts['xunit'] = xchdat[2][0]
+                self.plot_dicts['yunit'] = ychdat[2][0]
+        except AssertionError as e:
+            print('*'*60, '\n the', e[0], 'do not match the 0th line', '*'*60)
 
     def SaveFigure(self):
         '''
