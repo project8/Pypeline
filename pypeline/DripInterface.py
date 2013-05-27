@@ -36,6 +36,10 @@ try:
     from .SensorDumpInterface import _SensorDumpInterface
 except ImportError:
     from SensorDumpInterface import _SensorDumpInterface
+try:
+    from .PypelineErrors import NoResponseError
+except ImportError:
+    from PypelineErrors import NoResponseError
 
 
 class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface):
