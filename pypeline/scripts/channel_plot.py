@@ -36,8 +36,9 @@ class channel_plot:
         '''
         self.pype = interface
         self.formatstr = '%Y-%m-%d %H:%M:%S'
-        self.channelx = []
-        self.channely = []
+        self.plot_dicts = []
+#        self.channelx = []
+#        self.channely = []
         if isinstance(start_t, datetime):
             self.start_t = StringVar(value=start_t.strftime(self.formatstr))
         elif isinstance(start_t, str):
@@ -75,19 +76,22 @@ class channel_plot:
     def _AddSubplot(self):
         '''
         '''
+        self.plot_dicts.append({})
         plotnum = len(self.notebook.tabs())
-        self.removei.set(plotnum+1)
+#        self.removei.set(plotnum+1)
         frame = Frame(self.notebook)
         frame.pack(side='top', fill='both', expand='y')
-        self.channelx.append(StringVar(value='None'))
-        self.channely.append(StringVar(value='None'))
+        self.plot_dicts[plotnum]['xname']=StringVar(value='None')
+        self.plot_dicts[plotnum]['yname']=StringVar(value='None')
+#        self.channelx.append(StringVar(value='None'))
+#        self.channely.append(StringVar(value='None'))
         self.subfigure.append(self.figure.add_subplot(1,1,1))
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
-        OptionMenu(frame, self.channelx[plotnum],
+        OptionMenu(frame, self.plot_dicts[plotnum]['xname'],#self.channelx[plotnum],
                    "None", "time", *self.pype.ListWithProperty('logging')
                    ).grid(row=0, column=1, sticky='ew')
-        OptionMenu(frame, self.channely[plotnum],
+        OptionMenu(frame, self.plot_dicts[plotnum]['yname'],#self.channely[plotnum],
                    "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
         Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
@@ -96,25 +100,41 @@ class channel_plot:
 
     def _SetStart(self, event):
         '''
+            Note: event is automatically passed in by the binding, but unused
         '''
-        start_time = datetime.strptime(self.start_t.get(), self.formatstr)
-        stop = datetime.strptime(self.stop_t.get(), self.formatstr)
-        if start_time > stop:
-            print('start time must be before stop time')
-            return
-        self.time_interval[0] = self.start_t.get()
-        self.Update()
+        try:
+            start_time = datetime.strptime(self.start_t.get(), self.formatstr)
+            stop = datetime.strptime(self.stop_t.get(), self.formatstr)
+            assert (start_time < stop)
+            self.time_interval[0] = self.start_t.get()
+            self.Update()
+        except ValueError:
+            showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
+            self.start_t.set(self.time_interval[0])
+        except AssertionError:
+            showwarning('Warning', 'Start time must be before stop time')
+            self.start_t.set(self.time_interval[0])
+        except:
+            raise
 
-    def _SetStop(self, stop_time=False):
+    def _SetStop(self, event):
         '''
+            Note: event is automatically passed in by the binding, but unused
         '''
-        stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
-        start = datetime.strptime(self.start_t.get(), self.formatstr)
-        if stop_time < start:
-            print('stop time must be after start time')
-            return
-        self.time_interval[1] = self.stop_t.get()
-        self.Update()
+        try:
+            stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
+            start = datetime.strptime(self.start_t.get(), self.formatstr)
+            assert (start < stop_time)
+            self.time_interval[1] = self.stop_t.get()
+            self.Update()
+        except ValueError:
+            showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
+            self.stop_t.set(self.time_interval[1])
+        except AssertionError:
+            showwarning('Warning', 'Start time must be before stop time')
+            self.stop_t.set(self.time_interval[1])
+        except:
+            raise
 
     def BuildGui(self):
         '''
@@ -165,19 +185,19 @@ class channel_plot:
     def _MakePlot(self, tab=0):
         '''
         '''
-        if self.channelx[tab].get() == 'time':
+        if self.plot_dicts[tab]['xname'].get() == 'time':
             self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
             self.subfigure[tab].set_xticklabels(self.subfigure[tab].get_xticklabels(), rotation=-45)
             self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
-                "%m/%d %H:%M"))#self.formatstr.split()[-1])) self.formatstr = '%Y-%m-%d %H:%M:%S'
+                "%m/%d %H:%M"))
         else:
             self.subfigure[tab].plot(self.xdata, self.ydata)
-        self.subfigure[tab].set_title(self.channely[tab].get() + ' vs ' +
-                                 self.channelx[tab].get() +
+        self.subfigure[tab].set_title(self.plot_dicts[tab]['yname'].get() + ' vs ' +
+                                 self.plot_dicts[tab]['xname'].get() +
                                  '\n from ' + self.time_interval[0] +
                                  ' to ' + self.time_interval[1])
-        self.subfigure[tab].set_xlabel(self.channelx[tab].get().replace('_',' '))
-        self.subfigure[tab].set_ylabel(self.channely[tab].get().replace('_',' '))
+        self.subfigure[tab].set_xlabel(self.plot_dicts[tab]['xname'].get().replace('_',' '))
+        self.subfigure[tab].set_ylabel(self.plot_dicts[tab]['yname'].get().replace('_',' '))
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
@@ -186,15 +206,14 @@ class channel_plot:
     def _UpdateData(self, tab=0):
         '''
         '''
-        self.ychdat = self.pype.GetTimeSeries(self.channely[tab].get(),
+        self.ychdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['yname'].get(),
                                          self.time_interval[0],
                                          self.time_interval[1])
-        if self.channelx[tab].get() == 'time':
-            times = self.ychdat[0]#[dates.date2num(t) for t in self.ychdat[0]]
-            self.xchdat = (self.ychdat[0], times,
-                           'time' * len(self.ychdat[0]))
+        if self.plot_dicts[tab]['xname'].get() == 'time':
+            times = self.ychdat[0]
+            self.xchdat = (self.ychdat[0], times, 'time' * len(self.ychdat[0]))
         else:
-            self.xchdat = self.pype.GetTimeSeries(self.channelx[tab].get(),
+            self.xchdat = self.pype.GetTimeSeries(self.plot_dicts[tab]['xname'].get(),
                                              self.time_interval[0],
                                              self.time_interval[1])
         self.xdata = []
