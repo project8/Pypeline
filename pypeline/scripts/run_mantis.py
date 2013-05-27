@@ -3,6 +3,10 @@ from Tkinter import IntVar, StringVar, Label, Entry, Button, Checkbutton
 from inspect import getargspec
 #3rd party libs
 #local libs
+try:
+    from ..PypelineErrors import NoResponseError
+except ImportError:
+    from PypelineErrors import NoResponseError
 
 class __fake_bool:
     def __init__(self, value=False):
@@ -54,8 +58,11 @@ class run_mantis:
         if self.dodump.get():
             self.pype.DumpSensors(field_dict={'run_id':response['_id']})
         response.Wait()
-        filename = [line.split()[-1] for line in response['final'].split('\n') 
-                    if line.startswith('  *output')]
+        try:
+            filename = [line.split()[-1] for line in response['final'].split('\n') 
+                        if line.startswith('  *output')]
+        except:
+            raise NoResponseError('')
         self.status.set(filename[0] + ' written')
 
     def BuildGui(self):
