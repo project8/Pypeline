@@ -93,8 +93,6 @@ class channel_plot:
         OptionMenu(frame, self.plot_dicts[plotnum]['yname'],
                    "None", *self.pype.ListWithProperty('logging')
                    ).grid(row=1, column=1, sticky='ew')
-        Button(frame, text='Update', command=lambda: self.Update(tab=plotnum)
-               ).grid(row=2, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
     def _SetStart(self, event, isFirst=True):
