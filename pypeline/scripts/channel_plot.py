@@ -97,7 +97,7 @@ class channel_plot:
                ).grid(row=2, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
-    def _SetStart(self, event):
+    def _SetStart(self, event, isFirst=True):
         '''
             Note: event is automatically passed in by the binding, but unused
         '''
@@ -106,17 +106,23 @@ class channel_plot:
             stop = datetime.strptime(self.stop_t.get(), self.formatstr)
             assert (start_time < stop)
             self.time_interval[0] = self.start_t.get()
+            if isFirst:
+                self._SetStop(event, isFirst=False)
             self.Update()
         except ValueError:
             showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
             self.start_t.set(self.time_interval[0])
         except AssertionError:
-            showwarning('Warning', 'Start time must be before stop time')
-            self.start_t.set(self.time_interval[0])
+            if isFirst:
+                self._SetStop(event=None, isFirst=False)
+            else:
+                showwarning('Warning', 'Start time must be before stop time')
+                self.start_t.set(self.time_interval[0])
+
         except:
             raise
 
-    def _SetStop(self, event):
+    def _SetStop(self, event, isFirst=True):
         '''
             Note: event is automatically passed in by the binding, but unused
         '''
@@ -125,13 +131,18 @@ class channel_plot:
             start = datetime.strptime(self.start_t.get(), self.formatstr)
             assert (start < stop_time)
             self.time_interval[1] = self.stop_t.get()
+            if isFirst:
+                self._SetStart(event, isFirst=False)
             self.Update()
         except ValueError:
             showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
             self.stop_t.set(self.time_interval[1])
         except AssertionError:
-            showwarning('Warning', 'Start time must be before stop time')
-            self.stop_t.set(self.time_interval[1])
+            if isFirst:
+                self._SetStart(event=None, isFirst=False)
+            else:
+                showwarning('Warning', 'Start time must be before stop time')
+                self.stop_t.set(self.time_interval[1])
         except:
             raise
 
@@ -171,12 +182,12 @@ class channel_plot:
         self.status_var.set('updating')
         if tab == 'All':
             tab = range(len(self.notebook.tabs()))
+            self.subfigure[0].cla()
         elif isinstance(tab, int):
             tab = [tab]
         else:
             raise ValueError('tab should be "All" or an int')
         for tabi in tab:
-            self.subfigure[tabi].cla()
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
         self.status_var.set('done')
