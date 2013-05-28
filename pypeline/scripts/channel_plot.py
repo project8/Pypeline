@@ -145,6 +145,8 @@ class channel_plot:
         '''
         '''
         self.removei = IntVar(value=0)
+        self.relative_start_time = BooleanVar(value=False)
+        self.relative_stop_time = BooleanVar(value=False)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
         self._AddSubplot()
@@ -154,13 +156,16 @@ class channel_plot:
         start_entry.bind('<Return>', self._SetStart)
         start_entry.bind('<KP_Enter>', self._SetStart)
         start_entry.grid(row=4, column=2, columnspan=2)
+        Checkbutton(self.toplevel, text='Hours ago',
+                    variable=self.relative_start_time).grid(row=5, column=2)
 
         Label(self.toplevel, text='Stop Time').grid(row=6, column =1)
         stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
         stop_entry.bind('<Return>', self._SetStop)
         stop_entry.bind('<KP_Enter>', self._SetStop)
         stop_entry.grid(row=6, column=2, columnspan=2)
-
+        Checkbutton(self.toplevel, text='Now',
+                    variable=self.relative_stop_time).grid(row=7, column=2)
 
         Button(self.toplevel, text="Update All", command=lambda: self.Update(tab='All')
                ).grid(row=8, column=1)
