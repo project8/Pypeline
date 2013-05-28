@@ -29,11 +29,15 @@ class channel_plot:
     '''
     '''
 
-    def __init__(self, interface, toplevel=False,
-                 start_t=datetime(2013, 5, 13, 12, 10, 0),#default should become false
-                 stop_t=datetime(2013, 5, 13, 12, 20, 0)):#default should become false
+    def __init__(self, interface, toplevel=False, start_t=False, stop_t=False):
+#                 start_t=datetime(2013, 5, 13, 12, 10, 0),#default should become false
+#                 stop_t=datetime(2013, 5, 13, 12, 20, 0)):#default should become false
         '''
         '''
+        if not start_t:
+            start_t = datetime.now() - timedelta(hours=2)
+        if not stop_t:
+            stop_t = datetime.now()
         self.pype = interface
         self.formatstr = '%Y-%m-%d %H:%M:%S'
         self.plot_dicts = {}
@@ -98,12 +102,9 @@ class channel_plot:
         '''
         try:
             if self.relative_start_time.get():
-                print(self.relative_start_time.get())
-                print('should be rel')
-                start_time = datetime.now() - timedelta(hours=float(self.start_t.get()))
+                hours = float(self.start_t.get())
+                start_time = datetime.now() - timedelta(hours=hours)
             else:
-                print('not rel')
-                print(self.relative_start_time.get())
                 start_time = datetime.strptime(self.start_t.get(), self.formatstr)
             stop = datetime.strptime(self.stop_t.get(), self.formatstr)
             assert (start_time < stop)
@@ -136,7 +137,11 @@ class channel_plot:
                 stop_time = datetime.now()
             else:
                 stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
-            start = datetime.strptime(self.start_t.get(), self.formatstr)
+            if self.relative_start_time.get():
+                hours = float(self.start_t.get())
+                start = datetime.now() - timedelta(hours=hours)
+            else:
+                start = datetime.strptime(self.start_t.get(), self.formatstr)
             assert (start < stop_time)
             self.time_interval[1] = stop_time.strftime(self.formatstr)
             if isFirst:
@@ -209,7 +214,6 @@ class channel_plot:
         '''
         '''
         self._SetStart()
-        self._SetStop()
         self.Update()
 
     def _MakePlot(self, tab=0):
