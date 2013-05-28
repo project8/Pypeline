@@ -7,11 +7,11 @@ matplotlib.use('TkAgg')
 from sys import version_info, exit
 if version_info[0] < 3:
     import Tkinter as Tk
-    from Tkinter import StringVar, IntVar, Label, OptionMenu, Entry, Button
+    from Tkinter import StringVar, BooleanVar, IntVar, Label, OptionMenu, Entry, Button, Checkbutton
     from tkFileDialog import asksaveasfilename
 else:
     import tkinter as Tk
-    from tkinter import StringVar, IntVar, Label, OptionMenu, Entry, Button
+    from tkinter import StringVar, BooleanVar, IntVar, Label, OptionMenu, Entry, Button, Checkbutton
     from tkFileDialog import asksaveasfilename
 from ttk import Notebook, Frame
 from tkMessageBox import showwarning
@@ -30,8 +30,6 @@ class channel_plot:
     '''
 
     def __init__(self, interface, toplevel=False,
-                 channelx='hall_probe_voltage',#default should become ''
-                 channely='hall_probe_voltage',#default should become ''
                  start_t=datetime(2013, 5, 13, 12, 10, 0),#default should become false
                  stop_t=datetime(2013, 5, 13, 12, 20, 0)):#default should become false
         '''
@@ -71,7 +69,6 @@ class channel_plot:
         self.notebook = Notebook(self.toplevel)
         self.notebook.grid(row=1, column=1, rowspan=3, columnspan=3,
                            sticky='nsew')
-        #self._AddSubplot()
 
     def _AddSubplot(self):
         '''
@@ -158,20 +155,20 @@ class channel_plot:
         start_entry.bind('<KP_Enter>', self._SetStart)
         start_entry.grid(row=4, column=2, columnspan=2)
 
-        Label(self.toplevel, text='Stop Time').grid(row=5, column =1)
+        Label(self.toplevel, text='Stop Time').grid(row=6, column =1)
         stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
         stop_entry.bind('<Return>', self._SetStop)
         stop_entry.bind('<KP_Enter>', self._SetStop)
-        stop_entry.grid(row=5, column=2, columnspan=2)
+        stop_entry.grid(row=6, column=2, columnspan=2)
 
 
         Button(self.toplevel, text="Update All", command=lambda: self.Update(tab='All')
-               ).grid(row=6, column=1)
+               ).grid(row=8, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
-               ).grid(row=6, column=2)
+               ).grid(row=8, column=2)
         self.status_var.set('done')
 
-        Label(self.toplevel, textvariable=self.status_var).grid(row=11, column=2)
+        Label(self.toplevel, textvariable=self.status_var).grid(row=20, column=2)
 
     def Update(self, tab='All'):
         '''
