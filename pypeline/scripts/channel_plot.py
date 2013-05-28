@@ -92,20 +92,30 @@ class channel_plot:
                    ).grid(row=1, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
-    def _SetStart(self, event, isFirst=True):
+    def _SetStart(self, event=None, isFirst=True):
         '''
             Note: event is automatically passed in by the binding, but unused
         '''
         try:
-            start_time = datetime.strptime(self.start_t.get(), self.formatstr)
+            if self.relative_start_time.get():
+                print(self.relative_start_time.get())
+                print('should be rel')
+                start_time = datetime.now() - timedelta(hours=float(self.start_t.get()))
+            else:
+                print('not rel')
+                print(self.relative_start_time.get())
+                start_time = datetime.strptime(self.start_t.get(), self.formatstr)
             stop = datetime.strptime(self.stop_t.get(), self.formatstr)
             assert (start_time < stop)
-            self.time_interval[0] = self.start_t.get()
+            self.time_interval[0] = start_time.strftime(self.formatstr)
             if isFirst:
                 self._SetStop(event, isFirst=False)
             self.Update()
         except ValueError:
-            showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
+            if self.relative_start_time.get():
+                showwarning('Warning', 'Hours ago must be a float')
+            else:
+                showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
             self.start_t.set(self.time_interval[0])
         except AssertionError:
             if isFirst:
@@ -117,15 +127,18 @@ class channel_plot:
         except:
             raise
 
-    def _SetStop(self, event, isFirst=True):
+    def _SetStop(self, event=None, isFirst=True):
         '''
             Note: event is automatically passed in by the binding, but unused
         '''
         try:
-            stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
+            if self.relative_stop_time.get():
+                stop_time = datetime.now()
+            else:
+                stop_time = datetime.strptime(self.stop_t.get(), self.formatstr)
             start = datetime.strptime(self.start_t.get(), self.formatstr)
             assert (start < stop_time)
-            self.time_interval[1] = self.stop_t.get()
+            self.time_interval[1] = stop_time.strftime(self.formatstr)
             if isFirst:
                 self._SetStart(event, isFirst=False)
             self.Update()
@@ -167,7 +180,7 @@ class channel_plot:
         Checkbutton(self.toplevel, text='Now',
                     variable=self.relative_stop_time).grid(row=7, column=2)
 
-        Button(self.toplevel, text="Update All", command=lambda: self.Update(tab='All')
+        Button(self.toplevel, text="Update All", command=self.UpdateButton
                ).grid(row=8, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
                ).grid(row=8, column=2)
@@ -191,6 +204,13 @@ class channel_plot:
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
         self.status_var.set('done')
+
+    def UpdateButton(self):
+        '''
+        '''
+        self._SetStart()
+        self._SetStop()
+        self.Update()
 
     def _MakePlot(self, tab=0):
         '''
