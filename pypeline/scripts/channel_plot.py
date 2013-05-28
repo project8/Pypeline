@@ -165,6 +165,7 @@ class channel_plot:
         self.removei = IntVar(value=0)
         self.relative_start_time = BooleanVar(value=False)
         self.relative_stop_time = BooleanVar(value=False)
+        self.continuous_updates = BooleanVar(value=False)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
         self._AddSubplot()
@@ -189,9 +190,14 @@ class channel_plot:
                ).grid(row=8, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
                ).grid(row=8, column=2)
+        Checkbutton(self.toplevel, text='Continuous (Button above to start)',
+                    variable=self.continuous_updates
+                    ).grid(row=9, column=1, columnspan=2)
         self.status_var.set('done')
 
-        Label(self.toplevel, textvariable=self.status_var).grid(row=20, column=2)
+        Label(self.toplevel, textvariable=self.status_var).grid(row=20,
+                                                                column=1,
+                                                                columnspan=2)
 
     def Update(self, tab='All'):
         '''
@@ -208,7 +214,9 @@ class channel_plot:
         for tabi in tab:
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
-        self.status_var.set('done')
+        self.status_var.set('updated at: ' + datetime.now().strftime(self.formatstr))
+        if self.continuous_updates.get() and self.relative_stop_time.get():
+            self.toplevel.after(120000, self.Update)
 
     def UpdateButton(self):
         '''
