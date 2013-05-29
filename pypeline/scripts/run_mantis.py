@@ -1,5 +1,5 @@
 #standard libs
-from Tkinter import IntVar, StringVar, Label, Entry, Button, Checkbutton
+from Tkinter import IntVar, StringVar, Label, Entry, Button, Checkbutton, OptionMenu, Spinbox
 from inspect import getargspec
 #3rd party libs
 #local libs
@@ -79,10 +79,15 @@ class run_mantis:
             if keyname in ['self', 'pype']:
                 continue
             self.gui_input_dict[keyname] = StringVar(value=str(initval))
-            Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
-            Entry(self.toplevel,
-                  textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
-                                                                  column=1)
+            if keyname == "mode":
+                Label(self.toplevel, text="mode").grid(row=rowi, column=0)
+                Spinbox(self.toplevel, textvariable=self.gui_input_dict[keyname],
+                        values=(1,2)).grid(row=rowi, column=1)
+            else:
+                Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
+                Entry(self.toplevel,
+                      textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
+                                                                      column=1)
         rowi += 1
         Button(self.toplevel, text="Start Run",
                command=self.DoRun).grid(row=rowi, column=0)
