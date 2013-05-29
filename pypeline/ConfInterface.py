@@ -2,6 +2,7 @@
     Class specifically for interactions with dripline's configuration database.
 '''
 
+from __future__ import print_function
 # standard imports
 from time import sleep
 from uuid import uuid4

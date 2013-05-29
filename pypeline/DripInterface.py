@@ -2,6 +2,7 @@
     File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
 '''
 
+from __future__ import print_function
 # standard imports
 from time import sleep
 from uuid import uuid4
