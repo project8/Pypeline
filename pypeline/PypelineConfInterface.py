@@ -33,13 +33,17 @@ class _PypelineConfInterface:
             result = self._pype_conf_db[ids[0]]
         elif len(ids) ==0:
             conf_dict = {
+                '_id':uuid4().hex,
                 'channel':chname,
                 'description':"",
                 'result_units':"",
                 'final_units':"",
                 'properties':[]
             }
-            result = self._pype_conf_db[
+            self._pype_conf_db.save(conf_dict)
+            result = self._pype_conf_db[conf_dict['_id']]
+        else:
+            raise Exception('too many database docs found')
         return result
 
     def UpdateChannel(self, channel, update_dict):
@@ -47,7 +51,10 @@ class _PypelineConfInterface:
         '''
         ch_doc = self.GetChannelDoc(channel)
         ch_doc.update(update_dict)
-        ch_doc.store(self._pype_conf_db)
+        ch_new = Document.load(self._pype_conf_db, ch_doc['_id'])
+        for key in ch_doc.keys():
+            ch_new[key] = ch_doc[key]
+        ch_new.store(self._pype_conf_db)
 
     # ListOfChannels and ListWithProperty should be one method with optional arugments
     def ListOfChannels(self):
