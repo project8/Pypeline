@@ -9,7 +9,7 @@ from ...usegnuplot import Gnuplot
 from .dpph_utils import _GetVoltages
 
 
-def dpph_lockin_fft(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
+def fft_filter(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     '''
         Do a dpph scan using DripInterface instance <pype>
 

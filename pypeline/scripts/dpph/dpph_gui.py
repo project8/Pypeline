@@ -5,9 +5,9 @@ from tkFileDialog import asksaveasfile
 # 3rd party
 from numpy import pi
 # local
-from .dpph_lockin import dpph_lockin
-from .dpph_lockin_fft import dpph_lockin_fft
-methods = ['dpph_lockin', 'dpph_lockin_fft']
+from .linear_fit import linear_fit
+from .fft_filter import fft_filter
+methods = ['linear_fit', 'fft_filter']
 
 
 class __non_guiVar:
