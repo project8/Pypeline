@@ -7,6 +7,8 @@ from numpy import pi
 # local
 from .dpph_lockin import dpph_lockin
 from .dpph_lockin_fft import dpph_lockin_fft
+methods = ['dpph_lockin', 'dpph_lockin_fft']
+
 
 class __non_guiVar:
     def __init__(self, value=False):
@@ -27,17 +29,13 @@ class measure_dpph:
         self.runargs = runargs
         self.toplevel = toplevel
 
-        if toplevel:
-            self.guessval = DoubleVar(value=25000)
-            self.guessunits = StringVar(value="MHz")
-            self.nsigmavar = DoubleVar(value=20)
-            self.nvoltsvar = DoubleVar(value=9e-7)
-            self.BuildGui()
-        else:
-            self.guessval = __non_guiVar(value=25000)
-            self.guessunits = __non_guiVar(value="MHz")
-            self.nsigmavar = __non_guiVar(value=20)
-            self.nvoltsvar = __non_guiVar(value=9e-7)
+        self.guessval = DoubleVar(value=25000)
+        self.guessunits = StringVar(value="MHz")
+        self.nsigmavar = DoubleVar(value=20)
+        self.nvoltsvar = DoubleVar(value=9e-7)
+        self.methodVar = StringVar(value='dpph_lockin')
+        self.powerVar = DoubleVar(value=-75)
+        self.BuildGui()
 
     def DoRun(self):
         '''
@@ -48,15 +46,21 @@ class measure_dpph:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get() / freq_to_field)
             self.guessunits.set("MHz")
-        dpph_result, dpph_dataset = (dpph_lockin(self.pype,
-                                     guess=self.guessval.get(),
-                                     stop_nsigma=self.nsigmavar.get(),
-                                     stop_voltage=self.nvoltsvar.get()))
+        if self.methodVar.get() == 'dpph_lockin':
+            dpph_result, dpph_dataset = (dpph_lockin(self.pype,
+                                         guess=self.guessval.get(),
+                                         stop_nsigma=self.nsigmavar.get(),
+                                         stop_voltage=self.nvoltsvar.get(),
+                                         power=self.powerVar.get()))
+        elif self.methodVar.get() == 'dpph_lockin_fft':
+            dpph_result, dpph_dataset = (dpph_lockin_fft(self.pype,
+                                         guess=self.guessval.get(),
+                                         stop_nsigma=self.nsigmavar.get(),
+                                         stop_voltage=self.nvoltsvar.get(),
+                                         power=self.powerVar.get()))
+
         self.dpph_result = dpph_result
         self.dpph_dataset = dpph_dataset
-
-
-        pass
 
     def BuildGui(self):
         '''
@@ -78,16 +82,22 @@ class measure_dpph:
         Entry(self.toplevel, textvariable=self.nvoltsvar
               ).grid(row=2, column=1, sticky='ew')
         Label(self.toplevel, text='[V]', justify='left').grid(row=2, column=2)
+        Label(self.toplevel, text='Input Power').grid(row=3, column=0, sticky='ew')
+        Entry(self.toplevel, textvariable=self.powerVar
+              ).grid(row=3, column=1, sticky='ew')
+        Label(self.toplevel, text='[dBm]', justify='left').grid(row=3, column=2)
         # get hall probe guses
         Button(self.toplevel, text="Hall Probe", command=self.checkhallprobe
                ).grid(row=0, column=3)
         # buttons to do the run etc
         Button(self.toplevel, text="Start Scan", command=self.DoRun
-               ).grid(row=3, column=0)
+               ).grid(row=4, column=0)
+        OptionMenu(self.toplevel, self.methodVar, *methods
+                   ).grid(row=4, column=1)
         Button(self.toplevel, text="Save Plot Data",
-               command=self.store_dpph_data_json).grid(row=3, column=1)
+               command=self.store_dpph_data_json).grid(row=4, column=2)
         Button(self.toplevel, text="Log Result", command=self.log_dpph
-               ).grid(row=3, column=2)
+               ).grid(row=4, column=3)
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()

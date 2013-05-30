@@ -6,9 +6,10 @@ from numpy import multiply,concatenate
 from scipy import fftpack
 # local
 from ...usegnuplot import Gnuplot
+from .dpph_utils import _GetVoltages
 
 
-def dpph_lockin_fft(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7):
+def dpph_lockin_fft(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     '''
         Do a dpph scan using DripInterface instance <pype>
 
@@ -43,7 +44,7 @@ def dpph_lockin_fft(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7):
 
     #-- Take a scan over frequencies --
     print('Taking Coarse Scan')
-    VDC = _GetVoltages(pype, freqs)
+    VDC = _GetVoltages(pype, freqs, power=power)
     #----------------------------------
     
     #--- apply the filter ---

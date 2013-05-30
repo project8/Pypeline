@@ -8,7 +8,7 @@ from ...usegnuplot import Gnuplot
 from .dpph_utils import _GetVoltages
 
 
-def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
+def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     '''
         Do a dpph scan using DripInterface instance <pype>
 
@@ -28,7 +28,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
 
     # determine a mean and standard deviation
     print('determining mean and standard deviation')
-    VDC = _GetVoltages(pype, freqs[-num_stats_freqs:])
+    VDC = _GetVoltages(pype, freqs[-num_stats_freqs:], power=power)
     VDC_freqs = freqs[-num_stats_freqs:]
     VDC_std = std(VDC)
     VDC_mean = mean(VDC)
@@ -39,7 +39,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
     interesting_freq = False
     print('looking for structure')
     VDC = _GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
-                      stop_sigma=stop_nsigma, stop_volts=stop_voltage)
+                      stop_sigma=stop_nsigma, stop_volts=stop_voltage, power=power)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
@@ -50,7 +50,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
         assert interesting_freq, 'interesting_freq'
         fine_freqs = range(interesting_freq - 25, interesting_freq + 20, 2)
         print('coarse scan of structure')
-        VDC_fine = _GetVoltages(pype, fine_freqs)
+        VDC_fine = _GetVoltages(pype, fine_freqs, power=power)
         dataset = sorted(zip(fine_freqs, VDC_fine))
         # find zero crossing
         min_index = VDC_fine.index(min(VDC_fine))
@@ -70,7 +70,7 @@ def dpph_lockin(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7):
             # take some very finely spaced data for doing a fit
             very_fine_freqs = arange(est - 1, est + 1, 0.1)
             print('fine scan of zero crossing')
-            VDC_very_fine = _GetVoltages(pype, very_fine_freqs)
+            VDC_very_fine = _GetVoltages(pype, very_fine_freqs, power=power)
             dataset = sorted(dataset + zip(very_fine_freqs, VDC_very_fine))
 
             fitfunc = lambda p, x: p[1] * (x - p[0])
