@@ -1,3 +1,4 @@
+from __future__ import print_function
 # built in
 from time import sleep
 from sys import stdout

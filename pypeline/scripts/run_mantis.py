@@ -1,14 +1,26 @@
 #standard libs
-from Tkinter import StringVar, Label, Entry, Button 
+from Tkinter import IntVar, StringVar, Label, Entry, Button, Checkbutton, OptionMenu, Spinbox
 from inspect import getargspec
 #3rd party libs
 #local libs
+try:
+    from ..PypelineErrors import NoResponseError
+except ImportError:
+    from PypelineErrors import NoResponseError
+
+class __fake_bool:
+    def __init__(self, value=False):
+        self.value = value
+    def get(self):
+        return (self.value is True)
+    def set(self, value):
+        self.value = (value is True)
 
 class run_mantis:
     '''
     '''
 
-    def __init__(self, pype, toplevel=False, **runargs):
+    def __init__(self, pype, toplevel=False, dodump=False, **runargs):
         '''
             Script to run mantis, if called from within gpypeline, provides
             gui interface.
@@ -17,6 +29,7 @@ class run_mantis:
                 <pype>  A DripInterface object
                 <toplevel> A tkinter Toplevel instance (should only be used
                            internally by gpypeline)
+                <dodump> Is a bool, if True, run SensorDump() before mantis
                 <**runargs> any keword arguments for DripInterface.RunMantis
                             method
         '''
@@ -25,8 +38,10 @@ class run_mantis:
         self.status = StringVar(value='Ready')
 
         if not toplevel:
+            self.dodump = __fake_bool(value=(dodump is True))
             self.DoRun()
         else:
+            self.dodump = IntVar(value=(dodump is True))
             self.toplevel = toplevel
             self.BuildGui()
 
@@ -39,9 +54,15 @@ class run_mantis:
                 self.runargs[key]=self.gui_input_dict[key].get()
         except:
             pass
-        response = self.pype.RunMantis(**self.runargs).Wait()
-        filename = [line.split()[-1] for line in response['final'].split('\n') 
-                    if line.startswith('  *output')]
+        response = self.pype.RunMantis(**self.runargs)
+        if self.dodump.get():
+            self.pype.DumpSensors(field_dict={'run_id':response['_id']})
+        response.Wait()
+        try:
+            filename = [line.split()[-1] for line in response['final'].split('\n') 
+                        if line.startswith('  *output')]
+        except:
+            raise NoResponseError('')
         self.status.set(filename[0] + ' written')
 
     def BuildGui(self):
@@ -58,11 +79,19 @@ class run_mantis:
             if keyname in ['self', 'pype']:
                 continue
             self.gui_input_dict[keyname] = StringVar(value=str(initval))
-            Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
-            Entry(self.toplevel,
-                  textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
-                                                                  column=1)
+            if keyname == "mode":
+                Label(self.toplevel, text="mode").grid(row=rowi, column=0)
+                Spinbox(self.toplevel, textvariable=self.gui_input_dict[keyname],
+                        values=(1,2)).grid(row=rowi, column=1)
+            else:
+                Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
+                Entry(self.toplevel,
+                      textvariable=self.gui_input_dict[keyname]).grid(row=rowi,
+                                                                      column=1)
         rowi += 1
-        startbt = Button(self.toplevel, text="Start Run",
-                         command=self.DoRun).grid(row=rowi, column=0)
+        Button(self.toplevel, text="Start Run",
+               command=self.DoRun).grid(row=rowi, column=0)
         Label(self.toplevel, textvariable=self.status).grid(row=rowi, column=1)
+        rowi += 1
+        Checkbutton(self.toplevel, text="Do Sensor Dump",
+                    variable=self.dodump).grid(row=rowi, column=0)

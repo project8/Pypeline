@@ -35,7 +35,7 @@ class App:
         # current time
         self.time = StringVar(value=datetime.now())
         # which script to run
-        self.which_script = StringVar(value="check_pulse")
+        self.which_script = StringVar(value="channel_plot")
         # which channel to get
         self.getchannelVar = StringVar()
         # get return
@@ -128,18 +128,9 @@ class App:
             Update displayed values
         '''
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
-        latest = self.pype._log_database.view('pypeline_view/latest_values')
-        for channel in self.loggers_list:
-            ch_val = latest[channel].rows[0]['value']['cal_val']
-            if ch_val:
-                entrylist = ch_val.split()
-                update = []
-                for snip in entrylist:
-                    try:
-                        update.append('%.5E' % float(snip))
-                    except ValueError:
-                        update.append(snip)
-                self.loggers_dict[channel].set(" ".join(update))
+        latest = self.pype.GetLatestValues()
+        for key in latest:
+            self.loggers_dict[key].set(latest[key])
         self.timeval.after(2000, self.update_values)
 
     def GetChannel(self):

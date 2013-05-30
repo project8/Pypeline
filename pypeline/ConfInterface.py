@@ -2,6 +2,7 @@
     Class specifically for interactions with dripline's configuration database.
 '''
 
+from __future__ import print_function
 # standard imports
 from time import sleep
 from uuid import uuid4
@@ -18,7 +19,7 @@ except ImportError:
 class _ConfInterface:
 
     '''
-        Class for interactions with the configurations database
+        Class for interactions with the dripline configurations database
 
         This class is meant to be internal to pypeline and should NOT be used directly.
     '''

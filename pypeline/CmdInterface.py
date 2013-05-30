@@ -217,3 +217,30 @@ class _CmdInterface:
         }
         self._cmd_database.save(run_doc)
         return result
+
+    def RunSweepline( self, points, events, input ):
+        '''
+            Posts a "run" document calling a non-mantis process
+
+            Inputs:
+                <points> number of fft points to use
+                <event> max number of records to use
+                <input> input file to process
+
+            Returns:
+                A DripResponse instance.
+        '''
+        result = DripResponse( self._cmd_database, uuid4().hex )
+        run_doc = {
+            '_id':result['_id'],
+            'type':'command',
+            'command':{
+                "do":"run",
+                "subprocess":"sweepline",
+                "points":str( points ),
+                "events":str( events ),
+                "input":input
+            },
+        }
+        self._cmd_database.save( run_doc )
+        return result

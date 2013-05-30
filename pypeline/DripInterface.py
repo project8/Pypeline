@@ -2,6 +2,7 @@
     File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
 '''
 
+from __future__ import print_function
 # standard imports
 from time import sleep
 from uuid import uuid4
@@ -28,9 +29,21 @@ try:
     from .LogInterface import _LogInterface
 except ImportError:
     from LogInterface import _LogInterface
+try:
+    from .PypelineConfInterface import _PypelineConfInterface
+except ImportError:
+    from PypelineConfInterface import _PypelineConfInterface
+try:
+    from .SensorDumpInterface import _SensorDumpInterface
+except ImportError:
+    from SensorDumpInterface import _SensorDumpInterface
+try:
+    from .PypelineErrors import NoResponseError
+except ImportError:
+    from PypelineErrors import NoResponseError
 
 
-class DripInterface:
+class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface):
 
     '''
         Class to facilitate user interact with Dripline via couchDB. The
@@ -56,24 +69,15 @@ class DripInterface:
                 no return
         '''
         self._server = CouchServer(dripline_url)
+        _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
+        _SensorDumpInterface.__init__(self, self._server['pypeline_sensor_dump'])
+        _LogInterface.__init__(self, self._server['dripline_logged_data'])
         self._timeout = 15  # timeout is 15 seconds...
         self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
-        if (self._server.__contains__('dripline_cmd')):
-            self._cmd_database = self._server['dripline_cmd']
-            self._cmd_interface = _CmdInterface(self._cmd_database)
-        else:
-            raise UserWarning('The dripline command database was not found!')
-        if (self._server.__contains__('dripline_conf')):
-            self._conf_database = self._server['dripline_conf']
-            self._conf_interface = _ConfInterface(self._conf_database)
-        else:
-            raise UserWarning('The dripline conf database was not found!')
-        if (self._server.__contains__('dripline_logged_data')):
-            self._log_database = self._server['dripline_logged_data']
-            self._log_interface = _LogInterface(self._log_database)
-        else:
-            raise UserWarning('The dripline conf database was not found!')
+        self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
+        self._conf_interface = _ConfInterface(self._server['dripline_conf'])
+        #self._log_interface = _LogInterface(self._server['dripline_logged_data'])
 
     def Get(self, channel='', wait=False):
         '''
@@ -269,6 +273,14 @@ class DripInterface:
         if not timestamp:
             timestamp = datetime.now()
         return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
+
+    def DumpSensors(self, field_dict={}):
+        '''
+            Read all sensors with the property 'dump' and store to the sensor dump database
+        '''
+        dumps = [self.Get(ch).Wait() for ch in self.ListWithProperty('dump')]
+        dumplist = [resp for resp in dumps if resp.has_key('final')]
+        self._StoreDump(dumplist, field_dict)
 
     def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''
