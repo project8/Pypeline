@@ -46,14 +46,14 @@ class measure_dpph:
         if self.guessunits.get() == "kG":
             self.guessval.set(self.guessval.get() / freq_to_field)
             self.guessunits.set("MHz")
-        if self.methodVar.get() == 'dpph_lockin':
-            dpph_result, dpph_dataset = (dpph_lockin(self.pype,
+        if self.methodVar.get() == 'linear_fit':
+            dpph_result, dpph_dataset = (linear_fit(self.pype,
                                          guess=self.guessval.get(),
                                          stop_nsigma=self.nsigmavar.get(),
                                          stop_voltage=self.nvoltsvar.get(),
                                          power=self.powerVar.get()))
-        elif self.methodVar.get() == 'dpph_lockin_fft':
-            dpph_result, dpph_dataset = (dpph_lockin_fft(self.pype,
+        elif self.methodVar.get() == 'fft_filter':
+            dpph_result, dpph_dataset = (fft_filter(self.pype,
                                          guess=self.guessval.get(),
                                          stop_nsigma=self.nsigmavar.get(),
                                          stop_voltage=self.nvoltsvar.get(),
