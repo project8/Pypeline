@@ -3,6 +3,7 @@
 '''
 
 # standard imports
+from uuid import uuid4
 # 3rd party imports
 from couchdb.mapping import Document, TextField, ListField
 # local imports
@@ -30,6 +31,15 @@ class _PypelineConfInterface:
         ids = [row['id'] for row in channels.rows if row['key'] == channel]
         if len(ids) == 1:
             result = self._pype_conf_db[ids[0]]
+        elif len(ids) ==0:
+            conf_dict = {
+                'channel':chname,
+                'description':"",
+                'result_units':"",
+                'final_units':"",
+                'properties':[]
+            }
+            result = self._pype_conf_db[
         return result
 
     def UpdateChannel(self, channel, update_dict):
