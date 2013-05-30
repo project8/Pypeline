@@ -4,6 +4,7 @@
 
 # standard imports
 # 3rd party imports
+from couchdb.mapping import Document, TextField, ListField
 # local imports
 
 
@@ -19,6 +20,30 @@ class _PypelineConfInterface:
             <pype_conf_database> is the pypeline configuration database (element of a couchdb Server object)
         '''
         self._pype_conf_db = pype_conf_database
+
+    def GetChannelDoc(self, channel):
+        '''
+            Return the couch doc with configurations for channel <channel>
+        '''
+        result = None
+        channels = self._pype_conf_db.view('channel_lists/all')
+        ids = [row['id'] for row in channels.rows if row['key'] == channel]
+        if len(ids) == 1:
+            result = self._pype_conf_db[ids[0]]
+        return result
+
+    def UpdateChannel(self, channel, update_dict):
+        '''
+        '''
+        ch_doc = self.GetChannelDoc(channel)
+        ch_doc.update(update_dict)
+        ch_doc.store(self._pype_conf_db)
+
+    # ListOfChannels and ListWithProperty should be one method with optional arugments
+    def ListOfChannels(self):
+        '''
+        '''
+        return [row['key'] for row in self._pype_conf_db.view('channel_lists/all')]
 
     def ListWithProperty(self, property_name):
         '''
