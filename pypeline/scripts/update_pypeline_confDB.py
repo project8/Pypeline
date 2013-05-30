@@ -42,13 +42,6 @@ class update_pypeline_confDB:
     def _AddTab(self, chname):
         '''
         '''
-#        conf_dict = {
-#            'channel':chname,
-#            'description':"",
-#            'result_units':"",
-#            'final_units':"",
-#            'properties':[]
-#        }
         tkvars = {
             'channel':StringVar(),
             'description':StringVar(),
@@ -100,5 +93,4 @@ class update_pypeline_confDB:
                     if tkdict['properties'][prop].get():
                         props.append(prop)
                 tkdict[key] = props
-      #  old_doc = Document(self.
         self.pype.UpdateChannel(chname, tkdict)
