@@ -111,7 +111,7 @@ class App:
         self.run_script.grid(row=3, column=0, sticky=EW)
         scriptlist = [name[0] for name in getmembers(scripts, isfunction)]
         scriptlist += [name[0] for name in getmembers(scripts, isclass)]
-        scriptlist += ['run_dpph']
+        #scriptlist += ['run_dpph']
         self.script_selection = OptionMenu(self.frame, self.which_script,
                                            *scriptlist)
         self.script_selection.grid(row=3, column=1, sticky=EW)
@@ -144,7 +144,7 @@ class App:
 
     def ScriptDialog(self):
         #### this section should be added to the later parts asap
-        special_scripts = ['run_dpph']
+#        special_scripts = ['run_dpph']
         ####################
         func_scripts = [name[0] for name in getmembers(scripts, isfunction)]
         class_scripts = [line[0] for line in getmembers(scripts, isclass)]
@@ -153,8 +153,8 @@ class App:
             self.generic_function_script_popup(script_name)
         elif script_name in class_scripts:
             self.generic_class_script_popup(script_name)
-        elif script_name in special_scripts:
-            self.run_dpph()
+#        elif script_name in special_scripts:
+#            self.run_dpph()
         else:
             print('\n\n' + '*' * 60 + '\nscript not found\n' + '*' * 60)
 
@@ -192,90 +192,6 @@ class App:
             args_dict[key] = self.gui_input_dict[key].get()
         script(self.pype, *args_dict)
 
-    def say_hi(self):
-        print("hi there, everyone!")
-
-    def run_dpph(self):
-        '''
-            Dpph popup window
-        '''
-        self.guessval = DoubleVar(value=25000)
-        self.guessunits = StringVar(value="MHz")
-        self.nsigmavar = DoubleVar(value=20)
-        self.nvoltsvar = DoubleVar(value=9e-7)
-
-        dpph_popup = Toplevel()
-        dpph_popup.grid()
-        # user guess
-        Label(dpph_popup, text="guess").grid(row=0, column=0, sticky=EW)
-        guessentry = Entry(dpph_popup, textvariable=self.guessval)
-        guessentry.grid(row=0, column=1, sticky=EW)
-        unitsoption = OptionMenu(dpph_popup, self.guessunits, *["MHz", "kG"])
-        unitsoption.grid(row=0, column=2, sticky=EW)
-        # stop conditions
-        Label(dpph_popup, text='Sigma limit').grid(row=1, column=0, sticky=EW)
-        nsigmaentry = Entry(dpph_popup, textvariable=self.nsigmavar)
-        nsigmaentry.grid(row=1, column=1, sticky=EW)
-        Label(dpph_popup, text='(a real)', justify=LEFT).grid(row=1, column=2)
-        Label(dpph_popup, text='Voltage limit').grid(row=2, column=0,
-                                                     sticky=EW)
-        nvoltsentry = Entry(dpph_popup, textvariable=self.nvoltsvar)
-        nvoltsentry.grid(row=2, column=1, sticky=EW)
-        Label(dpph_popup, text='[V]', justify=LEFT).grid(row=2, column=2)
-        # get hall probe guses
-        checkhall = Button(dpph_popup, text="Hall Probe",
-                           command=self.checkhallprobe)
-        checkhall.grid(row=0, column=3)
-        # buttons to do the run etc
-        dorun = Button(dpph_popup, text="Start Scan", command=self.dpph_lockin)
-        dorun.grid(row=3, column=0)
-        savebutton = Button(dpph_popup, text="Save Plot Data",
-                            command=self.store_dpph_data_json)
-        savebutton.grid(row=3, column=1)
-        logresult = Button(dpph_popup, text="Log Result",
-                           command=self.log_dpph)
-        logresult.grid(row=3, column=2)
-
-    def checkhallprobe(self):
-        halldoc = self.pype.Get('hall_probe_voltage').Wait()
-        self.guessval.set(abs(float(halldoc['final'].split()[0])))
-        self.guessunits.set('kG')
-
-    def dpph_lockin(self):
-        geff = 2.0036
-        chargemass = 1.758e11
-        freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
-        if self.guessunits.get() == "kG":
-            self.guessval.set(self.guessval.get() / freq_to_field)
-            self.guessunits.set("MHz")
-        dpph_result, dpph_dataset = (scripts.dpph_lockin(self.pype,
-                                     guess=self.guessval.get(),
-                                     stop_nsigma=self.nsigmavar.get(),
-                                     stop_voltage=self.nvoltsvar.get()))
-        self.dpph_result = dpph_result
-        self.dpph_dataset = dpph_dataset
-
-    def store_dpph_data_json(self):
-        if not self.dpph_dataset:
-            print('no dpph_dataset stored')
-            return
-        outfile = asksaveasfile(defaultextension='.json')
-        dump({"frequencies": self.dpph_dataset[0],
-              "voltages": self.dpph_dataset[1]},
-             outfile, indent=4)
-        outfile.close()
-
-    def log_dpph(self):
-        if not self.dpph_result:
-            print('no dpph_result stored')
-            return
-        self.pype.LogValue(sensor='dpph_field', **self.dpph_result)
-
-    def check_pulse(self):
-        '''
-            check dripline for a pulse
-        '''
-        scripts.check_pulse(self.pype)
 
 if __name__ == "__main__":
     root = Tk()
