@@ -33,7 +33,7 @@ class measure_dpph:
         self.guessunits = StringVar(value="MHz")
         self.nsigmavar = DoubleVar(value=20)
         self.nvoltsvar = DoubleVar(value=9e-7)
-        self.methodVar = StringVar(value='dpph_lockin')
+        self.methodVar = StringVar(value=methods[0])
         self.powerVar = DoubleVar(value=-75)
         self.BuildGui()
 
