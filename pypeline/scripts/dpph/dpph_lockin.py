@@ -4,7 +4,7 @@ from __future__ import print_function, absolute_import
 from numpy import std, mean, array, arange, pi, where, diff, sign
 from scipy import optimize
 # local
-from ..usegnuplot import Gnuplot
+from ...usegnuplot import Gnuplot
 from .dpph_utils import _GetVoltages
 
 

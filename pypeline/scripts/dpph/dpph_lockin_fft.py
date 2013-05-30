@@ -5,7 +5,7 @@ from math import exp
 from numpy import multiply,concatenate
 from scipy import fftpack
 # local
-from ..usegnuplot import Gnuplot
+from ...usegnuplot import Gnuplot
 
 
 def dpph_lockin_fft(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7):
