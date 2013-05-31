@@ -1,15 +1,15 @@
 from __future__ import print_function, absolute_import
 # built in
-from math import exp
+from math import exp,floor,ceil
 # 3rd party
-from numpy import multiply,concatenate
+from numpy import multiply,concatenate,pi
 from scipy import fftpack
 # local
 from ...usegnuplot import Gnuplot
 from .dpph_utils import _GetVoltages
 
 
-def fft_filter(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
+def fft_filter(pype, guess=25001, power=-75,span=100,step=4):
     '''
         Do a dpph scan using DripInterface instance <pype>
 
@@ -22,11 +22,12 @@ def fft_filter(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     num_stats_freqs = 10
 
     #init_step = 2
-    init_step = 4
-    guess=25520
-    center=25520
-    halfspan=50
+    init_step = int(step)
+    #guess=25950
+    center=guess
+    halfspan=int(span/2)
     freqs = range(int(guess)-halfspan, int(guess)+halfspan, init_step)
+    nfreqs=len(freqs)
     #freqs.sort(key=lambda value: abs(value - guess))
 
     #-- build up what I'm looking for --
@@ -61,14 +62,49 @@ def fft_filter(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     #nickname for someone in middle school
     filtered_fft=multiply(coarse_data_fft,target_signal_fft)
     filtered=fftpack.ifft(filtered_fft)
-    print("filtered length "+str(len(filtered)))
+    #print("filtered length "+str(len(filtered)))
     #this is awkward, because I have to adjust to the fact that my
     #filter has its zero crossing in the middle
-    firsthalf=range( center,center+halfspan,init_step)
-    secondhalf=range(center-halfspan,center,init_step)
+    #firsthalf=range(int(center),int(center+halfspan),init_step)
+    firsthalf=range(int(center-halfspan+init_step*ceil(nfreqs/2.0)),int(center+halfspan),init_step)
+    secondhalf=range(int(center-halfspan),int(center),init_step)
+    #print("firsthalf",firsthalf)
+    #print("secondhalf",secondhalf)
     adjusted_freqs = concatenate([firsthalf,secondhalf] )
-    filtered_toplot=sorted(zip(adjusted_freqs,abs(filtered)))
+    absfiltered=abs(filtered)
+    #print("length of adjusted freqs ",len(adjusted_freqs))
+    #print("length of absfiltered ",len(absfiltered))
+    #print("last frequency: ",adjusted_freqs[len(adjusted_freqs)-1])
+
+    filtered_toplot=sorted(zip(adjusted_freqs,absfiltered))
     #----------------------------------
+
+    #--- find the peak ---
+    largest_f=0
+    largest_p=0
+    for i in range(len(absfiltered)):
+        if absfiltered[i]>largest_p:
+            largest_p=absfiltered[i]
+            largest_f=adjusted_freqs[i]
+    result['uncal']=largest_f
+    result['uncal_err']=init_step
+    result['uncal_units']='MHz'
+    result['uncal_val'] = (str(result['uncal']) + ' +/- ' +
+                           str(result['uncal_err']) + ' ' +
+                           str(result['uncal_units']))
+    print('Found zero crossing at ' + str(result['uncal']) + ' +/- ' +
+          str(result['uncal_err']) + ' MHz')
+    geff = 2.0036
+    chargemass = 1.758e11
+    freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
+    result['cal'] = freq_to_field * result['uncal']
+    result['cal_err'] = freq_to_field * result['uncal_err']
+    result['cal_units'] = 'kG'
+    result['cal_val'] = (str(result['cal']) + ' +/- ' +
+                         str(result['cal_err']) + ' ' +
+                         str(result['cal_units']))
+    print('Field is: ' + str(result['cal']) + ' +/- ' +
+           str(result['cal_err']) + str(result['cal_units']))
 
     #Only plotting beyond this point
 
@@ -129,4 +165,6 @@ def fft_filter(pype, guess=25001, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     plot3.gp("set title \"Filter Result, Freq Domain \"")
     plot3.plot1d(filtered_toplot, 'with lines')
     #----------------------------------
+
+    return result,zip(*dataset_coarse)
 

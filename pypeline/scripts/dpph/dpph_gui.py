@@ -35,6 +35,8 @@ class measure_dpph:
         self.nvoltsvar = DoubleVar(value=9e-7)
         self.methodVar = StringVar(value=methods[0])
         self.powerVar = DoubleVar(value=-75)
+        self.spanVar = DoubleVar(value=100)
+        self.stepVar = DoubleVar(value=4)
         self.BuildGui()
 
     def DoRun(self):
@@ -55,9 +57,9 @@ class measure_dpph:
         elif self.methodVar.get() == 'fft_filter':
             dpph_result, dpph_dataset = (fft_filter(self.pype,
                                          guess=self.guessval.get(),
-                                         stop_nsigma=self.nsigmavar.get(),
-                                         stop_voltage=self.nvoltsvar.get(),
-                                         power=self.powerVar.get()))
+                                         power=self.powerVar.get(),
+                                         span=self.spanVar.get(),
+                                         step=self.stepVar.get()))
 
         self.dpph_result = dpph_result
         self.dpph_dataset = dpph_dataset
@@ -66,6 +68,7 @@ class measure_dpph:
         '''
             Dpph popup window
         '''
+        lastrow=6
         # user guess
         Label(self.toplevel, text="guess").grid(row=0, column=0, sticky='ew')
         Entry(self.toplevel, textvariable=self.guessval
@@ -86,18 +89,30 @@ class measure_dpph:
         Entry(self.toplevel, textvariable=self.powerVar
               ).grid(row=3, column=1, sticky='ew')
         Label(self.toplevel, text='[dBm]', justify='left').grid(row=3, column=2)
+
+        Label(self.toplevel, text='Search Span').grid(row=4, column=0, sticky='ew')
+        Entry(self.toplevel, textvariable=self.spanVar
+              ).grid(row=4, column=1, sticky='ew')
+        Label(self.toplevel, text='MHz', justify='left').grid(row=4, column=2)
+
+        Label(self.toplevel, text='Step Size').grid(row=5, column=0, sticky='ew')
+        Entry(self.toplevel, textvariable=self.stepVar
+              ).grid(row=5, column=1, sticky='ew')
+        Label(self.toplevel, text='MHz', justify='left').grid(row=5, column=2)
+
+ 
         # get hall probe guses
         Button(self.toplevel, text="Hall Probe", command=self.checkhallprobe
                ).grid(row=0, column=3)
         # buttons to do the run etc
         Button(self.toplevel, text="Start Scan", command=self.DoRun
-               ).grid(row=4, column=0)
+               ).grid(row=lastrow, column=0)
         OptionMenu(self.toplevel, self.methodVar, *methods
-                   ).grid(row=4, column=1)
+                   ).grid(row=lastrow, column=1)
         Button(self.toplevel, text="Save Plot Data",
-               command=self.store_dpph_data_json).grid(row=4, column=2)
+               command=self.store_dpph_data_json).grid(row=lastrow, column=2)
         Button(self.toplevel, text="Log Result", command=self.log_dpph
-               ).grid(row=4, column=3)
+               ).grid(row=lastrow, column=3)
 
     def checkhallprobe(self):
         halldoc = self.pype.Get('hall_probe_voltage').Wait()
