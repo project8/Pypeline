@@ -66,15 +66,17 @@ class _LogInterface:
         latest = self._log_database.view('pypeline_view/latest_values')
         for channel in self.ListWithProperty('logging'):
             ch_val = latest[channel].rows[0]['value']['cal_val']
+            ch_time = latest[channel].rows[0]['value']['timestamp']
             if ch_val:
                 entrylist = ch_val.split()
                 update = []
                 for snip in entrylist:
                     try:
-                        update.append('%.5E' % float(snip))
+                        update.append('%.4E' % float(snip))
                     except ValueError:
                         update.append(snip)
-                loggers_dict[channel]=(" ".join(update))
+                loggers_dict[channel]={'value':" ".join(update),
+                                       'time':ch_time}
         return loggers_dict
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp):
