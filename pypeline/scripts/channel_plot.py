@@ -67,6 +67,7 @@ class channel_plot:
     def _SetupCanvas(self):
         '''
         '''
+        self.ManualLimits = BooleanVar(value=False)
         self.figure = Figure()
         self.figure.subplots_adjust(left=0.15, bottom=0.2)
         self.subfigure = []
