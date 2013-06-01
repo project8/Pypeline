@@ -190,11 +190,14 @@ class channel_plot:
                     variable=self.relative_stop_time).grid(row=7, column=2)
 
         Label(self.toplevel, text='Y limits (min-max)').grid(row=8, column=1)
-        ymin = Entry(self.toplevel, textvariable=self.ymin
-                     ).grid(row=8, column=2)
-        ymin.bind('<Return>'
-        ymax = Entry(self.toplevel, textvariable=self.ymax
-                     ).grid(row=8, column=3)
+        ymin = Entry(self.toplevel, textvariable=self.ymin)
+        ymin.grid(row=8, column=2)
+        ymin.bind('<Return>', self.__Update)
+        ymin.bind('<KP_Enter>', self.__Update, '+')
+        ymax = Entry(self.toplevel, textvariable=self.ymax)
+        ymax.grid(row=8, column=3)
+        ymax.bind('<Return>', self.__Update)
+        ymax.bind('<KP_Enter>', self.__Update, '+')
         Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
                     ).grid(row=9, column=1)
 
@@ -210,6 +213,11 @@ class channel_plot:
         Label(self.toplevel, textvariable=self.status_var).grid(row=20,
                                                                 column=1,
                                                                 columnspan=2)
+
+    def __Update(self, event=None):
+        '''
+        '''
+        self.Update(tab='All')
 
     def Update(self, tab='All'):
         '''
