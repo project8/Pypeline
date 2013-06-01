@@ -45,33 +45,36 @@ class App:
         # value to set
         self.setchannelvalueVar = DoubleVar()
         # values in loggers
-        self.loggers_list = ['bypass_valve_t',
-                             'coldhead_bottom_face_t',
-                             'dpph_field',
-                             'getter_valve_t',
-                             'hall_probe_voltage',
-                             'inlet_pressure',
-                             'left_gas_line_lower_t',
-                             'left_gas_line_upper_t',
-                             'linear_encoder',
-                             'liquid_helium_level',
-                             'liquid_nitrogen_level',
-                             'lower_nrao_amp_t',
-                             'outlet_pressure',
-                             'platinum_rtd_c_t1',
-                             'platinum_rtd_c_t2',
-                             'platinum_rtd_c_t3',
-                             'platinum_rtd_c_t4',
-                             'pump_valve_t',
-                             'right_gas_line_lower_t',
-                             'right_gas_line_upper_t',
-                             'trap_magnet_current',
-                             'upper_nrao_amp_t',
-                             'vent_valve_t',
-                             'waveguide_cell_body_t']
+        self.loggers_list = self.pype.ListWithProperty('logging')
+#        self.loggers_list = ['bypass_valve_t',
+#                             'coldhead_bottom_face_t',
+#                             'dpph_field',
+#                             'getter_valve_t',
+#                             'hall_probe_voltage',
+#                             'inlet_pressure',
+#                             'left_gas_line_lower_t',
+#                             'left_gas_line_upper_t',
+#                             'linear_encoder',
+#                             'liquid_helium_level',
+#                             'liquid_nitrogen_level',
+#                             'lower_nrao_amp_t',
+#                             'outlet_pressure',
+#                             'platinum_rtd_c_t1',
+#                             'platinum_rtd_c_t2',
+#                             'platinum_rtd_c_t3',
+#                             'platinum_rtd_c_t4',
+#                             'pump_valve_t',
+#                             'right_gas_line_lower_t',
+#                             'right_gas_line_upper_t',
+#                             'trap_magnet_current',
+#                             'upper_nrao_amp_t',
+#                             'vent_valve_t',
+#                             'waveguide_cell_body_t']
         self.loggers_dict = {}
+        self.loggers_time = {}
         for channel in self.loggers_list:
             self.loggers_dict[channel] = StringVar()
+            self.loggers_time[channel] = StringVar()
 
         # Text labels
         self.timedesc = Label(self.frame, text="The time is:")
@@ -122,6 +125,8 @@ class App:
             Label(self.frame, text=channel).grid(row=rowi, column=3)
             Label(self.frame, textvariable=self.loggers_dict[channel],
                   relief=SUNKEN).grid(row=rowi, column=4, sticky=EW)
+            Label(self.frame, textvariable=self.loggers_time[channel],
+                  relief=SUNKEN).grid(row=rowi, column=5, sticky=EW)
 
     def update_values(self):
         '''
@@ -130,7 +135,8 @@ class App:
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
         latest = self.pype.GetLatestValues()
         for key in latest:
-            self.loggers_dict[key].set(latest[key])
+            self.loggers_dict[key].set(latest[key]['value'])
+            self.loggers_time[key].set(latest[key]['time'])
         self.timeval.after(2000, self.update_values)
 
     def GetChannel(self):
