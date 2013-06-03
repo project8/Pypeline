@@ -232,7 +232,7 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
             instruments = [instruments]
         self._conf_interface.RemoveLoggers(instruments)
 
-    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000, mode=2, length=2097152, count=640):
+    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000, mode=2, length=2097152, count=640, description="None provided"):
         '''
             Posts a document to the command database instructing dripline to start a mantis run.
 
@@ -243,6 +243,7 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
                 <mode> channel mode to use (1 or 2)
                 <length> length of record to use in bytes
                 <count> number of circular buffer nodes to use
+                <description> decriptive string for the egg header
 
             Returns:
                 An instance of pypeline.DripResponse
@@ -250,7 +251,7 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
         result = self._cmd_interface.RunMantis(
-            output, rate, duration, mode, length, count)
+            output, rate, duration, mode, length, count, description)
         return result
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):

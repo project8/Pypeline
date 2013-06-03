@@ -158,7 +158,7 @@ class _CmdInterface:
         self._cmd_database.save(start_doc)
         return result
 
-    def RunMantis(self, output, rate, duration, mode, length, count):
+    def RunMantis(self, output, rate, duration, mode, length, count, description):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -169,6 +169,7 @@ class _CmdInterface:
                 <mode> channel mode to use (1 or 2)
                 <length> length of record to use in bytes
                 <count> number of circular buffer nodes to use
+                <description> string description
 
             Returns:
                 A DripResponse instance
@@ -185,7 +186,8 @@ class _CmdInterface:
                 "duration": str(duration),
                 "mode": str(mode),
                 "length": str(length),
-                "count": str(count)
+                "count": str(count),
+                "description": str(description)
             },
         }
         self._cmd_database.save(run_doc)
