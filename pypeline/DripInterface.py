@@ -138,7 +138,7 @@ class DripInterface(_PypelineConfInterface,
         '''
         if not channel:
             result = self._conf_interface.EligibleChannels()
-        elif not value:
+        elif not value and not value == 0:
             print("Please input value to assign to channel")
             result = False
         else:
