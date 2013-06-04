@@ -9,9 +9,12 @@ from time import sleep
 class DripResponse(dict):
 
     '''
-        Class which shall be returned by any DripInterface method which involves posting a document to a dripline db expecting dripline to modify that document.
+        Class which shall be returned by any DripInterface method which
+        involves posting a document to a dripline db expecting dripline to
+        modify that document.
 
-        This class will handle keeping track of the document's _id, and looking for responses stored there by dripline etc.
+        This class will handle keeping track of the document's _id,
+        and looking for responses stored there by dripline etc.
 
         Will have a key:value pair for each field of the document.
     '''
@@ -21,8 +24,8 @@ class DripResponse(dict):
             Internal: Initializes the default attribute values etc.
 
             Inputs:
-                <cmd_db> the dripline command database. This is where DripResponse will look
-                    for updates do documents
+                <cmd_db> the dripline command database. This is where
+                         DripResponse will look for updates do documents
                 <doc_id> the value of "_id" for the document.
         '''
         dict.__init__(self)
@@ -37,7 +40,8 @@ class DripResponse(dict):
             Existing key:values are changed and new ones are created.
             Missing keys are NOT removed.
 
-            Changes are made to the current instance but a copy is also returned.
+            Changes are made to the current instance but a copy is also
+            returned.
         '''
         for key in self._cmd_db[self['_id']]:
             self[key] = self._cmd_db[self['_id']][key]
@@ -59,10 +63,11 @@ class DripResponse(dict):
 
             Inputs:
                 <timeout>=15 is max wait time in seconds
-                WARNING: if <timeout>==False, the max timeout (3600 sec) will be used
-                         (I'm not putting in an infinite loop)
+                WARNING: if <timeout>==False, the max timeout (3600 sec)
+                         will be used (I'm not putting in an infinite loop)
 
-            Changes are made to the current instance but a copy is also returned.
+            Changes are made to the current instance but a copy is also
+            returned.
         '''
         timer = 0
         if not timeout:

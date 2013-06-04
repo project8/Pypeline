@@ -1,5 +1,6 @@
 #standard libs
-from Tkinter import IntVar, StringVar, Label, Entry, Button, Checkbutton, OptionMenu, Spinbox
+from Tkinter import (IntVar, StringVar, Label, Entry, Button, Checkbutton,
+                     OptionMenu, Spinbox)
 from inspect import getargspec
 #3rd party libs
 #local libs
@@ -8,13 +9,17 @@ try:
 except ImportError:
     from PypelineErrors import NoResponseError
 
+
 class __fake_bool:
     def __init__(self, value=False):
         self.value = value
+
     def get(self):
         return (self.value is True)
+
     def set(self, value):
         self.value = (value is True)
+
 
 class run_mantis:
     '''
@@ -51,15 +56,16 @@ class run_mantis:
         '''
         try:
             for key in self.gui_input_dict.keys():
-                self.runargs[key]=self.gui_input_dict[key].get()
+                self.runargs[key] = self.gui_input_dict[key].get()
         except:
             pass
         response = self.pype.RunMantis(**self.runargs)
         if self.dodump.get():
-            self.pype.DumpSensors(field_dict={'run_id':response['_id']})
+            self.pype.DumpSensors(field_dict={'run_id': response['_id']})
         response.Wait()
         try:
-            filename = [line.split()[-1] for line in response['final'].split('\n') 
+            filename = [line.split()[-1] for line in
+                        response['final'].split('\n')
                         if line.startswith('  *output')]
         except:
             raise NoResponseError('')
@@ -81,8 +87,9 @@ class run_mantis:
             self.gui_input_dict[keyname] = StringVar(value=str(initval))
             if keyname == "mode":
                 Label(self.toplevel, text="mode").grid(row=rowi, column=0)
-                Spinbox(self.toplevel, textvariable=self.gui_input_dict[keyname],
-                        values=(1,2)).grid(row=rowi, column=1)
+                Spinbox(self.toplevel,
+                        textvariable=self.gui_input_dict[keyname],
+                        values=(1, 2)).grid(row=rowi, column=1)
             else:
                 Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
                 Entry(self.toplevel,

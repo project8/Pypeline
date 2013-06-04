@@ -21,12 +21,14 @@ class _LogInterface:
     '''
         Class for interactions with the logged data database
 
-        This class is meant to be internal to pypeline and should NOT be used directly.
+        This class is meant to be internal to pypeline and should
+        NOT be used directly.
     '''
 
     def __init__(self, log_database):
         '''
-            <conf_database> is the dripline configuration database (element of a couchdb Server object)
+            <conf_database> is the dripline configuration database
+                            (element of a couchdb Server object)
         '''
         self._log_database = log_database
 
@@ -49,7 +51,7 @@ class _LogInterface:
         valuelist = []
         unitlist = []
         for row in self._log_database.view('log_access/all_logged_data',
-                                          startkey=start, endkey=stop):
+                                           startkey=start, endkey=stop):
             timestamp = datetime.strptime(row.value['timestamp_localstring'],
                                           "%Y-%m-%d %H:%M:%S")
             if row.value['sensor_name'] == sensor:
@@ -75,8 +77,8 @@ class _LogInterface:
                         update.append('%.4E' % float(snip))
                     except ValueError:
                         update.append(snip)
-                loggers_dict[channel]={'value':" ".join(update),
-                                       'time':ch_time}
+                loggers_dict[channel] = {'value': " ".join(update),
+                                         'time': ch_time}
         return loggers_dict
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp):

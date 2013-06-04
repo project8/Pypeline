@@ -8,6 +8,7 @@ from numpy import sign, sin, pi
 # local
 from ...PypelineErrors import NoResponseError
 
+
 def _GetLockinValue(interface, freq=25553.440, slptime=2):
     '''
         Make a reading with the lockin amplifier at a specific frequency.
@@ -34,8 +35,9 @@ def _GetLockinValue(interface, freq=25553.440, slptime=2):
         else:
             raise
 
+
 def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
-                stop_sigma=1e10, stop_volts=20):
+                 stop_sigma=1e10, stop_volts=20):
     '''
         Get a list for frequency <-> lockin voltage pairs with updates
 

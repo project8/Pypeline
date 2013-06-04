@@ -1,7 +1,9 @@
 '''
-    pypeline is the user scripting and interactive interface for the dripline slow control system.
+    pypeline is the user scripting and interactive interface for the dripline
+    slow control system.
 
-    There is currently support for use with both python 2.7 and python 3.2 (earlier probably works also).
+    There is currently support for use with both python 2.7 and python 3.2
+    (earlier probably works also).
 '''
 from __future__ import print_function
 from os import environ
@@ -28,8 +30,8 @@ if "DISPLAY" in environ:
             try:
                 from peakdet import peakdet
             except ImportError:
-                print(
-                    'import of peakdet failed, some dependency must be missing')
+                print('import of peakdet failed,
+                      some dependency must be missing')
         try:
             from .usegnuplot import Gnuplot
         except ImportError:

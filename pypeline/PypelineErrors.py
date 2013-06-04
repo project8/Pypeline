@@ -7,15 +7,16 @@
 
 from __future__ import print_function
 
+
 class DriplineError(Exception):
     '''
         Base class for exceptions from caused by dripline.
     '''
-    
+
     def __init__(self, msg):
         '''
         '''
-        print('','*'*60,'\nA Dripline Error occured\n','*'*60)
+        print('', '*'*60, '\nA Dripline Error occured\n', '*'*60)
         Exception.__init__(self, msg)
 
 

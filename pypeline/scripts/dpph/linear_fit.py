@@ -8,7 +8,8 @@ from ...usegnuplot import Gnuplot
 from .dpph_utils import _GetVoltages
 
 
-def linear_fit(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7, power=-75):
+def linear_fit(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7,
+               power=-75):
     '''
         Do a dpph scan using DripInterface instance <pype>
 
@@ -39,7 +40,8 @@ def linear_fit(pype, guess=25000, stop_nsigma=30, stop_voltage=9e-7, power=-75):
     interesting_freq = False
     print('looking for structure')
     VDC = _GetVoltages(pype, freqs, reference=VDC_mean, deviation=VDC_std,
-                      stop_sigma=stop_nsigma, stop_volts=stop_voltage, power=power)
+                       stop_sigma=stop_nsigma, stop_volts=stop_voltage,
+                       power=power)
     VDC_freqs = freqs[:len(VDC)]
     if not len(VDC) == len(freqs):
         interesting_freq = VDC_freqs[-1]
