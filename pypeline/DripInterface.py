@@ -1,5 +1,7 @@
 '''
-    File for the pypeline class. At least for now I suspect this entire project goes in one class, if that changes it will need to be split into more files.
+    File for the pypeline class. At least for now I suspect this entire
+    project goes in one class, if that changes it will need to be split
+    into more files.
 '''
 
 from __future__ import print_function
@@ -43,7 +45,9 @@ except ImportError:
     from PypelineErrors import NoResponseError
 
 
-class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface):
+class DripInterface(_PypelineConfInterface,
+                    _SensorDumpInterface,
+                    _LogInterface):
 
     '''
         Class to facilitate user interact with Dripline via couchDB. The
@@ -56,9 +60,11 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
     def __init__(self, dripline_url="http://127.0.0.1:5984"):
         '''
             Internal: Initializes each instance by doing the following:
-                1) connecting to the provided dripline couchdb (default is localhost)
+                1) connecting to the provided dripline couchdb
+                   (default is localhost)
                 2) sets initial/default value for attributes
-                3) finds the command and configuration databases within the server
+                3) finds the command and configuration databases within
+                   the server
                 4) checks the status of dripline for checking for a heartbeat
 
             Inputs:
@@ -70,29 +76,34 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
         '''
         self._server = CouchServer(dripline_url)
         _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
-        _SensorDumpInterface.__init__(self, self._server['pypeline_sensor_dump'])
+        _SensorDumpInterface.__init__(self,
+                                      self._server['pypeline_sensor_dump'])
         _LogInterface.__init__(self, self._server['dripline_logged_data'])
         self._timeout = 15  # timeout is 15 seconds...
         self._sleep_time = .1  # number of seconds to sleep while waiting
         self._wait_state = {}
         self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         self._conf_interface = _ConfInterface(self._server['dripline_conf'])
-        #self._log_interface = _LogInterface(self._server['dripline_logged_data'])
 
     def Get(self, channel='', wait=False):
         '''
-            Post a document to the command database using the get verb for a specific channel.
+            Post a document to the command database using the get verb for a
+            specific channel.
 
             Inputs:
                 <channel> is any configured channel in dripline.
-                    If no channel is given, or the value passed evaluates as False, gives the available channels
+                    If no channel is given, or the value passed evaluates as
+                    False, gives the available channels
 
             Returns:
-                IF a channel was given: returns a pypeline.DripResponse instance.
-                OTHERWISE: returns a list of strings of the available channel names.
+                IF a channel was given: returns a pypeline.DripResponse
+                                        instance.
+                OTHERWISE: returns a list of strings of the available channel
+                           names.
 
             Notes:
-                1) The channel name is not validated, invalid channel names will still be posted.
+                1) The channel name is not validated, invalid channel names
+                   will still be posted.
         '''
         if not channel:
             result = self._conf_interface.EligibleChannels()
@@ -104,20 +115,26 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def Set(self, channel=None, value=None, wait=False):
         '''
-            Post a document to the command database using the set verb for a specific channel.
+            Post a document to the command database using the set verb for a
+            specific channel.
 
             Inputs:
                 <channel> is any dripline channel
-                    If no channel is given, or the the value passed evaluates as False, gives the available channels
+                    If no channel is given, or the the value passed evaluates
+                    as False, gives the available channels
                 <value> value to assign to <channel>
-                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+                <wait> If wait evaluates as True, wait for either a timeout or
+                       a response from dripline before returning
 
             Returns:
-                IF: a channel was given, returns a pypeline.DripResponse instance.
-                OTHERWISE: returns a list of strings of the available channel names.
+                IF: a channel was given, returns a pypeline.DripResponse
+                    instance.
+                OTHERWISE: returns a list of strings of the available channel
+                           names.
 
             Notes:
-                1) The channel name is not validated as an existing channel, or as one which admits the set verb.
+                1) The channel name is not validated as an existing channel,
+                   or as one which admits the set verb.
         '''
         if not channel:
             result = self._conf_interface.EligibleChannels()
@@ -132,16 +149,22 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def StartLoggers(self, instruments=False, wait=False):
         '''
-            Posts a document to the command database to start the logging one or more instruments.
+            Posts a document to the command database to start the logging one
+            or more instruments.
 
             Inputs:
-                <instruments> is either the name of a channel or a list of channel names for which logging should start
-                    If no instrument is given, or the the value passed evaluates as False, gives the available instruments
-                    as determined by the loggers view of the configuration database.
-                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+                <instruments> is either the name of a channel or a list of
+                              channel names for which logging should start
+                    If no instrument is given, or the the value passed
+                    evaluates as False, gives the available instruments
+                    as determined by the loggers view of the configuration
+                    database.
+                <wait> If wait evaluates as True, wait for either a timeout or
+                       a response from dripline before returning
 
             Returns:
-                IF: a channel was given, returns a pypeline.DripResponse instance
+                IF: a channel was given, returns a pypeline.DripResponse
+                    instance
                 OTHERWISE: returns a list of eligible loggers
         '''
         if not instruments:
@@ -154,20 +177,27 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def StopLoggers(self, instruments=False, wait=False):
         '''
-            Posts a document to the command database to stop the logging one or more instruments.
+            Posts a document to the command database to stop the logging one or
+            more instruments.
 
             Inputs:
-                <instruments> is either the name of a channel or a list of channel names for which logging should stop
-                    If no instrument is given, or the the value passed evaluates as False, gives the available instruments
-                    as determined by the loggers view of the configuration database.
-                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+                <instruments> is either the name of a channel or a list of
+                              channel names for which logging should stop.
+                              If no instrument is given, or the the value
+                              passed evaluates as False, gives the available
+                              instruments as determined by the loggers view
+                              of the configuration database.
+                <wait> If wait evaluates as True, wait for either a timeout or
+                       a response from dripline before returning
 
             Returns:
-                IF: a channel was given, returns a pypeline.DripResponse instance
+                IF: a channel was given, returns a
+                    pypeline.DripResponse instance
                 OTHERWISE: returns a list of eligible loggers
 
             Notes:
-                1) Dripline seems to have a bug, these documents are posting and being responded to, but logging does not stop.
+                1) Dripline seems to have a bug, these documents are posting
+                   and being responded to, but logging does not stop.
         '''
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
@@ -179,16 +209,19 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def CurrentLoggers(self, wait=False):
         '''
-            Posts a document to the command database which requests the list of channels currently being logged.
+            Posts a document to the command database which requests the list
+            of channels currently being logged.
 
             Inputs:
-                <wait> If wait evaluates as True, wait for either a timeout or a response from dripline before returning
+                <wait> If wait evaluates as True, wait for either a timeout
+                       or a response from dripline before returning
 
             Returns:
                 A pypeline.DripResponse instance
 
             Notes:
-                1) Dripline seems to have a bug, these documents are posting but receive no response.
+                1) Dripline seems to have a bug, these documents are posting
+                   but receive no response.
         '''
         result = self._cmd_interface.CurrentLoggers()
         if wait:
@@ -197,10 +230,12 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def AddLoggers(self, instruments=False, intervals=False):
         '''
-            Posts a document to the configuration database making an instrument into a potential logger.
+            Posts a document to the configuration database making an
+            instrument into a potential logger.
 
             Inputs:
-                <instruments> an instrument name or list of names for which logging capabilities are to be established
+                <instruments> an instrument name or list of names for which
+                              logging capabilities are to be established
                 <intervals> matched set of values, giving the logging interval
 
             Returns:
@@ -218,10 +253,12 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def RemoveLoggers(self, instruments=''):
         '''
-            Removes the docuemnt(s) from the configuration database which makes <instruments> (a) potential logger(s)
+            Removes the docuemnt(s) from the configuration database which
+            makes <instruments> (a) potential logger(s)
 
             Inputs:
-                <instruments> an instrument name or list of names for which logging capabilities are to be removed.
+                <instruments> an instrument name or list of names for which
+                              logging capabilities are to be removed.
 
             Returns:
                 nothing is returned
@@ -232,9 +269,12 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
             instruments = [instruments]
         self._conf_interface.RemoveLoggers(instruments)
 
-    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000, mode=2, length=2097152, count=640, description="None provided"):
+    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
+                  mode=2, length=2097152, count=640,
+                  description="None provided"):
         '''
-            Posts a document to the command database instructing dripline to start a mantis run.
+            Posts a document to the command database instructing dripline to
+            start a mantis run.
 
             Inputs:
                 <output> the output file to which we should write
@@ -256,9 +296,11 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
         '''
-            Posts a document to the logged data database, logging a channel reading.
+            Posts a document to the logged data database,
+            logging a channel reading.
 
-            This being put in for the B field measured by dpph but the result of any other scripted measurement could also be logged in this way
+            This being put in for the B field measured by dpph but the result
+            of any other scripted measurement could also be logged in this way
 
             Inputs:
                 <sensor> is the atom for the sensor being logged
@@ -268,24 +310,28 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
             Returns:
                 An instance of pypeline.DripResponse
 
-            NOTE: Dripline doesn't listen to the log database so DripResponse should NOT get a response
+            NOTE: Dripline doesn't listen to the log database so DripResponse
+                  should NOT get a response
                   **extras allows a unpacking a dict with extra keys
         '''
         if not timestamp:
             timestamp = datetime.now()
-        return self._log_interface.LogValue(sensor, uncal_val, cal_val, timestamp)
+        return self._log_interface.LogValue(sensor, uncal_val,
+                                            cal_val, timestamp)
 
     def DumpSensors(self, field_dict={}):
         '''
-            Read all sensors with the property 'dump' and store to the sensor dump database
+            Read all sensors with the property 'dump' and store to the sensor
+            dump database
         '''
         dumps = [self.Get(ch).Wait() for ch in self.ListWithProperty('dump')]
-        dumplist = [resp for resp in dumps if resp.has_key('final')]
+        dumplist = [resp for resp in dumps if 'final' in resp]
         self._StoreDump(dumplist, field_dict)
 
     def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''
-            Posts a document to the command database instructing dripline to start a powerline run.
+            Posts a document to the command database instructing dripline to
+            start a powerline run.
 
             Inputs:
                 <points> number of fft points to use
@@ -300,13 +346,15 @@ class DripInterface(_PypelineConfInterface, _SensorDumpInterface, _LogInterface)
 
     def CheckHeartbeat(self):
         '''
-            Checks to see if dripline is listing and responding to the command database.
+            Checks to see if dripline is listing and responding to the
+            command database.
 
             Inputs:
                 no inputs
 
             Returns:
-                The 'final' field fron the couch document produced by calling pypeline.DripInterface.Get("heartbeat")
+                The 'final' field fron the couch document produced by calling
+                pypeline.DripInterface.Get("heartbeat")
         '''
         status = self.Get("heartbeat")
         status.Wait()

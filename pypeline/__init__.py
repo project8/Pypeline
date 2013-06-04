@@ -30,36 +30,6 @@ if "DISPLAY" in environ:
             except ImportError:
                 print(
                     'import of peakdet failed, some dependency must be missing')
-#        try:
-#            from .LoggedDataHandler import LoggedDataHandler
-#        except ImportError:
-#            try:
-#                from LoggedDataHandler import LoggedDataHandler
-#            except ImportError:
-#                print(
-#                    'import of LoggedDataHandler failed, it is not available')
-#        try:
-#            from .LoggedDataHandler_Gnuplot import LoggedDataHandler_Gnuplot
-#        except ImportError:
-#            try:
-#                from LoggedDataHandler_Gnuplot import LoggedDataHandler_Gnuplot
-#            except ImportError:
-#                print(
-#                    'import of LoggedDataHandler failed, it is not available')
-#        try:
-#            from .PlotMakingGui import PlotMakingGui
-#        except ImportError:
-#            try:
-#                from PlotMakingGui import PlotMakingGui
-#            except ImportError:
-#                print('import of PlotMakingGui failed, it is not available')
-#        try:
-#            from .PlotMakingGui import start_plotgui
-#        except ImportError:
-#            try:
-#                from PlotMakingGui import start_plotgui
-#            except ImportError:
-#                print('import of PlotMakingGui failed, it is not available')
         try:
             from .usegnuplot import Gnuplot
         except ImportError:

@@ -21,12 +21,14 @@ class _ConfInterface:
     '''
         Class for interactions with the dripline configurations database
 
-        This class is meant to be internal to pypeline and should NOT be used directly.
+        This class is meant to be internal to pypeline and
+        should NOT be used directly.
     '''
 
     def __init__(self, conf_database):
         '''
-            <conf_database> is the dripline configuration database (element of a couchdb Server object)
+            <conf_database> is the dripline configuration database
+            (element of a couchdb Server object)
         '''
         self._conf_database = conf_database
 
@@ -50,12 +52,13 @@ class _ConfInterface:
 
     def AddLoggers(self, instruments, intervals):
         '''
-            Add each element of instruments to the configuration database as a logger
+            Add each element of instruments to the configuration database
+            as a logger
         '''
         for (instrument, interval) in zip(instruments, intervals):
             match = False
-            match = sum([instrument == row.key for row in self._conf_database.view(
-                'objects/loggers')])
+            match = sum([instrument == row.key for row in
+                         self._conf_database.view('objects/loggers')])
             if match:
                 print(instruments[i] + " already added")
                 continue
@@ -69,7 +72,8 @@ class _ConfInterface:
 
     def RemoveLoggers(self, instruments):
         '''
-            Remove each element of instruments from the configuration database as a logger
+            Remove each element of instruments from the configuration database
+            as a logger
         '''
         # for inst in instruments:
         for row in self._conf_database.view('objects/loggers'):
