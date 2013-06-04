@@ -89,8 +89,8 @@ class _PypelineConfInterface:
                     return_str = self._pype_conf_db[row['id']]['description']
                 except KeyError as e:
                     if e[0] is 'description':
-                        return_str = ("channel has no description string,
-                                      consider adding one")
+                        return_str = ("channel has no description string," + 
+                                      "consider adding one")
                     else:
                         raise
         return return_str

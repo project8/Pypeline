@@ -30,8 +30,8 @@ if "DISPLAY" in environ:
             try:
                 from peakdet import peakdet
             except ImportError:
-                print('import of peakdet failed,
-                      some dependency must be missing')
+                print('import of peakdet failed,',
+                      'some dependency must be missing')
         try:
             from .usegnuplot import Gnuplot
         except ImportError:
