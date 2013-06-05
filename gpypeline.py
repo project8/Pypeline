@@ -166,11 +166,13 @@ class App:
 
     def generic_class_script_popup(self, script_name):
         script_popup = Toplevel()
+        script_popup.title(script_name)
         script_popup.grid()
         getattr(scripts, script_name)(self.pype, script_popup)
 
     def generic_function_script_popup(self, script_name):
         script_popup = Toplevel()
+        script_popup.title(script_name)
         script_popup.grid()
 
         script_fun = getattr(scripts, script_name)
