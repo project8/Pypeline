@@ -54,8 +54,11 @@ class data_run:
         '''
         '''
         self.keep_runningVar.set(False)
-        print(self.runthread.is_alive())
-        self.runthread.terminate()
+        if self.runthread.is_alive():
+            print('terminating child process')
+            self.runthread.terminate()
+        else:
+            print('no current thread')
 
     def _IsRunning(self):
         '''
