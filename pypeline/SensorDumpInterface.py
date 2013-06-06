@@ -7,6 +7,7 @@ from datetime import datetime
 # 3rd party imports
 # local imports
 from .SensorDumpDocument import SensorDumpDocument
+from .PypelineErrors import RunTagNotUnique
 
 
 class _SensorDumpInterface:
@@ -51,14 +52,14 @@ class _SensorDumpInterface:
         if not run_tag in runs and new_run:
             print('creating new run')
             dump_doc['run_number'] = len(runcount)
-            dump_doc['run_timestamp'] = datetime.now()
+            dump_doc['run_timestamp'] = datetime.now().strftime(self._formatstr)
             dump_doc['sequence_number'] = 0
             dump_doc['sequence_tag'] = ''
         elif run_tag in runs and not new_run:
             print('adding to existing run')
             dump_doc['run_number'] = runs[run_tag]['run_number']
             dump_doc['run_timestamp'] = runs[run_tag]['run_timestamp']
-            dump_doc['sequence_number'] = run[run_tag]['sequence_count']
+            dump_doc['sequence_number'] = runs[run_tag]['sequence_count']
             dump_doc['sequence_tag'] = ''
         elif (run_tag in runs and new_run):
             raise RunTagNotUnique('tag already exists')

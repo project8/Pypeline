@@ -31,7 +31,7 @@ class SensorDumpDocument(dict):
                 <doc_id> the value of "_id" for the document.
         '''
         dict.__init__(self)
-        self._dump_db = cmd_db
+        self._dump_db = dump_db
         self['_id'] = doc_id
         if doc_id in self._dump_db:
             self._UpdateFrom()
@@ -56,7 +56,7 @@ class SensorDumpDocument(dict):
         '''
             Updates the remote to match local.
         '''
-        document = Document.load(self._dump_db, doc_id)
+        document = Document.load(self._dump_db, self['_id'])
         for key in self.keys():
             document[key] = self[key]
         document.store(self._dump_db)
