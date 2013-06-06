@@ -6,6 +6,7 @@
 from datetime import datetime
 # 3rd party imports
 # local imports
+from .SensorDumpDocument import SensorDumpDocument
 
 
 class _SensorDumpInterface:
@@ -49,7 +50,7 @@ class _SensorDumpInterface:
                    }
         if not run_tag in runs and new_run:
             print('creating new run')
-            dump_doc['run_number'] = len(runview)
+            dump_doc['run_number'] = len(runcount)
             dump_doc['run_timestamp'] = datetime.now()
             dump_doc['sequence_number'] = 0
             dump_doc['sequence_tag'] = ''
