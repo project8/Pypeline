@@ -25,7 +25,7 @@ class _SensorDumpInterface:
         '''
         self._sensor_dump_database = sensor_dump_database
         #debugging things
-        if True:
+        if False:
             import couchdb
             svr = couchdb.Server('http://localhost:5984')
             self._sensor_dump_database = svr['sensor_dump_debug']
