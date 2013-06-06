@@ -35,7 +35,9 @@ class _SensorDumpInterface:
         runcount = self._sensor_dump_database.view('runs/sequence_count',
                                                   group_level=2)
         for run in runcount:
-            runs[run['key']]['sequence_count'] = run['value']
+            print('run is:')
+            print(run)
+            runs[run['key']] = {'sequence_count': run['value']}
         runinfo = self._sensor_dump_database.view('runs/run_info',
                                                   group_level=2)
         for run in runinfo:
