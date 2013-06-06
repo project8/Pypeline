@@ -25,7 +25,7 @@ class take_data:
 
         self.keep_runningVar = BooleanVar(value=True)
         self.run_tagVar = StringVar()
-        self.numSequencesVar = IntVar(value=100)
+        self.numSequencesVar = IntVar(value=10)
         self.params = {}
         self.runthread = multiprocessing.Process()
 
@@ -158,10 +158,10 @@ class take_data:
     def _SetParams(self, params_list):
         '''
         '''
-        print("would do the Set()s now, but that is commented out")
         for channel_name, value in params_list:
             #if self.pype.Set(channel_name, value).Wait().Waiting():
             #    raise NoResponseError('setting ' + str(channel_name))
+            print('*'*60, '\nskipping Set() calls while debugging')
             print(channel_name, '->', value)
 
 
@@ -169,24 +169,32 @@ class take_data:
         '''
             Do one sequence within the run
         '''
-        print('doing something...')
-        print('tag is:', self.params['run_tag'])
-        print('though you currently think it is:', self.run_tagVar.get())
-        print('sequence is:', sequence_number)
-        run_doc = pype._NewDump(uuid4().hex, self.params['run_tag'],
+        print('*'*60, '\nsequence is:', sequence_number)
+        run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
                                 new_run=(not sequence_number))
         self._SetParams(self.SequenceParams(sequence_number))
+        print('*'*60, '\nnow trying to get dump channels')
         for channel in self.pype.ListWithProperty('dump'):
-            run_doc[channel] = self.pype.Get(channel).Wait()
+            print('*'*60, '\nnow for channel', channel)
+            run_doc[channel] = self.pype.Get(channel)
+            print('get submitted')
+            run_doc[channel].Update()
+            print('updated')
+            run_doc[channel].Wait()
+            print('waited')
         run_doc._UpdateTo()
+        trap_status = ''
         if (sequence_number % 3 == 0):
-            trap_state = 'anti'
+            trap_status = 'anti'
         elif (sequence_number % 3 == 1):
             trap_status = 'off'
         elif (sequence_number % 3 == 2):
             trap_status = 'on'
+        else:
+            print('got to else', sequence_number % 3)
+            raise ValueError("that's... not possible")
         outfilename = '/data/june2013/_{:s}_{:05d}_{:05d}.egg'.format(
-            trap_staus, run_doc['run_number'], run_doc['sequence_number'])
+            trap_status, run_doc['run_number'], run_doc['sequence_number'])
         run_descrip = ''
         run = self.pype.RunMantis(output=outfilename, mode=1, description=run_descrip,
                                   duration=60000)

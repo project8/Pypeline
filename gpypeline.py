@@ -46,30 +46,6 @@ class App:
         self.setchannelvalueVar = DoubleVar()
         # values in loggers
         self.loggers_list = self.pype.ListWithProperty('logging')
-#        self.loggers_list = ['bypass_valve_t',
-#                             'coldhead_bottom_face_t',
-#                             'dpph_field',
-#                             'getter_valve_t',
-#                             'hall_probe_voltage',
-#                             'inlet_pressure',
-#                             'left_gas_line_lower_t',
-#                             'left_gas_line_upper_t',
-#                             'linear_encoder',
-#                             'liquid_helium_level',
-#                             'liquid_nitrogen_level',
-#                             'lower_nrao_amp_t',
-#                             'outlet_pressure',
-#                             'platinum_rtd_c_t1',
-#                             'platinum_rtd_c_t2',
-#                             'platinum_rtd_c_t3',
-#                             'platinum_rtd_c_t4',
-#                             'pump_valve_t',
-#                             'right_gas_line_lower_t',
-#                             'right_gas_line_upper_t',
-#                             'trap_magnet_current',
-#                             'upper_nrao_amp_t',
-#                             'vent_valve_t',
-#                             'waveguide_cell_body_t']
         self.loggers_dict = {}
         self.loggers_time = {}
         for channel in self.loggers_list:
@@ -82,8 +58,7 @@ class App:
         self.timeval = Label(self.frame, textvariable=self.time, relief=SUNKEN)
         self.timeval.grid(row=0, column=1)
 
-        # Buttons
-        #
+        # Buttons ########################################
         # Get interface
         self.get_button = Button(self.frame, text="Get",
                                  command=self.GetChannel)
@@ -133,11 +108,11 @@ class App:
             Update displayed values
         '''
         self.time.set(datetime.now().strftime('%B %d, %Y %H:%M:%S'))
-        latest = self.pype.GetLatestValues()
+        latest = self.pype.GetLatestValues(self.loggers_list)
         for key in latest:
             self.loggers_dict[key].set(latest[key]['value'])
             self.loggers_time[key].set(latest[key]['time'])
-        self.timeval.after(2000, self.update_values)
+        self.timeval.after(5*60*1000, self.update_values)
 
     def GetChannel(self):
         try:

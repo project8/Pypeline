@@ -74,8 +74,14 @@ class _PypelineConfInterface:
         '''
         return_list = []
         for row in self._pype_conf_db.view('channel_lists/all'):
+          try:
             if property_name in self._pype_conf_db[row['id']]['properties']:
                 return_list.append(row['key'])
+          except KeyError:
+            print('key error here',"*"*60,'\n')
+            print('property name is', property_name)
+            print('row is ', row)
+            raise
         return return_list
 
     def ChannelInfo(self, channel_name):

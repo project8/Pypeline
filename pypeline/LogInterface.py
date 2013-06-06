@@ -61,12 +61,14 @@ class _LogInterface:
                 unitlist.append(str(row.value['calibrated_value'].split()[1]))
         return (timelist, valuelist, unitlist)
 
-    def GetLatestValues(self):
+    def GetLatestValues(self, channels):
         '''
+            <channels> is a list of channel names for which the lastest value
+                       is being requested
         '''
         loggers_dict = {}
         latest = self._log_database.view('pypeline_view/latest_values')
-        for channel in self.ListWithProperty('logging'):
+        for channel in channels:
             ch_val = latest[channel].rows[0]['value']['cal_val']
             ch_time = latest[channel].rows[0]['value']['timestamp']
             if ch_val:

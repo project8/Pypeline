@@ -25,9 +25,10 @@ class _SensorDumpInterface:
         '''
         self._sensor_dump_database = sensor_dump_database
         #debugging things
-        ##import couchdb
-        ##svr = couchdb.Server('http://localhost:5984')
-        ##self._sensor_dump_database = svr['sensor_dump_debug']
+        if True:
+            import couchdb
+            svr = couchdb.Server('http://localhost:5984')
+            self._sensor_dump_database = svr['sensor_dump_debug']
         self._formatstr = '%Y-%m-%d %H:%M:%S'
 
     def _NewDump(self, doc_id, run_tag='', new_run=False):
