@@ -2,13 +2,17 @@ from __future__ import print_function, absolute_import
 # standard libs
 from Tkinter import (Button, Label, Entry,
                      StringVar, BooleanVar, IntVar)
+from tkFileDialog import askopenfilename
 from time import sleep
 import multiprocessing
+import sys
+import imp
 # 3rd party libs
 # local libs
+from ...PypelineErrors import NoResponseError
 
 
-class data_run:
+class take_data:
     '''
     '''
 
@@ -24,6 +28,7 @@ class data_run:
         self.params = {}
         self.runthread = multiprocessing.Process()
 
+        self._GetParamFuncs(filename=False)
         self._BuildGui()
 
     def _BuildGui(self):
@@ -43,11 +48,54 @@ class data_run:
                                                                      column=1)
         row += 1
 
+        Label(self.toplevel, text='Load Custom Run Def').grid(row=row,
+                                                              column=0)
+        Button(self.toplevel, text="find file", command=self._ParamFuncFile
+               ).grid(row=row, column=1)
+        row += 1
+
         Button(self.toplevel, text="Start Run", command=self.DoRun
                ).grid(row=row, column=0)
         Button(self.toplevel, text="ABORT", command=self._Abort, bg='red'
                ).grid(row=row, column=1)
         Button(self.toplevel, text="Is Running?", command=self._IsRunning
+               ).grid(row=row, column=2)
+
+    def _ParamFuncFile(self):
+        '''
+        '''
+        filename = askopenfilename()
+        if filename:
+            self._GetParamFuncs(filename)
+
+    def _Abort(self):
+        '''
+        '''
+        self.keep_runningVar.set(False)
+        if self.runthread.is_alive():
+            print('terminating child process')
+            self.runthread.terminate()
+        else:
+            print('no current thread')
+
+    def _IsRunning(self):
+        '''
+        '''
+        print(self.runthread.is_alive())
+
+    def _GetParamFuncs(self, filename=False):
+        '''
+        '''
+        if not filename:
+            if not 'run_params' in sys.modules:
+                #imp.load_module('run_params', None
+                #import .default_run as run_params
+                from . import default_run as run_params
+        Button(self.toplevel, text="Start Run", command=self.DoRun
+               ).grid(row=row, column=0)
+        Button(self.toplevel, text="ABORT", command=self._Abort, bg='red'
+               ).grid(row=row, column=1)
+        Button(self.toplevel, text="Is Running??", command=self._IsRunning
                ).grid(row=row, column=2)
 
     def _Abort(self):
@@ -65,17 +113,21 @@ class data_run:
         '''
         print(self.runthread.is_alive())
 
-    def _SetDefaults(self):
+    def _GetParamFuncs(self, filename=False):
         '''
         '''
-        # These should be hard coded, or better yet migrated to the config database
-        defaults = [
-                    ('trap_current', 0),
-                    ('dpph_current', 0),
-                    ('waveguide_cell_heater_current', 0)
-                   ]
-        for channel, value in defaults:
-            self.pype.Set(channel, value).Wait()
+        if not filename:
+            if not 'run_params' in sys.modules:
+                #imp.load_module('run_params', None
+                #import .default_run as run_params
+                from . import default_run as run_params
+            else:
+                reload(run_params)
+        else:
+            imp.load_source('run_params', filename)
+            import run_params
+        self.DefaultParams = run_params.DefaultParams
+        self.SequenceParams = run_params.SequenceParams
 
     def DoRun(self):
         '''
@@ -93,6 +145,8 @@ class data_run:
         '''
         self.params['run_tag'] = self.run_tagVar.get()
         self.params['num_sequences'] = self.numSequencesVar.get()
+        self._SetParams(self.DefaultParams())
+        print('defaults should be set now')
         for sequence_num in range(self.params['num_sequences']):
             if not self.keep_runningVar.get():
                 print('Aborting!')
@@ -100,13 +154,24 @@ class data_run:
             self._DoSequence(sequence_num)
         print('run sequence aborted or completed')
 
-    def _DoSequence(self, sequence_num):
+    def _SetParams(self, params_list):
+        '''
+        '''
+        print("would do the Set()s now, but that is commented out")
+        for channel_name, value in params_list:
+            #if self.pype.Set(channel_name, value).Wait().Waiting():
+            #    raise NoResponseError('setting ' + str(channel_name))
+            print(channel_name, '->', value)
+
+
+    def _DoSequence(self, sequence_number):
         '''
             Do one sequence within the run
         '''
         print('doing something...')
         print('tag is:', self.params['run_tag'])
         print('though you currently think it is:', self.run_tagVar.get())
-        print('sequence is:', sequence_num)
+        print('sequence is:', sequence_number)
+        self._SetParams(self.SequenceParams(sequence_number))
         sleep(5)
         print('actually, nothing yet')
