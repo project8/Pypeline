@@ -65,6 +65,18 @@ class data_run:
         '''
         print(self.runthread.is_alive())
 
+    def _SetDefaults(self):
+        '''
+        '''
+        # These should be hard coded, or better yet migrated to the config database
+        defaults = [
+                    ('trap_current', 0),
+                    ('dpph_current', 0),
+                    ('waveguide_cell_heater_current', 0)
+                   ]
+        for channel, value in defaults:
+            self.pype.Set(channel, value).Wait()
+
     def DoRun(self):
         '''
             Execute the run

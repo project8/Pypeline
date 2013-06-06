@@ -140,7 +140,12 @@ class App:
         self.timeval.after(2000, self.update_values)
 
     def GetChannel(self):
-        result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
+        try:
+            result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
+        except KeyError:
+            result = "No response from dripline"
+        except:
+            raise
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
