@@ -173,5 +173,7 @@ class take_data:
         print('though you currently think it is:', self.run_tagVar.get())
         print('sequence is:', sequence_number)
         self._SetParams(self.SequenceParams(sequence_number))
+        for channel in self.pype.ListWithProperty('dump'):
+            pass
         sleep(5)
         print('actually, nothing yet')
