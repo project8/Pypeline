@@ -26,7 +26,7 @@ class _SensorDumpInterface:
         import couchdb
         svr = couchdb.Server('http://localhost:5984')
         self._sensor_dump_database = svr['sensor_dump_debug']
-        self.formatstr = '%Y-%m-%d %H:%M:%S'
+        self._formatstr = '%Y-%m-%d %H:%M:%S'
 
     def _NewDump(self, doc_id, run_tag='', new_run=False):
         '''
@@ -43,7 +43,7 @@ class _SensorDumpInterface:
             runs[run['key']]['run_timestamp'] = run['value']['run_timestamp']
 
         dump_doc = {'run_tag': run_tag,
-                    'timestamp': datetime.now().strftime(self.formatstr)
+                    'timestamp': datetime.now().strftime(self._formatstr)
                    }
         if not run_tag in runs and new_run:
             print('creating new run')

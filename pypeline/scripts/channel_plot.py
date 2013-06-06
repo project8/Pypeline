@@ -41,16 +41,16 @@ class channel_plot:
         if not stop_t:
             stop_t = datetime.now()
         self.pype = interface
-        self.formatstr = '%Y-%m-%d %H:%M:%S'
+        self._formatstr = '%Y-%m-%d %H:%M:%S'
         self.plot_dicts = {}
         if isinstance(start_t, datetime):
-            self.start_t = StringVar(value=start_t.strftime(self.formatstr))
+            self.start_t = StringVar(value=start_t.strftime(self._formatstr))
         elif isinstance(start_t, str):
             self.start_t = StringVar(value=start_t)
         else:
             raise TypeError('start_t must be string or datetime')
         if isinstance(stop_t, datetime):
-            self.stop_t = StringVar(value=stop_t.strftime(self.formatstr))
+            self.stop_t = StringVar(value=stop_t.strftime(self._formatstr))
         elif isinstance(stop_t, str):
             self.stop_t = StringVar(value=stop_t)
         else:
@@ -110,10 +110,10 @@ class channel_plot:
                 start_time = datetime.now() - timedelta(hours=hours)
             else:
                 start_time = datetime.strptime(self.start_t.get(),
-                                               self.formatstr)
-            stop = datetime.strptime(self.stop_t.get(), self.formatstr)
+                                               self._formatstr)
+            stop = datetime.strptime(self.stop_t.get(), self._formatstr)
             assert (start_time < stop)
-            self.time_interval[0] = start_time.strftime(self.formatstr)
+            self.time_interval[0] = start_time.strftime(self._formatstr)
             if isFirst:
                 self._SetStop(event, isFirst=False)
             self.Update()
@@ -142,14 +142,14 @@ class channel_plot:
                 stop_time = datetime.now()
             else:
                 stop_time = datetime.strptime(self.stop_t.get(),
-                                              self.formatstr)
+                                              self._formatstr)
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
                 start = datetime.now() - timedelta(hours=hours)
             else:
-                start = datetime.strptime(self.start_t.get(), self.formatstr)
+                start = datetime.strptime(self.start_t.get(), self._formatstr)
             assert (start < stop_time)
-            self.time_interval[1] = stop_time.strftime(self.formatstr)
+            self.time_interval[1] = stop_time.strftime(self._formatstr)
             if isFirst:
                 self._SetStart(event, isFirst=False)
             self.Update()
@@ -240,7 +240,7 @@ class channel_plot:
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
         self.status_var.set('updated at: ' +
-                            datetime.now().strftime(self.formatstr))
+                            datetime.now().strftime(self._formatstr))
         if self.continuous_updates.get() and self.relative_stop_time.get():
             self.toplevel.after(120000, self.Update)
 

@@ -67,7 +67,7 @@ class run_mantis:
             sleeptime = self.runargs['duration']/1000.
         sleep(sleeptime)
         response.Wait()
-        if response.Waiting()
+        if response.Waiting():
             raise NoResponseError('')
         if self.dodump.get():
             sensor_dump['mantis'].Update()
