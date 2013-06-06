@@ -7,6 +7,7 @@ from time import sleep
 import multiprocessing
 import sys
 import imp
+from uuid import uuid4
 # 3rd party libs
 # local libs
 from ...PypelineErrors import NoResponseError
@@ -172,8 +173,25 @@ class take_data:
         print('tag is:', self.params['run_tag'])
         print('though you currently think it is:', self.run_tagVar.get())
         print('sequence is:', sequence_number)
+        run_doc = pype._NewDump(uuid4().hex, self.params['run_tag'],
+                                new_run=(not sequence_number))
         self._SetParams(self.SequenceParams(sequence_number))
         for channel in self.pype.ListWithProperty('dump'):
-            pass
-        sleep(5)
+            run_doc[channel] = self.pype.Get(channel).Wait()
+        run_doc._UpdateTo()
+        if (sequence_number % 3 == 0):
+            trap_state = 'anti'
+        elif (sequence_number % 3 == 1):
+            trap_status = 'off'
+        elif (sequence_number % 3 == 2):
+            trap_status = 'on'
+        outfilename = '/data/june2013/_{:s}_{:05d}_{:05d}.egg'.format(
+            trap_staus, run_doc['run_number'], run_doc['sequence_number'])
+        run_descrip = ''
+        run = self.pype.RunMantis(output=outfilename, mode=1, description=run_descrip,
+                                  duration=60000)
+        sleep(60)
+        run.Wait()
+        run_doc['mantis'] = run
+        run_doc._UpdateTo()
         print('actually, nothing yet')
