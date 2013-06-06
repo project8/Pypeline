@@ -319,14 +319,21 @@ class DripInterface(_PypelineConfInterface,
         return self._log_interface.LogValue(sensor, uncal_val,
                                             cal_val, timestamp)
 
-    def DumpSensors(self, field_dict={}):
+    def DumpSensors(self, dumpdoc=False, runresponse=False):
         '''
             Read all sensors with the property 'dump' and store to the sensor
             dump database
         '''
-        dumps = [self.Get(ch).Wait() for ch in self.ListWithProperty('dump')]
-        dumplist = [resp for resp in dumps if 'final' in resp]
-        self._StoreDump(dumplist, field_dict)
+        if not dumpdoc:
+            dumpdoc = self._NewDump(uuid4().hex)
+        if runresponse:
+            dumpdoc['mantis'] = runresponse
+        for ch in self.ListWithProperty('dump'):
+            resp = self.Get(ch).Wait()
+            if not resp.Waiting():
+                dumpdoc[ch] = resp
+        dumpdoc._UpdateTo()
+        return dumpdoc
 
     def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''

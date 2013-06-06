@@ -1,0 +1,28 @@
+def DefaultParams():
+    '''
+        Return a list of tuples of the form (channel_name, value).
+
+        These will all be set once before the run starts.
+    '''
+    defaults = [
+                ('trap_current', 0),
+                ('dpph_current', 0),
+                ('waveguide_cell_heater_current', 0)
+               ]
+    return defaults
+
+def SequenceParams(sequence_number):
+    '''
+        Return a list of tuples for a particular sequence number
+    '''
+    params = []
+    if sequence_number % 3 == 0:
+        params.append(('trap_current', -1))
+    elif sequence_number % 3 == 1:
+        params.append(('trap_current', 0))
+    elif sequence_number % 3 == 2:
+        params.append(('trap_current', 1))
+    else:
+        raise ValueError("catchall case shouldn't be reached")
+
+    return params
