@@ -333,6 +333,7 @@ class DripInterface(_PypelineConfInterface,
             if not resp.Waiting():
                 dumpdoc[ch] = resp
         dumpdoc._UpdateTo()
+        return dumpdoc
 
     def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
         '''

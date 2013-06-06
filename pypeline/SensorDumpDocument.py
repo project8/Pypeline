@@ -57,6 +57,8 @@ class SensorDumpDocument(dict):
             Updates the remote to match local.
         '''
         document = Document.load(self._dump_db, self['_id'])
+        if '_rev' in self:
+            self.pop('_rev')
         for key in self.keys():
             document[key] = self[key]
         document.store(self._dump_db)

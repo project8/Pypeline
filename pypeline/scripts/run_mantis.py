@@ -2,6 +2,7 @@
 from Tkinter import (IntVar, StringVar, Label, Entry, Button, Checkbutton,
                      OptionMenu, Spinbox)
 from inspect import getargspec
+from time import sleep
 #3rd party libs
 #local libs
 try:
@@ -64,15 +65,17 @@ class run_mantis:
             sensor_dump = self.pype.DumpSensors(runresponse=response)
         sleeptime = 60
         if 'duration' in self.runargs:
-            sleeptime = self.runargs['duration']/1000.
+            sleeptime = float(self.runargs['duration'])/1000.
         sleep(sleeptime)
         response.Wait()
         if response.Waiting():
             raise NoResponseError('')
+        filename = [line.split()[-1] for line in response['final'].split('\n')
+                    if line.startswith(' *output')]
         if self.dodump.get():
             sensor_dump['mantis'].Update()
             sensor_dump._UpdateTo()
-        self.status.set(filename[0] + ' written')
+        self.status.set('run concluded')
 
     def BuildGui(self):
         '''
