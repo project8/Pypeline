@@ -193,7 +193,7 @@ class take_data:
         else:
             print('got to else', sequence_number % 3)
             raise ValueError("that's... not possible")
-        outfilename = '/data/june2013/_{:s}_{:05d}_{:05d}.egg'.format(
+        outfilename = '/data/june2013_{:s}_{:05d}_{:05d}.egg'.format(
             trap_status, run_doc['run_number'], run_doc['sequence_number'])
         run_descrip = ''
         run = self.pype.RunMantis(output=outfilename, mode=1, description=run_descrip,
