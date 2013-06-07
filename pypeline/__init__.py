@@ -17,6 +17,10 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 try:
+    from .PypelineErrors import NoResponseError
+except ImportError:
+    from PypelineErrors import NoResponseError
+try:
     import scripts
 except ImportError:
     # from scripts import *

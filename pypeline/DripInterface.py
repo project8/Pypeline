@@ -167,6 +167,8 @@ class DripInterface(_PypelineConfInterface,
                     instance
                 OTHERWISE: returns a list of eligible loggers
         '''
+        if isinstance(instruments, str):
+            instruments = [instruments]
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:

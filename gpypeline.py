@@ -9,7 +9,7 @@ from inspect import getargspec, getmembers, isclass, isfunction
 # 3rd party Libs
 from numpy import pi
 # internal Libs
-from pypeline import DripInterface, scripts
+from pypeline import DripInterface, scripts, NoResponseError
 
 
 class App:
@@ -22,13 +22,14 @@ class App:
 
         self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
 
-        self.setup_grid()
+        self.BuildGUI()
         self.update_values()
 
-    def setup_grid(self):
+    def BuildGUI(self):
         '''
             Create the permanent text, should only need to call this once
         '''
+        row = 0
         self.channels = self.pype.Get()
         # Tkinter Variables
         #
@@ -44,6 +45,8 @@ class App:
         self.setchannelVar = StringVar()
         # value to set
         self.setchannelvalueVar = DoubleVar()
+        # which logger to turn on 
+        self.logchannelVar = StringVar()
         # values in loggers
         self.loggers_list = self.pype.ListWithProperty('logging')
         self.loggers_dict = {}
@@ -54,45 +57,58 @@ class App:
 
         # Text labels
         self.timedesc = Label(self.frame, text="The time is:")
-        self.timedesc.grid(row=0, sticky=W)
+        self.timedesc.grid(row=row, sticky=W)
         self.timeval = Label(self.frame, textvariable=self.time, relief=SUNKEN)
-        self.timeval.grid(row=0, column=1)
+        self.timeval.grid(row=row, column=1)
+        row += 1
 
         # Buttons ########################################
         # Get interface
         self.get_button = Button(self.frame, text="Get",
                                  command=self.GetChannel)
-        self.get_button.grid(row=1, column=0, sticky=EW)
+        self.get_button.grid(row=row, column=0, sticky=EW)
         self.get_selection = OptionMenu(self.frame, self.getchannelVar,
                                         *self.channels)
-        self.get_selection.grid(row=1, column=1, sticky=EW)
+        self.get_selection.grid(row=row, column=1, sticky=EW)
         self.get_answer_label = Label(self.frame,
                                       textvariable=self.getchannelvalueVar,
                                       relief=SUNKEN)
-        self.get_answer_label.grid(row=1, column=2, sticky=EW)
+        self.get_answer_label.grid(row=row, column=2, sticky=EW)
+        row += 1
 
         # Set interface
         self.set_button = Button(self.frame, text="Set",
                                  command=self.SetChannel)
-        self.set_button.grid(row=2, column=0, sticky=EW)
+        self.set_button.grid(row=row, column=0, sticky=EW)
         self.set_selection = OptionMenu(self.frame, self.setchannelVar,
                                         *self.channels)
-        self.set_selection.grid(row=2, column=1, sticky=EW)
+        self.set_selection.grid(row=row, column=1, sticky=EW)
         self.set_answer_label = Entry(self.frame,
                                       textvariable=self.setchannelvalueVar,
                                       relief=SUNKEN)
-        self.set_answer_label.grid(row=2, column=2, sticky=EW)
+        self.set_answer_label.grid(row=row, column=2, sticky=EW)
+        row += 1
+
+        # Start logger interface
+        self.start_button = Button(self.frame, text="Start Logging",
+                                   command=self.StartLogger)
+        self.start_button.grid(row=row, column=0, sticky=EW)
+        self.log_selection = OptionMenu(self.frame, self.logchannelVar,
+                                        *self.channels)
+        self.log_selection.grid(row=row, column=1, sticky=EW)
+        row += 1
+
 
         # Run interface
         self.run_script = Button(self.frame, text="Run",
                                  command=self.ScriptDialog)
-        self.run_script.grid(row=3, column=0, sticky=EW)
+        self.run_script.grid(row=row, column=0, sticky=EW)
         scriptlist = [name[0] for name in getmembers(scripts, isfunction)]
         scriptlist += [name[0] for name in getmembers(scripts, isclass)]
         #scriptlist += ['run_dpph']
         self.script_selection = OptionMenu(self.frame, self.which_script,
                                            *scriptlist)
-        self.script_selection.grid(row=3, column=1, sticky=EW)
+        self.script_selection.grid(row=row, column=1, sticky=EW)
 
         # Data display
         #
@@ -127,6 +143,15 @@ class App:
         result = self.pype.Set(self.setchannelVar.get(),
                                self.setchannelvalueVar.get()).Wait()['final']
         self.setchannelvalueVar.set(result)
+
+    def StartLogger(self):
+        result = self.pype.StartLoggers([self.logchannelVar.get()]).Wait()
+        if 'final' in result:
+            print('started')
+        else:
+            print(result)
+            raise NoResponseError('no response to start loggers')
+
 
     def ScriptDialog(self):
         #### this section should be added to the later parts asap
