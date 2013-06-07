@@ -26,6 +26,7 @@ class take_data:
         self.keep_runningVar = BooleanVar(value=True)
         self.run_tagVar = StringVar()
         self.numSequencesVar = IntVar(value=10)
+        self.stateVar = StringVar(value='done')
         self.params = {}
         self.runthread = multiprocessing.Process()
 
@@ -59,7 +60,7 @@ class take_data:
                ).grid(row=row, column=0)
         Button(self.toplevel, text="ABORT", command=self._Abort, bg='red'
                ).grid(row=row, column=1)
-        Button(self.toplevel, text="Is Running?", command=self._IsRunning
+        Label(self.toplevel, textvariable=self.stateVar#, command=self._IsRunning
                ).grid(row=row, column=2)
 
     def _ParamFuncFile(self):
@@ -78,6 +79,7 @@ class take_data:
             self.runthread.terminate()
         else:
             print('no current thread')
+        self.stateVar.set('aborted')
 
     def _IsRunning(self):
         '''
@@ -108,6 +110,7 @@ class take_data:
             self.runthread.terminate()
         else:
             print('no current thread')
+        self.stateVar.set('aborted')
 
     def _IsRunning(self):
         '''
@@ -135,6 +138,7 @@ class take_data:
             Execute the run
         '''
         self.keep_runningVar.set(True)
+        self.stateVar.set('normal')
         if self.runthread.is_alive():
             print('there is already live process, abort first or let it finish')
         else:
@@ -146,22 +150,23 @@ class take_data:
         '''
         self.params['run_tag'] = self.run_tagVar.get()
         self.params['num_sequences'] = self.numSequencesVar.get()
+        print('setting defaults')
         self._SetParams(self.DefaultParams())
-        print('defaults should be set now')
         for sequence_num in range(self.params['num_sequences']):
+            print('starting sequence', sequence_num)
             if not self.keep_runningVar.get():
                 print('Aborting!')
                 break
             self._DoSequence(sequence_num)
-        print('run sequence aborted or completed')
+        self.stateVar.set('run complete')
 
     def _SetParams(self, params_list):
         '''
         '''
+        print('******** skipping Set() calls while debugging')
         for channel_name, value in params_list:
             #if self.pype.Set(channel_name, value).Wait().Waiting():
             #    raise NoResponseError('setting ' + str(channel_name))
-            print('*'*60, '\nskipping Set() calls while debugging')
             print(channel_name, '->', value)
 
 
@@ -169,19 +174,13 @@ class take_data:
         '''
             Do one sequence within the run
         '''
-        print('*'*60, '\nsequence is:', sequence_number)
         run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
                                 new_run=(not sequence_number))
         self._SetParams(self.SequenceParams(sequence_number))
-        print('*'*60, '\nnow trying to get dump channels')
         for channel in self.pype.ListWithProperty('dump'):
-            print('*'*60, '\nnow for channel', channel)
             run_doc[channel] = self.pype.Get(channel)
-            print('get submitted')
             run_doc[channel].Update()
-            print('updated')
             run_doc[channel].Wait()
-            print('waited')
         run_doc._UpdateTo()
         trap_status = ''
         if (sequence_number % 3 == 0):
@@ -191,7 +190,6 @@ class take_data:
         elif (sequence_number % 3 == 2):
             trap_status = 'on'
         else:
-            print('got to else', sequence_number % 3)
             raise ValueError("that's... not possible")
         outfilename = '/data/june2013_{:s}_{:05d}_{:05d}.egg'.format(
             trap_status, run_doc['run_number'], run_doc['sequence_number'])
@@ -202,4 +200,3 @@ class take_data:
         run.Wait()
         run_doc['mantis'] = run
         run_doc._UpdateTo()
-        print('actually, nothing yet')
