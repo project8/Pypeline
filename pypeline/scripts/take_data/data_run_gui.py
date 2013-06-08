@@ -7,6 +7,7 @@ from time import sleep
 import multiprocessing
 import sys
 import imp
+from json import dumps
 from uuid import uuid4
 # 3rd party libs
 # local libs
@@ -195,11 +196,15 @@ class take_data:
             raise ValueError("that's... not possible")
         outfilename = '/data/june2013_{:s}_{:05d}_{:05d}.egg'.format(
             trap_status, run_doc['run_number'], run_doc['sequence_number'])
-        run_descrip = ''
-        run = self.pype.RunMantis(output=outfilename, mode=1, description=run_descrip,
-                                  duration=60000)
+        run_descrip = {}
+        for (chan,val) in self.SequenceParams(sequence_number):
+            run_descrip[chan] = val
+        run_descrip['run_tag'] = self.params['run_tag']
+        run_doc['sequence_tag'] = dumps(run_descrip)
+        run = self.pype.RunMantis(output=outfilename, mode=1, duration=60000,
+                                  description=dumps(run_descrip))
+        print('mantis run starting')
         sleep(60)
         run.Wait()
         run_doc['mantis'] = run
         run_doc._UpdateTo()
-        print('actually, nothing yet')
