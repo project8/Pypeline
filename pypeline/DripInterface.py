@@ -175,6 +175,7 @@ class DripInterface(_PypelineConfInterface,
             result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
+        self._log_interface.AddProperties(instruments, 'logging')
         return result
 
     def StopLoggers(self, instruments=False, wait=False):
