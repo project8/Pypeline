@@ -2,6 +2,8 @@
     Class specifically for interactions with dripline's configuration database.
 '''
 
+from __future__ import print_function, absolute_import
+
 # standard imports
 from time import sleep
 from uuid import uuid4
@@ -67,20 +69,26 @@ class _LogInterface:
                        is being requested
         '''
         loggers_dict = {}
-        latest = self._log_database.view('pypeline_view/latest_values')
-        for channel in channels:
-            ch_val = latest[channel].rows[0]['value']['cal_val']
-            ch_time = latest[channel].rows[0]['value']['timestamp']
-            if ch_val:
-                entrylist = ch_val.split()
-                update = []
-                for snip in entrylist:
-                    try:
-                        update.append('%.4E' % float(snip))
-                    except ValueError:
-                        update.append(snip)
-                loggers_dict[channel] = {'value': " ".join(update),
-                                         'time': ch_time}
+        latest = self._log_database.view('pypeline_view/latest_values',
+                                         group_level=2)
+
+        for reading in latest:
+            channel = reading['key']
+            if not channel in channels:
+                continue
+            ch_val = reading['value']['cal_val']
+            ch_time = reading['value']['timestamp']
+            print('ch',channel,'\nval',ch_val,'\ntime',ch_time)
+            entrylist = ch_val.split()
+            update = []
+            for snip in entrylist:
+                try:
+                    update.append('%.4E' % float(snip))
+                except ValueError:
+                    update.append(snip)
+            loggers_dict[channel] = {'value': " ".join(update),
+                                     'time': ch_time}
+
         return loggers_dict
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp):
