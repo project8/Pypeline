@@ -37,7 +37,7 @@ class _PypelineConfInterface:
         elif len(ids) == 0:
             conf_dict = {
                 '_id': uuid4().hex,
-                'channel': chname,
+                'channel': channel,
                 'description': "",
                 'result_units': "",
                 'final_units': "",
@@ -58,6 +58,33 @@ class _PypelineConfInterface:
         for key in ch_doc.keys():
             ch_new[key] = ch_doc[key]
         ch_new.store(self._pype_conf_db)
+
+    def AddProperties(self, channels, properties):
+        '''
+        '''
+        if isinstance(channels, str):
+            channels = [channels]
+        if isinstance(properties, str):
+            properties = [properties]
+        for channel in channels:
+            old_doc = self.GetChannelDoc(channel)
+            new_props = list(set(old_doc['properties']).union(properties))
+            self.UpdateChannel(channel, {'properties': new_props})
+
+    def RemoveProperties(self, channels, properties):
+        '''
+        '''
+        if isinstance(channels, str):
+            channels = [channels]
+        if isinstance(properties, str):
+            properties = [properties]
+        for channel in channels:
+            old_doc = self.GetChannelDoc(channel)
+            new_properties = old_doc['properties']
+            for prop in properties:
+                if prop in new_properties:
+                    new_properties.pop(new_properties.index(prop))
+            self.UpdateChannel(channel, {'properties': new_properties})
 
     # ListOfChannels and ListWithProperty should be one method
     # with optional arugments
