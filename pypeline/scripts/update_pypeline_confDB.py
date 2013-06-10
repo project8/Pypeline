@@ -49,6 +49,7 @@ class update_pypeline_confDB:
             'description': StringVar(),
             'result_units': StringVar(),
             'final_units': StringVar(),
+            'description': StringVar(),
             'properties': {
                 'dripline': BooleanVar(),
                 'pypeline': BooleanVar(),
@@ -64,7 +65,7 @@ class update_pypeline_confDB:
         frame.pack(side='top', fill='both', expand='y')
         rowi = 0
         for key in tkvars.keys():
-            if key.startswith('_'):
+            if key.startswith('_') or (key == 'channel'):
                 continue
             elif key == 'properties':
                 for prop in tkvars['properties'].keys():
@@ -75,7 +76,8 @@ class update_pypeline_confDB:
                     rowi += 1
             else:
                 Label(frame, text=key).grid(row=rowi, column=0)
-                tkvars[key].set(conf_doc[key])
+                if key in conf_doc:
+                    tkvars[key].set(conf_doc[key])
                 Entry(frame, textvariable=tkvars[key]).grid(row=rowi, column=1,
                                                             columnspan=5)
                 rowi += 1
