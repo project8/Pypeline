@@ -78,7 +78,6 @@ class _LogInterface:
                 continue
             ch_val = reading['value']['cal_val']
             ch_time = reading['value']['timestamp']
-            print('ch',channel,'\nval',ch_val,'\ntime',ch_time)
             entrylist = ch_val.split()
             update = []
             for snip in entrylist:
