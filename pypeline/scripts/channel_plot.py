@@ -40,6 +40,7 @@ class channel_plot:
             start_t = datetime.now() - timedelta(hours=2)
         if not stop_t:
             stop_t = datetime.now()
+        self.update_pending = False
         self.pype = interface
         self._formatstr = '%Y-%m-%d %H:%M:%S'
         self.plot_dicts = {}
@@ -223,11 +224,13 @@ class channel_plot:
         '''
         self.Update(tab='All')
 
-    def Update(self, tab='All'):
+    def Update(self, tab='All', unpend=False):
         '''
             Call whatever sequence is needed to update local data and redraw
             the plot
         '''
+        if unpend:
+            self.update_pending = False
         self.status_var.set('updating')
         if tab == 'All':
             tab = range(len(self.notebook.tabs()))
@@ -241,8 +244,10 @@ class channel_plot:
             self._MakePlot(tab=tabi)
         self.status_var.set('updated at: ' +
                             datetime.now().strftime(self._formatstr))
-        if self.continuous_updates.get() and self.relative_stop_time.get():
-            self.toplevel.after(120000, self.Update)
+        if (self.continuous_updates.get() and self.relative_stop_time.get() and
+            not self.update_pending):
+            self.update_pending = True
+            self.toplevel.after(120000, lambda: self.Update(unpend=True))
 
     def _MakePlot(self, tab=0):
         '''
