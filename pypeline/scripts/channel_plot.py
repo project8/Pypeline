@@ -87,9 +87,9 @@ class channel_plot:
         frame = Frame(self.notebook)
         frame.pack(side='top', fill='both', expand='y')
         self.plot_dicts[plotnum]['xname'] = StringVar(value='None')
-        self.plot_dicts['xunits'] = False
+        self.plot_dicts['xunit'] = False
         self.plot_dicts[plotnum]['yname'] = StringVar(value='None')
-        self.plot_dicts['yunits'] = False
+        self.plot_dicts['yunit'] = False
         self.subfigure.append(self.figure.add_subplot(1, 1, 1))
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
@@ -177,6 +177,10 @@ class channel_plot:
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
         self._AddSubplot()
+        Button(self.toplevel, text="Gas Line Temps", command=self._PlotGasLines
+               ).grid(row=0, column=2)
+        Button(self.toplevel, text="Amps+Cell Temps", command=self._PlotCell
+               ).grid(row=0, column=3)
 
         Label(self.toplevel, text='Start Time').grid(row=4, column=1)
         start_entry = Entry(self.toplevel, textvariable=self.start_t)
@@ -197,16 +201,16 @@ class channel_plot:
         Label(self.toplevel, text='Y limits (min-max)').grid(row=8, column=1)
         ymin = Entry(self.toplevel, textvariable=self.ymin)
         ymin.grid(row=8, column=2)
-        ymin.bind('<Return>', self.__Update)
-        ymin.bind('<KP_Enter>', self.__Update, '+')
+        ymin.bind('<Return>', self.Update)
+        ymin.bind('<KP_Enter>', self.Update, '+')
         ymax = Entry(self.toplevel, textvariable=self.ymax)
         ymax.grid(row=8, column=3)
-        ymax.bind('<Return>', self.__Update)
-        ymax.bind('<KP_Enter>', self.__Update, '+')
+        ymax.bind('<Return>', self.Update)
+        ymax.bind('<KP_Enter>', self.Update, '+')
         Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
                     ).grid(row=9, column=1)
 
-        Button(self.toplevel, text="Update All", command=self.__Update
+        Button(self.toplevel, text="Update All", command=self.Update
                ).grid(row=10, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
                ).grid(row=10, column=2)
@@ -224,7 +228,7 @@ class channel_plot:
         '''
         self.Update(tab='All')
 
-    def Update(self, tab='All', unpend=False):
+    def Update(self, event=None, tab='All', unpend=False):
         '''
             Call whatever sequence is needed to update local data and redraw
             the plot
@@ -266,9 +270,11 @@ class channel_plot:
                                       '\n from ' + self.time_interval[0] +
                                       ' to ' + self.time_interval[1])
         xname = self.plot_dicts[tab]['xname'].get().replace('_', ' ')
-        self.subfigure[tab].set_xlabel(xname)
+        xunit = '[' + str(self.plot_dicts['xunit']) + ']'
+        self.subfigure[tab].set_xlabel(xname + ' ' + xunit)
         yname = self.plot_dicts[tab]['yname'].get().replace('_', ' ')
-        self.subfigure[tab].set_ylabel(yname)
+        yunit = '[' + str(self.plot_dicts['yunit']) + ']'
+        self.subfigure[tab].set_ylabel(yname + ' ' + yunit)
         if self.ManualLimits.get():
             self.subfigure[tab].set_ylim(bottom=self.ymin.get(),
                                          top=self.ymax.get())
@@ -315,6 +321,35 @@ class channel_plot:
                 self.plot_dicts['yunit'] = ychdat[2][0]
         except AssertionError as e:
             print('*'*60, '\n the', e[0], 'do not match the 0th line', '*'*60)
+
+    def _PlotGasLines(self):
+        '''
+        '''
+        gas_lines = ['left_gas_line_lower_t',
+                     'left_gas_line_upper_t',
+                     'right_gas_line_lower_t',
+                     'right_gas_line_upper_t']
+        self._PlotSet(gas_lines)
+
+    def _PlotCell(self):
+        '''
+        '''
+        sensors = ['kh2_temp', 'kh3_temp', 'waveguide_cell_body_temp']
+        self._PlotSet(sensors)
+
+    def _PlotSet(self, channels):
+        '''
+        '''
+        for plotn, channel in enumerate(channels):
+            if (len(self.plot_dicts)-2) <= plotn:
+                self._AddSubplot()
+            self.plot_dicts[plotn]['xname'].set('time')
+            self.plot_dicts[plotn]['yname'].set(channel)
+        self.start_t.set('3')
+        self.relative_start_time.set(True)
+        self.relative_stop_time.set(True)
+        self.continuous_updates.set(True)
+        self.Update()
 
     def SaveFigure(self):
         '''
