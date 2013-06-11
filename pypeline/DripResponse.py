@@ -4,6 +4,7 @@
 
 # import standard libraries
 from time import sleep
+from .PypelineErrors import DriplineError
 
 
 class DripResponse(dict):
@@ -45,6 +46,14 @@ class DripResponse(dict):
         '''
         for key in self._cmd_db[self['_id']]:
             self[key] = self._cmd_db[self['_id']][key]
+        if 'result' in self:
+            if self['result'] == 'error':
+                msg = ''
+                if isinstance(self['final'], dict):
+                    msg = self['final']['error']
+                else:
+                    msg = self['final']
+                raise DriplineError(msg)
         return self
 
     def Waiting(self):

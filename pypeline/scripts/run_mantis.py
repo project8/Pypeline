@@ -55,6 +55,7 @@ class run_mantis:
         '''
             Executes the mantis run
         '''
+        self.status.set('run failed!')
         try:
             for key in self.gui_input_dict.keys():
                 self.runargs[key] = self.gui_input_dict[key].get()
@@ -75,7 +76,7 @@ class run_mantis:
         if self.dodump.get():
             sensor_dump['mantis'].Update()
             sensor_dump._UpdateTo()
-        self.status.set('run concluded')
+        self.status.set('run complete')
 
     def BuildGui(self):
         '''
