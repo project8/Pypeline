@@ -334,7 +334,8 @@ class channel_plot:
     def _PlotCell(self):
         '''
         '''
-        sensors = ['kh2_temp', 'kh3_temp', 'waveguide_cell_body_temp']
+        sensors = ['kh2_temp', 'kh3_temp', 'waveguide_cell_body_temp',
+                   'coldhead_temp']
         self._PlotSet(sensors)
 
     def _PlotSet(self, channels):
