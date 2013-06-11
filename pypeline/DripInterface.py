@@ -175,7 +175,7 @@ class DripInterface(_PypelineConfInterface,
             result = self._cmd_interface.StartLoggers(instruments)
             if wait:
                 result.Wait()
-        self._log_interface.AddProperties(instruments, 'logging')
+        self.AddProperties(instruments, 'logging')
         return result
 
     def StopLoggers(self, instruments=False, wait=False):
@@ -319,7 +319,7 @@ class DripInterface(_PypelineConfInterface,
         '''
         if not timestamp:
             timestamp = datetime.now()
-        return self._log_interface.LogValue(sensor, uncal_val,
+        return self.LogValue(sensor, uncal_val,
                                             cal_val, timestamp)
 
     def DumpSensors(self, dumpdoc=False, runresponse=False):
