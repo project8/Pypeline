@@ -24,8 +24,11 @@ try:
     import scripts
 except ImportError:
     # from scripts import *
-    print('crap')
-    raise
+    print('*'*60, '\ncrap')
+    try:
+        from . import scripts
+    except:
+        raise
 if "DISPLAY" in environ:
     if environ["DISPLAY"]:
         try:
