@@ -205,7 +205,7 @@ class channel_plot:
         Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
                     ).grid(row=9, column=1)
 
-        Button(self.toplevel, text="Update All", command=self.UpdateButton
+        Button(self.toplevel, text="Update All", command=self.__Update
                ).grid(row=10, column=1)
         Button(self.toplevel, text="Save", command=self.SaveFigure
                ).grid(row=10, column=2)
@@ -243,12 +243,6 @@ class channel_plot:
                             datetime.now().strftime(self._formatstr))
         if self.continuous_updates.get() and self.relative_stop_time.get():
             self.toplevel.after(120000, self.Update)
-
-    def UpdateButton(self):
-        '''
-        '''
-        self._SetStart()
-        self.Update()
 
     def _MakePlot(self, tab=0):
         '''
