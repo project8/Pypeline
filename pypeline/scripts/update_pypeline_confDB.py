@@ -3,7 +3,11 @@ from sys import version_info
 if version_info[0] < 3:
     from Tkinter import (Label, Entry, OptionMenu, Button, StringVar,
                          BooleanVar, Checkbutton)
-from ttk import Notebook, Frame
+    from ttk import Notebook, Frame
+else:
+    from tkinter import (Label, Entry, OptionMenu, Button, StringVar,
+                         BooleanVar, Checkbutton)
+    from tkinter.ttk import Notebook, Frame
 #3rd party libs
 #local libs
 

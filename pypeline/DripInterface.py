@@ -4,7 +4,7 @@
     into more files.
 '''
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 # standard imports
 from time import sleep
 from uuid import uuid4
@@ -18,30 +18,37 @@ from couchdb import Server as CouchServer
 try:
     from .DripResponse import DripResponse
 except ImportError:
+    print('doing py2.7')
     from DripResponse import DripResponse
 try:
     from .CmdInterface import _CmdInterface
 except ImportError:
+    print('doing py2.7')
     from CmdInterface import _CmdInterface
 try:
     from .ConfInterface import _ConfInterface
 except ImportError:
+    print('doing py2.7')
     from ConfInterface import _ConfInterface
 try:
     from .LogInterface import _LogInterface
 except ImportError:
+    print('doing py2.7')
     from LogInterface import _LogInterface
 try:
     from .PypelineConfInterface import _PypelineConfInterface
 except ImportError:
+    print('doing py2.7')
     from PypelineConfInterface import _PypelineConfInterface
 try:
     from .SensorDumpInterface import _SensorDumpInterface
 except ImportError:
+    print('doing py2.7')
     from SensorDumpInterface import _SensorDumpInterface
 try:
     from .PypelineErrors import NoResponseError
 except ImportError:
+    print('doing py2.7')
     from PypelineErrors import NoResponseError
 
 

@@ -1,8 +1,14 @@
 #!/usr/bin/python2
+from sys import version_info
+inpy3 = not version_info[0] < 3
 
 # Standard Libs
-from Tkinter import *
-from tkFileDialog import asksaveasfile
+if inpy3:
+    from tkinter import *
+    from tkinter.filedialog import asksaveasfile
+else:
+    from Tkinter import *
+    from tkFileDialog import asksaveasfile
 from datetime import datetime
 from json import dump
 from inspect import getargspec, getmembers, isclass, isfunction
