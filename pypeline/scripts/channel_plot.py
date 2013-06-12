@@ -71,6 +71,62 @@ class channel_plot:
         if not toplevel:
             Tk.mainloop()
 
+    def BuildGui(self):
+        '''
+        '''
+        self.removei = IntVar(value=0)
+        self.relative_start_time = BooleanVar(value=False)
+        self.relative_stop_time = BooleanVar(value=False)
+        self.continuous_updates = BooleanVar(value=False)
+        self.ManualLimits = BooleanVar(value=False)
+        Button(self.toplevel, text="Add Line", command=self._AddSubplot
+               ).grid(row=0, column=1)
+        self._AddSubplot()
+        Button(self.toplevel, text="Gas Line Temps", command=self._PlotGasLines
+               ).grid(row=0, column=2)
+        Button(self.toplevel, text="Amps+Cell Temps", command=self._PlotCell
+               ).grid(row=0, column=3)
+
+        Label(self.toplevel, text='Start Time').grid(row=4, column=1)
+        start_entry = Entry(self.toplevel, textvariable=self.start_t)
+        start_entry.bind('<Return>', self._SetStart)
+        start_entry.bind('<KP_Enter>', self._SetStart, '+')
+        start_entry.grid(row=4, column=2, columnspan=2)
+        Checkbutton(self.toplevel, text='Hours ago',
+                    variable=self.relative_start_time).grid(row=5, column=2)
+
+        Label(self.toplevel, text='Stop Time').grid(row=6, column=1)
+        stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
+        stop_entry.bind('<Return>', self._SetStop)
+        stop_entry.bind('<KP_Enter>', self._SetStop, '+')
+        stop_entry.grid(row=6, column=2, columnspan=2)
+        Checkbutton(self.toplevel, text='Now',
+                    variable=self.relative_stop_time).grid(row=7, column=2)
+
+        Label(self.toplevel, text='Y limits (min-max)').grid(row=8, column=1)
+        ymin = Entry(self.toplevel, textvariable=self.ymin)
+        ymin.grid(row=8, column=2)
+        ymin.bind('<Return>', self.Update)
+        ymin.bind('<KP_Enter>', self.Update, '+')
+        ymax = Entry(self.toplevel, textvariable=self.ymax)
+        ymax.grid(row=8, column=3)
+        ymax.bind('<Return>', self.Update)
+        ymax.bind('<KP_Enter>', self.Update, '+')
+        Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
+                    ).grid(row=9, column=1)
+
+        Button(self.toplevel, text="Update All", command=self.Update
+               ).grid(row=10, column=1)
+        Button(self.toplevel, text="Save", command=self.SaveFigure
+               ).grid(row=10, column=2)
+        Checkbutton(self.toplevel, text='Continuous (Button above to start)',
+                    variable=self.continuous_updates
+                    ).grid(row=11, column=1, columnspan=2)
+        self.status_var.set('done')
+
+        Label(self.toplevel, textvariable=self.status_var).grid(row=20,
+                                                                column=1,
+                                                                columnspan=2)
     def _SetupCanvas(self):
         '''
         '''
@@ -168,67 +224,6 @@ class channel_plot:
         except:
             raise
 
-    def BuildGui(self):
-        '''
-        '''
-        self.removei = IntVar(value=0)
-        self.relative_start_time = BooleanVar(value=False)
-        self.relative_stop_time = BooleanVar(value=False)
-        self.continuous_updates = BooleanVar(value=False)
-        self.ManualLimits = BooleanVar(value=False)
-        Button(self.toplevel, text="Add Line", command=self._AddSubplot
-               ).grid(row=0, column=1)
-        self._AddSubplot()
-        Button(self.toplevel, text="Gas Line Temps", command=self._PlotGasLines
-               ).grid(row=0, column=2)
-        Button(self.toplevel, text="Amps+Cell Temps", command=self._PlotCell
-               ).grid(row=0, column=3)
-
-        Label(self.toplevel, text='Start Time').grid(row=4, column=1)
-        start_entry = Entry(self.toplevel, textvariable=self.start_t)
-        start_entry.bind('<Return>', self._SetStart)
-        start_entry.bind('<KP_Enter>', self._SetStart, '+')
-        start_entry.grid(row=4, column=2, columnspan=2)
-        Checkbutton(self.toplevel, text='Hours ago',
-                    variable=self.relative_start_time).grid(row=5, column=2)
-
-        Label(self.toplevel, text='Stop Time').grid(row=6, column=1)
-        stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
-        stop_entry.bind('<Return>', self._SetStop)
-        stop_entry.bind('<KP_Enter>', self._SetStop, '+')
-        stop_entry.grid(row=6, column=2, columnspan=2)
-        Checkbutton(self.toplevel, text='Now',
-                    variable=self.relative_stop_time).grid(row=7, column=2)
-
-        Label(self.toplevel, text='Y limits (min-max)').grid(row=8, column=1)
-        ymin = Entry(self.toplevel, textvariable=self.ymin)
-        ymin.grid(row=8, column=2)
-        ymin.bind('<Return>', self.Update)
-        ymin.bind('<KP_Enter>', self.Update, '+')
-        ymax = Entry(self.toplevel, textvariable=self.ymax)
-        ymax.grid(row=8, column=3)
-        ymax.bind('<Return>', self.Update)
-        ymax.bind('<KP_Enter>', self.Update, '+')
-        Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
-                    ).grid(row=9, column=1)
-
-        Button(self.toplevel, text="Update All", command=self.Update
-               ).grid(row=10, column=1)
-        Button(self.toplevel, text="Save", command=self.SaveFigure
-               ).grid(row=10, column=2)
-        Checkbutton(self.toplevel, text='Continuous (Button above to start)',
-                    variable=self.continuous_updates
-                    ).grid(row=11, column=1, columnspan=2)
-        self.status_var.set('done')
-
-        Label(self.toplevel, textvariable=self.status_var).grid(row=20,
-                                                                column=1,
-                                                                columnspan=2)
-
-    def __Update(self, event=None):
-        '''
-        '''
-        self.Update(tab='All')
 
     def Update(self, event=None, tab='All', unpend=False):
         '''
@@ -254,36 +249,6 @@ class channel_plot:
             not self.update_pending):
             self.update_pending = True
             self.toplevel.after(120000, lambda: self.Update(unpend=True))
-
-    def _MakePlot(self, tab=0):
-        '''
-        '''
-        if self.plot_dicts[tab]['xname'].get() == 'time':
-            self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
-            self.subfigure[tab].set_xticklabels(
-                self.subfigure[tab].get_xticklabels(), rotation=-45)
-            self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
-                "%m/%d %H:%M"))
-        else:
-            self.subfigure[tab].plot(self.xdata, self.ydata)
-        self.subfigure[tab].set_title(self.plot_dicts[tab]['yname'].get() +
-                                      ' vs ' +
-                                      self.plot_dicts[tab]['xname'].get() +
-                                      '\n from ' + self.time_interval[0] +
-                                      ' to ' + self.time_interval[1])
-        xname = self.plot_dicts[tab]['xname'].get().replace('_', ' ')
-        xunit = '[' + str(self.plot_dicts['xunit']) + ']'
-        self.subfigure[tab].set_xlabel(xname + ' ' + xunit)
-        yname = self.plot_dicts[tab]['yname'].get().replace('_', ' ')
-        yunit = '[' + str(self.plot_dicts['yunit']) + ']'
-        self.subfigure[tab].set_ylabel(yname + ' ' + yunit)
-        if self.ManualLimits.get():
-            self.subfigure[tab].set_ylim(bottom=self.ymin.get(),
-                                         top=self.ymax.get())
-
-        self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
-        self.canvas.show()
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=10)
 
     def _UpdateData(self, tab=0):
         '''
@@ -323,6 +288,36 @@ class channel_plot:
                 self.plot_dicts['yunit'] = ychdat[2][0]
         except AssertionError as e:
             print('*'*60, '\n the', e[0], 'do not match the 0th line', '*'*60)
+
+    def _MakePlot(self, tab=0):
+        '''
+        '''
+        if self.plot_dicts[tab]['xname'].get() == 'time':
+            self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
+            self.subfigure[tab].set_xticklabels(
+                self.subfigure[tab].get_xticklabels(), rotation=-45)
+            self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
+                "%m/%d %H:%M"))
+        else:
+            self.subfigure[tab].plot(self.xdata, self.ydata)
+        self.subfigure[tab].set_title(self.plot_dicts[tab]['yname'].get() +
+                                      ' vs ' +
+                                      self.plot_dicts[tab]['xname'].get() +
+                                      '\n from ' + self.time_interval[0] +
+                                      ' to ' + self.time_interval[1])
+        xname = self.plot_dicts[tab]['xname'].get().replace('_', ' ')
+        xunit = '[' + str(self.plot_dicts['xunit']) + ']'
+        self.subfigure[tab].set_xlabel(xname + ' ' + xunit)
+        yname = self.plot_dicts[tab]['yname'].get().replace('_', ' ')
+        yunit = '[' + str(self.plot_dicts['yunit']) + ']'
+        self.subfigure[tab].set_ylabel(yname + ' ' + yunit)
+        if self.ManualLimits.get():
+            self.subfigure[tab].set_ylim(bottom=self.ymin.get(),
+                                         top=self.ymax.get())
+
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
+        self.canvas.show()
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=10)
 
     def _PlotGasLines(self):
         '''
