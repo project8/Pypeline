@@ -243,6 +243,9 @@ class channel_plot:
         for tabi in tab:
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
+        self.figure.legends = []
+        self.figure.legend(*self.subfigure[0].get_legend_handles_labels())
+        self.figure.legends[0].draggable(True)
         self.status_var.set('updated at: ' +
                             datetime.now().strftime(self._formatstr))
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
@@ -293,13 +296,15 @@ class channel_plot:
         '''
         '''
         if self.plot_dicts[tab]['xname'].get() == 'time':
-            self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-')
+            self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-',
+                label=self.plot_dicts[tab]['yname'].get())
             self.subfigure[tab].set_xticklabels(
                 self.subfigure[tab].get_xticklabels(), rotation=-45)
             self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(
                 "%m/%d %H:%M"))
         else:
-            self.subfigure[tab].plot(self.xdata, self.ydata)
+            self.subfigure[tab].plot(self.xdata, self.ydata,
+                                     label=self.plot_dicts[tab]['yname'].get())
         self.subfigure[tab].set_title(self.plot_dicts[tab]['yname'].get() +
                                       ' vs ' +
                                       self.plot_dicts[tab]['xname'].get() +
