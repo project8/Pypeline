@@ -1,6 +1,13 @@
+from sys import version_info
+inpy3 = not version_info[0] < 3
+
 #standard libs
-from Tkinter import (IntVar, StringVar, Label, Entry, Button, Checkbutton,
-                     OptionMenu, Spinbox)
+if inpy3:
+    from tkinter import (IntVar, StringVar, Label, Entry, Button, Checkbutton,
+                         OptionMenu, Spinbox)
+else:
+    from Tkinter import (IntVar, StringVar, Label, Entry, Button, Checkbutton,
+                         OptionMenu, Spinbox)
 from inspect import getargspec
 from time import sleep
 #3rd party libs

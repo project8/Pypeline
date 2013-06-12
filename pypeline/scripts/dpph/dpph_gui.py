@@ -1,8 +1,16 @@
 from __future__ import print_function, absolute_import
+from sys import version_info
+inpy3 = not version_info[0] < 3
+
 # built in
-from Tkinter import DoubleVar, StringVar, Button, Entry, Label, OptionMenu
-from tkFileDialog import asksaveasfile
-from ttk import Notebook, Frame
+if inpy3:
+    from tkinter import DoubleVar, StringVar, Button, Entry, Label, OptionMenu
+    from tkinter.filedialog import asksaveasfile
+    from tkinter.ttk import Notebook, Frame
+else:
+    from Tkinter import DoubleVar, StringVar, Button, Entry, Label, OptionMenu
+    from tkFileDialog import asksaveasfile
+    from ttk import Notebook, Frame
 # 3rd party
 from numpy import pi
 # local

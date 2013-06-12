@@ -1,8 +1,16 @@
 from __future__ import print_function, absolute_import
+from sys import version_info
+inpy3 = not version_info[0] < 3
+
 # standard libs
-from Tkinter import (Button, Label, Entry,
-                     StringVar, BooleanVar, IntVar)
-from tkFileDialog import askopenfilename
+if inpy3:
+    from tkinter import (Button, Label, Entry,
+                         StringVar, BooleanVar, IntVar)
+    from tkinter.filedialog import askopenfilename
+else:
+    from Tkinter import (Button, Label, Entry,
+                         StringVar, BooleanVar, IntVar)
+    from tkFileDialog import askopenfilename
 from time import sleep
 import multiprocessing
 import sys

@@ -10,13 +10,15 @@ if version_info[0] < 3:
     from Tkinter import (StringVar, BooleanVar, IntVar, DoubleVar, Label,
                          OptionMenu, Entry, Button, Checkbutton)
     from tkFileDialog import asksaveasfilename
+    from ttk import Notebook, Frame
+    from tkMessageBox import showwarning
 else:
     import tkinter as Tk
     from tkinter import (StringVar, BooleanVar, IntVar, DoubleVar, Label,
                          OptionMenu, Entry, Button, Checkbutton)
-    from tkFileDialog import asksaveasfilename
-from ttk import Notebook, Frame
-from tkMessageBox import showwarning
+    from tkinter.filedialog import asksaveasfilename
+    from tkinter.ttk import Notebook, Frame
+    from tkinter.messagebox import showwarning
 from datetime import datetime, timedelta
 
 #3rd party libs

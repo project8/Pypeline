@@ -8,33 +8,7 @@
 from __future__ import print_function
 from os import environ
 
-try:
-    from .DripInterface import DripInterface
-except ImportError:
-    import DripInterface.DripInterface
-try:
-    from .DripResponse import DripResponse
-except ImportError:
-    from DripResponse import DripResponse
-try:
-    from .PypelineErrors import NoResponseError
-except ImportError:
-    from PypelineErrors import NoResponseError
-try:
-    import scripts
-except ImportError:
-    # from scripts import *
-    print('*'*60, '\ncrap')
-    try:
-        from . import scripts
-    except:
-        raise
-if "DISPLAY" in environ:
-    if environ["DISPLAY"]:
-        try:
-            from .usegnuplot import Gnuplot
-        except ImportError:
-            try:
-                from usegnuplot import Gnuplot
-            except ImportError:
-                print('import of Gnuplot failed, it is not available')
+from .DripInterface import DripInterface
+from .DripResponse import DripResponse
+from .PypelineErrors import NoResponseError
+from . import scripts
