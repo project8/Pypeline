@@ -29,6 +29,7 @@ def compression_test(pype, power_start=-80, power_stop=-10, power_step=5,
         pype.Set('hf_sweeper_power', power)
         run_out = pype.Run(filename=tempfile, mode=mode, rate=rate,
                            durration=digitization_time, description=descrip)
+        powerline_out = pype.RunPowerline(input_file=tempfile)
         # something to run powerline and get the power back
         # further processing of powerline output
         # something to append the power list
