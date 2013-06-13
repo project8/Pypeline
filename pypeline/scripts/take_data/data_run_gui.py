@@ -27,21 +27,23 @@ class take_data:
     '''
     '''
 
-    def __init__(self, pype, toplevel):
+    def __init__(self, pype, toplevel=False, filename=False, num_sequences=10,
+                 run_tag=''):
         '''
         '''
         self.pype = pype
         self.toplevel = toplevel
 
         self.keep_runningVar = BooleanVar(value=True)
-        self.run_tagVar = StringVar()
-        self.numSequencesVar = IntVar(value=10)
+        self.run_tagVar = StringVar(value=run_tag)
+        self.num_sequencesVar = IntVar(value=num_sequences)
         self.stateVar = StringVar(value='done')
         self.params = {}
         self.runthread = multiprocessing.Process()
 
-        self._GetParamFuncs(filename=False)
-        self._BuildGui()
+        self._GetParamFuncs(filename)
+        if toplevel:
+            self._BuildGui()
 
     def _BuildGui(self):
         '''
@@ -56,7 +58,7 @@ class take_data:
 
         Label(self.toplevel, text='Number of Sequences').grid(row=row,
                                                               column=0)
-        Entry(self.toplevel, textvariable=self.numSequencesVar).grid(row=row,
+        Entry(self.toplevel, textvariable=self.num_sequencesVar).grid(row=row,
                                                                      column=1)
         row += 1
 
@@ -117,8 +119,6 @@ class take_data:
         '''
         if not filename:
             if not 'run_params' in sys.modules:
-                #imp.load_module('run_params', None
-                #import .default_run as run_params
                 from . import default_run as run_params
             else:
                 reload(run_params)
@@ -146,7 +146,7 @@ class take_data:
             the run called by DoRun in a subprocess
         '''
         self.params['run_tag'] = self.run_tagVar.get()
-        self.params['num_sequences'] = self.numSequencesVar.get()
+        self.params['num_sequences'] = self.num_sequencesVar.get()
         print('setting defaults')
         self._SetParams(self.DefaultParams())
         for sequence_num in range(self.params['num_sequences']):
