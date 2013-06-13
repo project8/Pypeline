@@ -1,7 +1,9 @@
 # Standard
+import ast
 # 3rd Party
 from numpy import arange
 # Local
+from ..PypelineErrors import DriplineError
 
 
 def compression_test(pype, power_start=-80, power_stop=-10, power_step=5,
@@ -24,14 +26,17 @@ def compression_test(pype, power_start=-80, power_stop=-10, power_step=5,
     descrip = {'lo_frequency': lo_frequency}
     rate = 200
     mode = 1
-    powers = []
+    power_out = []
     for power in arange(power_start, power_stop, power_step):
         pype.Set('hf_sweeper_power', power)
-        run_out = pype.Run(filename=tempfile, mode=mode, rate=rate,
-                           durration=digitization_time, description=descrip)
+        mantis_out = pype.RunMantis(filename=tempfile, mode=mode, rate=rate,
+                                    durration=digitization_time,
+                                    description=descrip)
+        mantis_out.Wait(digitization_time/500.)
+        if mantis_out.Waiting():
+            raise DriplineError('failed to digitize')
         powerline_out = pype.RunPowerline(input_file=tempfile)
-        # something to run powerline and get the power back
-        # further processing of powerline output
-        # something to append the power list
+        power_out.append(max(ast.literal_eval(powerline_out['final'])['data']))
+    result = {'power_in': power, 'power_out': power_out}
 
     # something to plot the two sets of data
