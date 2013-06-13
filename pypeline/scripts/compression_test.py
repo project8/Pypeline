@@ -11,9 +11,11 @@ import ast
 if inpy3:
     from tkinter import (DoubleVar, Label, Entry, Button)
     from tkinter.ttk import Frame
+    from tkinter.filedialog import asksaveasfilename
 else:
     from Tkinter import (DoubleVar, Label, Entry, Button)
     from ttk import Frame
+    from tkFileDialog import asksaveasfilename
 # 3rd Party
 from numpy import arange
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
