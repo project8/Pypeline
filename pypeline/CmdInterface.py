@@ -194,14 +194,14 @@ class _CmdInterface:
         self._cmd_database.save(run_doc)
         return result
 
-    def RunPowerline(self, points, events, input):
+    def RunPowerline(self, points, events, input_file):
         '''
             Posts a "run" document calling a non-mantis process
 
             Inputs:
                 <points> number of fft points to use
                 <event> max number of records to use
-                <input> input file to process
+                <input_file> input file to process
 
             Returns:
                 A DripResponse instance.
@@ -215,20 +215,20 @@ class _CmdInterface:
                 "subprocess": "powerline",
                 "points": str(points),
                 "events": str(events),
-                "input": input
+                "input": input_file
             },
         }
         self._cmd_database.save(run_doc)
         return result
 
-    def RunSweepline(self, points, events, input):
+    def RunSweepline(self, points, events, input_file):
         '''
             Posts a "run" document calling a non-mantis process
 
             Inputs:
                 <points> number of fft points to use
                 <event> max number of records to use
-                <input> input file to process
+                <input_file> input file to process
 
             Returns:
                 A DripResponse instance.
@@ -242,7 +242,7 @@ class _CmdInterface:
                 "subprocess": "sweepline",
                 "points": str(points),
                 "events": str(events),
-                "input": input
+                "input": input_file
             },
         }
         self._cmd_database.save(run_doc)

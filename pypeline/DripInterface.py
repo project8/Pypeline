@@ -345,7 +345,8 @@ class DripInterface(_PypelineConfInterface,
         dumpdoc._UpdateTo()
         return dumpdoc
 
-    def RunPowerline(self, points=4096, events=1024, input="/data/temp.egg"):
+    def RunPowerline(self, points=4096, events=1024,
+                     input_file="/data/temp.egg"):
         '''
             Posts a document to the command database instructing dripline to
             start a powerline run.
@@ -353,12 +354,12 @@ class DripInterface(_PypelineConfInterface,
             Inputs:
                 <points> number of fft points to use
                 <event> max number of records to use
-                <input> input file to process
+                <input_file> input file to process
 
             Returns:
                 A pypeline.DripResponse instance.
         '''
-        result = self._cmd_interface.RunPowerline(points, events, input)
+        result = self._cmd_interface.RunPowerline(points, events, input_file)
         return result
 
     def CheckHeartbeat(self):
