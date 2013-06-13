@@ -1,3 +1,18 @@
+def Mantis_kwargs():
+    '''
+        Return a dict of kwargs for DripInterface.RunMantis()
+    '''
+    kwargs = {
+              'output': '/data/temp.egg',
+              'rate': 250.,
+              'duration': 60000.,
+              'mode': 1,
+              'length': 2097152,
+              'count': 640,
+              'description': '{}'
+             }
+    return kwargs
+
 def DefaultParams():
     '''
         Return a list of tuples of the form (channel_name, value).

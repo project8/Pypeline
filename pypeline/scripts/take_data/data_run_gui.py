@@ -17,6 +17,7 @@ import sys
 import imp
 from json import dumps
 from uuid import uuid4
+import ast
 # 3rd party libs
 # local libs
 from ...PypelineErrors import NoResponseError
@@ -95,21 +96,6 @@ class take_data:
         '''
         print(self.runthread.is_alive())
 
-    def _GetParamFuncs(self, filename=False):
-        '''
-        '''
-        if not filename:
-            if not 'run_params' in sys.modules:
-                #imp.load_module('run_params', None
-                #import .default_run as run_params
-                from . import default_run as run_params
-        Button(self.toplevel, text="Start Run", command=self.DoRun
-               ).grid(row=row, column=0)
-        Button(self.toplevel, text="ABORT", command=self._Abort, bg='red'
-               ).grid(row=row, column=1)
-        Button(self.toplevel, text="Is Running??", command=self._IsRunning
-               ).grid(row=row, column=2)
-
     def _Abort(self):
         '''
         '''
@@ -141,6 +127,7 @@ class take_data:
             import run_params
         self.DefaultParams = run_params.DefaultParams
         self.SequenceParams = run_params.SequenceParams
+        self.Mantis_kwargs = run_params.Mantis_kwargs()
 
     def DoRun(self):
         '''
@@ -151,11 +138,12 @@ class take_data:
         if self.runthread.is_alive():
             print('there is already live process, abort first or let it finish')
         else:
-            self.runthread = multiprocessing.Process(target=self._DoRun)
+            self.runthread = multiprocessing.Process(target=self.__DoRun)
             self.runthread.start()
 
-    def _DoRun(self):
+    def __DoRun(self):
         '''
+            the run called by DoRun in a subprocess
         '''
         self.params['run_tag'] = self.run_tagVar.get()
         self.params['num_sequences'] = self.numSequencesVar.get()
@@ -183,6 +171,7 @@ class take_data:
         '''
             Do one sequence within the run
         '''
+        mantis_kwargs = self.Mantis_kwargs.copy()
         run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
                                 new_run=(not sequence_number))
         self._SetParams(self.SequenceParams(sequence_number))
@@ -202,13 +191,14 @@ class take_data:
             raise ValueError("that's... not possible")
         outfilename = '/data/june2013_{:s}_{:05d}_{:05d}.egg'.format(
             trap_status, run_doc['run_number'], run_doc['sequence_number'])
-        run_descrip = {}
+        run_descrip = ast.literal_eval(mantis_kwargs['description'])
         for (chan,val) in self.SequenceParams(sequence_number):
             run_descrip[chan] = val
         run_descrip['run_tag'] = self.params['run_tag']
         run_doc['sequence_tag'] = dumps(run_descrip)
-        run = self.pype.RunMantis(output=outfilename, mode=1, duration=60000,
-                                  description=dumps(run_descrip))
+        mantis_kwargs.update({'output': outfilename,
+                              'description':dumps(run_descrip)})
+        run = self.pype.RunMantis(*mantis_kwargs)
         print('mantis run starting')
         sleep(60)
         run.Wait()
