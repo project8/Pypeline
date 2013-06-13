@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+from __future__ import print_function, absolute_import
 from sys import version_info
 inpy3 = not version_info[0] < 3
 
