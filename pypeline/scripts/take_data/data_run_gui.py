@@ -4,11 +4,11 @@ inpy3 = not version_info[0] < 3
 
 # standard libs
 if inpy3:
-    from tkinter import (Button, Label, Entry,
+    from tkinter import (Button, Label, Entry, Checkbutton,
                          StringVar, BooleanVar, IntVar)
     from tkinter.filedialog import askopenfilename
 else:
-    from Tkinter import (Button, Label, Entry,
+    from Tkinter import (Button, Label, Entry, Checkbutton,
                          StringVar, BooleanVar, IntVar)
     from tkFileDialog import askopenfilename
 from time import sleep
@@ -35,6 +35,7 @@ class take_data:
         self.toplevel = toplevel
 
         self.keep_runningVar = BooleanVar(value=True)
+        self.extend_runVar = BooleanVar(value=False)
         self.run_tagVar = StringVar(value=run_tag)
         self.num_sequencesVar = IntVar(value=num_sequences)
         self.stateVar = StringVar(value='done')
@@ -54,6 +55,8 @@ class take_data:
         Label(self.toplevel, text='Run tag').grid(row=row, column=0)
         Entry(self.toplevel, textvariable=self.run_tagVar).grid(row=row,
                                                                 column=1)
+        Checkbutton(self.toplevel, text="Extend Existing",
+                    variable=self.extend_runVar).grid(row=row, column=2)
         row += 1
 
         Label(self.toplevel, text='Number of Sequences').grid(row=row,
@@ -173,7 +176,8 @@ class take_data:
         '''
         mantis_kwargs = self.Mantis_kwargs.copy()
         run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
-                                new_run=(not sequence_number))
+                                new_run=((not sequence_number) and 
+                                          not self.extend_runVar.get()))
         self._SetParams(self.SequenceParams(sequence_number))
         for channel in self.pype.ListWithProperty('dump'):
             run_doc[channel] = self.pype.Get(channel)
