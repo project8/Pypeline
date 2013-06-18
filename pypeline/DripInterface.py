@@ -277,8 +277,9 @@ class DripInterface(_ConfInterface,
         '''
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
-        result = self.RunMantis(
-            output, rate, duration, mode, length, count, description)
+        result = super(DripInterface, self).RunMantis(output, rate, duration,
+                                                      mode, length, count,
+                                                      description)
         return result
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
