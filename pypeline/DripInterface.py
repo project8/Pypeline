@@ -66,9 +66,6 @@ class DripInterface(_ConfInterface,
                                       self._server['pypeline_sensor_dump'])
         _LogInterface.__init__(self, self._server['dripline_logged_data'])
 
-        #self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
-        self._conf_interface = _ConfInterface(self._server['dripline_conf'])
-
     def Get(self, channel='', wait=False):
         '''
             Post a document to the command database using the get verb for a
@@ -90,7 +87,7 @@ class DripInterface(_ConfInterface,
                    will still be posted.
         '''
         if not channel:
-            result = self._conf_interface.EligibleChannels()
+            result = self.EligibleChannels()
         else:
             if channel in self.GetPureSetters():
                 result = self._GetFromSet(channel)
@@ -124,7 +121,7 @@ class DripInterface(_ConfInterface,
                    or as one which admits the set verb.
         '''
         if not channel:
-            result = self._conf_interface.EligibleChannels()
+            result = self.EligibleChannels()
         elif value is None:
             print("Please input value to assign to channel")
             result = False
@@ -157,7 +154,7 @@ class DripInterface(_ConfInterface,
         if isinstance(instruments, str):
             instruments = [instruments]
         if not instruments:
-            result = self._conf_interface.EligibleLoggers()
+            result = self.EligibleLoggers()
         else:
             result = self.StartLoggers(instruments)
             if wait:
@@ -190,7 +187,7 @@ class DripInterface(_ConfInterface,
                    and being responded to, but logging does not stop.
         '''
         if not instruments:
-            result = self._conf_interface.EligibleLoggers()
+            result = self.EligibleLoggers()
         else:
             result = self.StopLoggers(instruments)
             if wait:
@@ -232,7 +229,7 @@ class DripInterface(_ConfInterface,
                 nothing is returned
         '''
         if not instruments:
-            return self._conf_interface.EligibleChannels()
+            return self.EligibleChannels()
         if isinstance(instruments, str):
             instruments = [instruments]
         if not intervals:
@@ -254,10 +251,10 @@ class DripInterface(_ConfInterface,
                 nothing is returned
         '''
         if not instruments:
-            return self._conf_interface.EligibleLoggers()
+            return self.EligibleLoggers()
         elif isinstance(instruments, str):
             instruments = [instruments]
-        self._conf_interface.RemoveLoggers(instruments)
+        self.RemoveLoggers(instruments)
 
     def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
                   mode=2, length=2097152, count=640,
