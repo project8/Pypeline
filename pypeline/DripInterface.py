@@ -9,6 +9,8 @@ from __future__ import print_function, absolute_import
 from time import sleep
 from uuid import uuid4
 from datetime import datetime
+from ast import literal_eval
+from json import dumps
 
 # 3rd party imports
 from couchdb import Server as CouchServer
@@ -270,13 +272,19 @@ class DripInterface(_ConfInterface,
                 <mode> channel mode to use (1 or 2)
                 <length> length of record to use in bytes
                 <count> number of circular buffer nodes to use
-                <description> decriptive string for the egg header
+                <description> dict of useful info
 
             Returns:
                 An instance of pypeline.DripResponse
         '''
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
+        descrip = literal_eval(description)
+        if isinstance(descrip, str):
+            descrip = {'comment': descrip}
+        if not 'lo_cw_freq' in descrip:
+            descrip['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
+        description = dumps(descrip)
         result = super(DripInterface, self).RunMantis(output, rate, duration,
                                                       mode, length, count,
                                                       description)
