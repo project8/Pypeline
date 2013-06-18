@@ -66,7 +66,7 @@ class DripInterface(_ConfInterface,
                                       self._server['pypeline_sensor_dump'])
         _LogInterface.__init__(self, self._server['dripline_logged_data'])
 
-        self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
+        #self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         self._conf_interface = _ConfInterface(self._server['dripline_conf'])
 
     def Get(self, channel='', wait=False):
@@ -129,7 +129,7 @@ class DripInterface(_ConfInterface,
             print("Please input value to assign to channel")
             result = False
         else:
-            result = self._cmd_interface.Set(channel, value)
+            result = self.Set(channel, value)
             if wait:
                 result.Wait()
         return result
@@ -159,7 +159,7 @@ class DripInterface(_ConfInterface,
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StartLoggers(instruments)
+            result = self.StartLoggers(instruments)
             if wait:
                 result.Wait()
         self.AddProperties(instruments, 'logging')
@@ -192,7 +192,7 @@ class DripInterface(_ConfInterface,
         if not instruments:
             result = self._conf_interface.EligibleLoggers()
         else:
-            result = self._cmd_interface.StopLoggers(instruments)
+            result = self.StopLoggers(instruments)
             if wait:
                 result.Wait()
         return result
@@ -213,7 +213,7 @@ class DripInterface(_ConfInterface,
                 1) Dripline seems to have a bug, these documents are posting
                    but receive no response.
         '''
-        result = self._cmd_interface.CurrentLoggers()
+        result = self.CurrentLoggers()
         if wait:
             result.Wait()
         return result
@@ -280,7 +280,7 @@ class DripInterface(_ConfInterface,
         '''
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
-        result = self._cmd_interface.RunMantis(
+        result = self.RunMantis(
             output, rate, duration, mode, length, count, description)
         return result
 
@@ -339,7 +339,7 @@ class DripInterface(_ConfInterface,
             Returns:
                 A pypeline.DripResponse instance.
         '''
-        result = self._cmd_interface.RunPowerline(points, events, input_file)
+        result = self.RunPowerline(points, events, input_file)
         return result
 
     def CheckHeartbeat(self):
