@@ -2,6 +2,7 @@
     Source for the _CmdInterface class, actual content which interacts with
     the dripline_cmd database.
 '''
+from __future__ import print_function, absolute_import
 
 # standard imports
 from time import sleep
@@ -40,7 +41,7 @@ class _CmdInterface:
         '''
         self._cmd_database = cmd_database
 
-    def Get(self, channel):
+    def _Get(self, channel):
         '''
             Post a "get" document to the command database.
 
@@ -60,6 +61,15 @@ class _CmdInterface:
             },
         }
         self._cmd_database.save(get_doc)
+        return result
+
+    def _GetFromSet(self, channel):
+        '''
+        '''
+        vw = self._cmd_database.view('latest_set/pure_setters', group_level=2)
+        doc_id = [row['value']['_id'] for row in vw if row['key']==channel][0]
+        result = DripResponse(self._cmd_database, doc_id)
+        result.Update()
         return result
 
     def Set(self, channel, value):
@@ -110,6 +120,15 @@ class _CmdInterface:
         }
         self._cmd_database.save(start_doc)
         return result
+
+    def GetPureSetters(self):
+        '''
+        '''
+        pure_setters = []
+        setters_view = self._cmd_database.view('latest_set/pure_setters', group_level=2)
+        for row in setters_view:
+            pure_setters.append(row['key'])
+        return pure_setters
 
     def StopLoggers(self, instruments):
         '''

@@ -54,6 +54,8 @@ class DripResponse(dict):
                 else:
                     msg = self['final']
                 raise DriplineError(msg)
+            if self['result'] == 'ok':
+                self['final'] = self['command']['value']
         return self
 
     def Waiting(self):
