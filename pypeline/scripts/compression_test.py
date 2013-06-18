@@ -1,7 +1,7 @@
 from __future__ import print_function, absolute_import
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('TkAgg', warn=False)
 
 from sys import version_info
 inpy3 = not version_info[0] <3

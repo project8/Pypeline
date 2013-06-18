@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('TkAgg', warn=False)
 
 #standard libs
 from sys import version_info, exit
