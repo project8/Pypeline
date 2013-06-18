@@ -13,46 +13,19 @@ from datetime import datetime
 # 3rd party imports
 from couchdb import Server as CouchServer
 
-# local imports (the try is python 3 syntax, the cought exceptions try
-# python 2 syntax)
-try:
-    from .DripResponse import DripResponse
-except ImportError:
-    print('doing py2.7')
-    from DripResponse import DripResponse
-try:
-    from .CmdInterface import _CmdInterface
-except ImportError:
-    print('doing py2.7')
-    from CmdInterface import _CmdInterface
-try:
-    from .ConfInterface import _ConfInterface
-except ImportError:
-    print('doing py2.7')
-    from ConfInterface import _ConfInterface
-try:
-    from .LogInterface import _LogInterface
-except ImportError:
-    print('doing py2.7')
-    from LogInterface import _LogInterface
-try:
-    from .PypelineConfInterface import _PypelineConfInterface
-except ImportError:
-    print('doing py2.7')
-    from PypelineConfInterface import _PypelineConfInterface
-try:
-    from .SensorDumpInterface import _SensorDumpInterface
-except ImportError:
-    print('doing py2.7')
-    from SensorDumpInterface import _SensorDumpInterface
-try:
-    from .PypelineErrors import NoResponseError
-except ImportError:
-    print('doing py2.7')
-    from PypelineErrors import NoResponseError
+# local imports 
+from .DripResponse import DripResponse
+from .CmdInterface import _CmdInterface
+from .ConfInterface import _ConfInterface
+from .LogInterface import _LogInterface
+from .PypelineConfInterface import _PypelineConfInterface
+from .SensorDumpInterface import _SensorDumpInterface
+from .PypelineErrors import NoResponseError
 
 
-class DripInterface(_PypelineConfInterface,
+class DripInterface(_ConfInterface,
+                    _CmdInterface,
+                    _PypelineConfInterface,
                     _SensorDumpInterface,
                     _LogInterface):
 
@@ -81,14 +54,18 @@ class DripInterface(_PypelineConfInterface,
             Returns:
                 no return
         '''
+        self._timeout = 15  # timeout is 15 seconds...
+        self._sleep_time = .1  # number of seconds to sleep while waiting
+        self._wait_state = {}
         self._server = CouchServer(dripline_url)
+
+        _ConfInterface.__init__(self, self._server['dripline_conf'])
+        _CmdInterface.__init__(self, self._server['dripline_cmd'])
         _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
         _SensorDumpInterface.__init__(self,
                                       self._server['pypeline_sensor_dump'])
         _LogInterface.__init__(self, self._server['dripline_logged_data'])
-        self._timeout = 15  # timeout is 15 seconds...
-        self._sleep_time = .1  # number of seconds to sleep while waiting
-        self._wait_state = {}
+
         self._cmd_interface = _CmdInterface(self._server['dripline_cmd'])
         self._conf_interface = _ConfInterface(self._server['dripline_conf'])
 
@@ -115,9 +92,12 @@ class DripInterface(_PypelineConfInterface,
         if not channel:
             result = self._conf_interface.EligibleChannels()
         else:
-            result = self._cmd_interface.Get(channel)
-            if wait:
-                result.Wait()
+            if channel in self.GetPureSetters():
+                result = self._GetFromSet(channel)
+            else:
+                result = self._Get(channel)
+                if wait:
+                    result.Wait()
         return result
 
     def Set(self, channel=None, value=None, wait=False):
