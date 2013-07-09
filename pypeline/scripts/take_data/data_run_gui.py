@@ -165,10 +165,9 @@ class take_data:
         '''
         print('******** skipping Set() calls while debugging')
         for channel_name, value in params_list:
-            #if self.pype.Set(channel_name, value).Wait().Waiting():
-            #    raise NoResponseError('setting ' + str(channel_name))
-            print(channel_name, '->', value)
-
+            if self.pype.Set(channel_name, value).Wait().Waiting():
+                raise NoResponseError('setting ' + str(channel_name))
+            #print(channel_name, '->', value)
 
     def _DoSequence(self, sequence_number):
         '''
@@ -184,17 +183,10 @@ class take_data:
             run_doc[channel].Update()
             run_doc[channel].Wait()
         run_doc._UpdateTo()
-        trap_status = ''
-        if (sequence_number % 3 == 0):
-            trap_status = 'anti'
-        elif (sequence_number % 3 == 1):
-            trap_status = 'off'
-        elif (sequence_number % 3 == 2):
-            trap_status = 'on'
-        else:
-            raise ValueError("that's... not possible")
-        outfilename = '/data/june2013_{:s}_{:05d}_{:05d}.egg'.format(
-            trap_status, run_doc['run_number'], run_doc['sequence_number'])
+        outfilename = '/data/{:s}_{:05d}_{:05d}.egg'.format(
+            self.FilenamePrefix(sequence_number),
+            run_doc['run_number'],
+            run_doc['sequence_number']) 
         run_descrip = ast.literal_eval(mantis_kwargs['description'])
         for (chan,val) in self.SequenceParams(sequence_number):
             run_descrip[chan] = val

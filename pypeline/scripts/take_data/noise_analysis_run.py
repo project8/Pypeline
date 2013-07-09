@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def Mantis_kwargs():
     '''
         Return a dict of kwargs for DripInterface.RunMantis()
@@ -31,14 +33,6 @@ def SequenceParams(sequence_number):
         Return a list of tuples for a particular sequence number
     '''
     params = []
-    if sequence_number % 3 == 0:
-        params.append(('trap_current', -1))
-    elif sequence_number % 3 == 1:
-        params.append(('trap_current', 0))
-    elif sequence_number % 3 == 2:
-        params.append(('trap_current', 1))
-    else:
-        raise ValueError("catchall case shouldn't be reached")
     return params
 
 def FilenamePrefix(sequence_number):
@@ -47,12 +41,4 @@ def FilenamePrefix(sequence_number):
         Does NOT inlcude the run number or sequence number
     '''
     prefix = datetime.now().strftime("%B%Y")
-    if (sequence_number % 3 == 0):
-        prefix += 'anti'
-    elif (sequence_number % 3 == 1):
-        prefix += 'off'
-    elif (sequence_number % 3 == 2):
-        prefix += 'on'
-    else:
-        raise ValueError("that's... not possible")
     return prefix
