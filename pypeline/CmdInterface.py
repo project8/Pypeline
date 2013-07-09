@@ -72,7 +72,7 @@ class _CmdInterface:
         result.Update()
         return result
 
-    def Set(self, channel, value):
+    def _Set(self, channel, value):
         '''
             Post a "set" document to the command database
 

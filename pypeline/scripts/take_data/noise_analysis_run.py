@@ -21,11 +21,7 @@ def DefaultParams():
 
         These will all be set once before the run starts.
     '''
-    defaults = [
-                ('trap_current', 0),
-                ('dpph_current', 0),
-                ('waveguide_cell_heater_current', 0)
-               ]
+    defaults = []
     return defaults
 
 def SequenceParams(sequence_number):

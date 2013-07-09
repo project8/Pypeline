@@ -128,7 +128,7 @@ class DripInterface(_ConfInterface,
             print("Please input value to assign to channel")
             result = False
         else:
-            result = self.Set(channel, value)
+            result = self._Set(channel, value)
             if wait:
                 result.Wait()
         return result

@@ -4,11 +4,11 @@ inpy3 = not version_info[0] < 3
 
 # standard libs
 if inpy3:
-    from tkinter import (Button, Label, Entry, Checkbutton,
+    from tkinter import (Button, Label, Entry, Checkbutton, OptionMenu,
                          StringVar, BooleanVar, IntVar)
     from tkinter.filedialog import askopenfilename
 else:
-    from Tkinter import (Button, Label, Entry, Checkbutton,
+    from Tkinter import (Button, Label, Entry, Checkbutton, OptionMenu,
                          StringVar, BooleanVar, IntVar)
     from tkFileDialog import askopenfilename
 from time import sleep
@@ -18,6 +18,7 @@ import imp
 from json import dumps
 from uuid import uuid4
 import ast
+from inspect import getmembers
 # 3rd party libs
 # local libs
 from ...PypelineErrors import NoResponseError
@@ -39,10 +40,11 @@ class take_data:
         self.run_tagVar = StringVar(value=run_tag)
         self.num_sequencesVar = IntVar(value=num_sequences)
         self.stateVar = StringVar(value='done')
+        self.conf_filename = StringVar(value='')
         self.params = {}
         self.runthread = multiprocessing.Process()
 
-        self._GetParamFuncs(filename)
+        self._GetParamFuncs()
         if toplevel:
             self._BuildGui()
 
@@ -65,6 +67,14 @@ class take_data:
                                                                      column=1)
         row += 1
 
+        builtins_list = ['default_run', 'noise_analysis_run']
+        Button(self.toplevel, text='Load Builtin Run Def',
+               command=self._GetParamFuncs).grid(row=row, column=0)
+        OptionMenu(self.toplevel, self.conf_filename, *builtins_list).grid(
+            row=row, column=1)
+
+        row += 1
+
         Label(self.toplevel, text='Load Custom Run Def').grid(row=row,
                                                               column=0)
         Button(self.toplevel, text="find file", command=self._ParamFuncFile
@@ -81,9 +91,9 @@ class take_data:
     def _ParamFuncFile(self):
         '''
         '''
-        filename = askopenfilename()
-        if filename:
-            self._GetParamFuncs(filename)
+        self.conf_filename.set(askopenfilename())
+        if self.conf_filename.get():
+            self._GetParamFuncs()
 
     def _Abort(self):
         '''
@@ -117,19 +127,23 @@ class take_data:
         '''
         print(self.runthread.is_alive())
 
-    def _GetParamFuncs(self, filename=False):
+    def _GetParamFuncs(self):
         '''
         '''
-        if not filename:
+        fname = self.conf_filename.get()
+        if not fname or fname == 'default_run':
             if not 'run_params' in sys.modules:
                 from . import default_run as run_params
             else:
                 reload(run_params)
+        elif fname == 'noise_analysis_run':
+            from . import noise_analysis_run as run_params
         else:
-            imp.load_source('run_params', filename)
+            imp.load_source('run_params', fname)
             import run_params
         self.DefaultParams = run_params.DefaultParams
         self.SequenceParams = run_params.SequenceParams
+        self.FilenamePrefix = run_params.FilenamePrefix
         self.Mantis_kwargs = run_params.Mantis_kwargs()
 
     def DoRun(self):
@@ -163,11 +177,12 @@ class take_data:
     def _SetParams(self, params_list):
         '''
         '''
-        print('******** skipping Set() calls while debugging')
         for channel_name, value in params_list:
-            if self.pype.Set(channel_name, value).Wait().Waiting():
+            setattempt = self.pype.Set(channel_name, value)
+            setattempt.Wait()
+            if setattempt.Waiting():
                 raise NoResponseError('setting ' + str(channel_name))
-            #print(channel_name, '->', value)
+            print(channel_name, '->', value)
 
     def _DoSequence(self, sequence_number):
         '''
@@ -187,6 +202,8 @@ class take_data:
             self.FilenamePrefix(sequence_number),
             run_doc['run_number'],
             run_doc['sequence_number']) 
+        print('outputting '+outfilename)
+        sleep(120)
         run_descrip = ast.literal_eval(mantis_kwargs['description'])
         for (chan,val) in self.SequenceParams(sequence_number):
             run_descrip[chan] = val
