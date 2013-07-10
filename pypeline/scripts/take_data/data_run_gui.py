@@ -72,6 +72,7 @@ class take_data:
                command=self._GetParamFuncs).grid(row=row, column=0)
         OptionMenu(self.toplevel, self.conf_filename, *builtins_list).grid(
             row=row, column=1)
+        self.conf_filename.set(builtins_list[0])
 
         row += 1
 
