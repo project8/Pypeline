@@ -96,7 +96,7 @@ class _CmdInterface:
         self._cmd_database.save(set_doc)
         return result
 
-    def StartLoggers(self, instruments):
+    def _StartLoggers(self, instruments):
         '''
             Posts a "syscmd" document to start one ore more loggers
 

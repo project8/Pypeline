@@ -158,7 +158,7 @@ class DripInterface(_ConfInterface,
         if not instruments:
             result = self.EligibleLoggers()
         else:
-            result = self.StartLoggers(instruments)
+            result = self._StartLoggers(instruments)
             if wait:
                 result.Wait()
         self.AddProperties(instruments, 'logging')
