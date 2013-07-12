@@ -54,6 +54,7 @@ class App:
         self.setchannelvalueVar = DoubleVar()
         # which logger to turn on 
         self.logchannelVar = StringVar()
+        self.logintervalVar = IntVar(value=20)
         # values in loggers
         self.loggers_list = self.pype.ListWithProperty('logging')
         self.loggers_dict = {}
@@ -103,6 +104,8 @@ class App:
         self.log_selection = OptionMenu(self.frame, self.logchannelVar,
                                         *self.channels)
         self.log_selection.grid(row=row, column=1, sticky=EW)
+        Entry(self.frame, textvariable=self.logintervalVar,
+              relief=SUNKEN).grid(row=row, column=2, sticky=EW)
         row += 1
 
 
@@ -152,6 +155,9 @@ class App:
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):
+        if not logchannelVar.get() in self.pype.EligibleLoggers():
+            self.pype.AddLoggers([self.logchannelVar.get()],
+                                 [self.logintervalVar.get()])
         result = self.pype.StartLoggers([self.logchannelVar.get()]).Wait()
         if 'final' in result:
             print('started')
