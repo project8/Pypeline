@@ -51,7 +51,7 @@ class App:
         # which channel to set
         self.setchannelVar = StringVar()
         # value to set
-        self.setchannelvalueVar = DoubleVar()
+        self.setchannelvalueVar = StringVar()
         # which logger to turn on 
         self.logchannelVar = StringVar()
         self.logintervalVar = IntVar(value=20)
