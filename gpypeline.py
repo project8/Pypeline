@@ -155,7 +155,7 @@ class App:
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):
-        if not logchannelVar.get() in self.pype.EligibleLoggers():
+        if not self.logchannelVar.get() in self.pype.EligibleLoggers():
             self.pype.AddLoggers([self.logchannelVar.get()],
                                  [self.logintervalVar.get()])
         result = self.pype.StartLoggers([self.logchannelVar.get()]).Wait()
