@@ -259,7 +259,7 @@ class DripInterface(_ConfInterface,
         self.RemoveLoggers(instruments)
 
     def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
-                  mode=2, length=2097152, count=640,
+                  mode=2, length=2097152, count=16,
                   description="None provided"):
         '''
             Posts a document to the command database instructing dripline to
@@ -285,7 +285,7 @@ class DripInterface(_ConfInterface,
         if not 'lo_cw_freq' in descrip:
             descrip['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
         description = dumps(descrip)
-        result = super(DripInterface, self).RunMantis(output, rate, duration,
+        result = super(DripInterface, self)._RunMantis(output, rate, duration,
                                                       mode, length, count,
                                                       description)
         return result
