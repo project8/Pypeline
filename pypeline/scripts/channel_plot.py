@@ -175,7 +175,7 @@ class channel_plot:
             self.time_interval[0] = start_time.strftime(self._formatstr)
             if isFirst:
                 self._SetStop(event, isFirst=False)
-            self.Update()
+            #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
         except ValueError:
             if self.relative_start_time.get():
                 showwarning('Warning', 'Hours ago must be a float')
@@ -211,7 +211,7 @@ class channel_plot:
             self.time_interval[1] = stop_time.strftime(self._formatstr)
             if isFirst:
                 self._SetStart(event, isFirst=False)
-            self.Update()
+            #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
         except ValueError:
             showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
             self.stop_t.set(self.time_interval[1])
