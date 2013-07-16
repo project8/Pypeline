@@ -7,10 +7,10 @@ def Mantis_kwargs():
     kwargs = {
               'output': '/data/temp.egg',
               'rate': 250.,
-              'duration': 60000.,
+              'duration': 100.,
               'mode': 1,
               'length': 2097152,
-              'count': 640,
+              'count': 16,
               'description': '{}'
              }
     return kwargs
