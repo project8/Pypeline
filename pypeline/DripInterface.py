@@ -278,9 +278,6 @@ class DripInterface(_ConfInterface,
             Returns:
                 An instance of pypeline.DripResponse
         '''
-        #debug
-        print(description)
-        #k
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
         descrip = literal_eval(description)
