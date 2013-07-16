@@ -204,7 +204,6 @@ class take_data:
             run_doc['run_number'],
             run_doc['sequence_number']) 
         print('outputting '+outfilename)
-        sleep(120)
         run_descrip = ast.literal_eval(mantis_kwargs['description'])
         for (chan,val) in self.SequenceParams(sequence_number):
             run_descrip[chan] = val
@@ -212,7 +211,7 @@ class take_data:
         run_doc['sequence_tag'] = dumps(run_descrip)
         mantis_kwargs.update({'output': outfilename,
                               'description':dumps(run_descrip)})
-        run = self.pype.RunMantis(*mantis_kwargs)
+        run = self.pype.RunMantis(**mantis_kwargs)
         print('mantis run starting')
         sleep(60)
         run.Wait()
