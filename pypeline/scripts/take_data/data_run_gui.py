@@ -213,7 +213,6 @@ class take_data:
                               'description':dumps(run_descrip)})
         run = self.pype.RunMantis(**mantis_kwargs)
         print('mantis run starting')
-        sleep(60)
         run.Wait()
         run_doc['mantis'] = run
         run_doc._UpdateTo()
