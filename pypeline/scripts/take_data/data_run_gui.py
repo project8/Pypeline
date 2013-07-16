@@ -168,11 +168,13 @@ class take_data:
         print('setting defaults')
         self._SetParams(self.DefaultParams())
         for sequence_num in range(self.params['num_sequences']):
-            print('starting sequence', sequence_num)
+            print('--> starting sequence {0}/{1}'.format(sequence_num, self.params['num_sequences'] - 1))
             if not self.keep_runningVar.get():
                 print('Aborting!')
                 break
             self._DoSequence(sequence_num)
+            print('--> sequence {0}/{1} complete.'.format(sequence_num, self.params['num_sequences'] - 1))
+        print('-> run (tag: {0}) complete.'.format(self.params['run_tag']))
         self.stateVar.set('run complete')
 
     def _SetParams(self, params_list):
