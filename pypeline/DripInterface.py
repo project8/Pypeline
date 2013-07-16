@@ -239,7 +239,7 @@ class DripInterface(_ConfInterface,
             intervals = ['10' for i in range(len(instruments))]
         elif isinstance(intervals, str):
             intervals = [intervals]
-        self._conf_interface.AddLoggers(instruments, intervals)
+        self.AddLoggers(instruments, intervals)
 
     def RemoveLoggers(self, instruments=''):
         '''
