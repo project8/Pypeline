@@ -60,12 +60,12 @@ class _ConfInterface:
             match = sum([instrument == row.key for row in
                          self._conf_database.view('objects/loggers')])
             if match:
-                print(instruments[i] + " already added")
+                print(instrument + " already added")
                 continue
             add_doc = {
                 '_id': uuid4().hex,
-                'channel': instruments[i],
-                'interval': intervals[i],
+                'channel': instrument,
+                'interval': interval,
                 'type': 'logger',
             }
             self._conf_database.save(add_doc)
