@@ -29,7 +29,8 @@ class DripInterface(_ConfInterface,
                     _CmdInterface,
                     _PypelineConfInterface,
                     _SensorDumpInterface,
-                    _LogInterface):
+                    _LogInterface,
+                    object):
 
     '''
         Class to facilitate user interact with Dripline via couchDB. The
@@ -277,6 +278,9 @@ class DripInterface(_ConfInterface,
             Returns:
                 An instance of pypeline.DripResponse
         '''
+        #debug
+        print(description)
+        #k
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
         descrip = literal_eval(description)
