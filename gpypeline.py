@@ -38,6 +38,7 @@ class App:
         '''
         row = 0
         self.channels = self.pype.Get()
+        print(self.channels)
         # Tkinter Variables
         #
         # current time
