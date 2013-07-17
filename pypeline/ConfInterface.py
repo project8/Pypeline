@@ -61,15 +61,14 @@ class _ConfInterface:
                          self._conf_database.view('objects/loggers')])
             if match:
                 print(instrument + " already added")
-                #continue
+                continue
             add_doc = {
                 '_id': uuid4().hex,
                 'channel': instrument,
                 'interval': interval,
                 'type': 'logger',
             }
-            print(add_doc)
-            #self._conf_database.save(add_doc)
+            self._conf_database.save(add_doc)
 
     def RemoveLoggers(self, instruments):
         '''
