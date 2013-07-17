@@ -38,7 +38,6 @@ class App:
         '''
         row = 0
         self.channels = self.pype.Get()
-        print(self.channels)
         # Tkinter Variables
         #
         # current time
@@ -159,9 +158,7 @@ class App:
         if not self.logchannelVar.get() in self.pype.EligibleLoggers():
             self.pype.AddLoggers([self.logchannelVar.get()],
                                  [self.logintervalVar.get()])
-        #this line is temporary
-        self.pype.AddLoggers([self.logchannelVar.get()],
-                                 [self.logintervalVar.get()])
+
         result = self.pype.StartLoggers([self.logchannelVar.get()]).Wait()
         if 'final' in result:
             print('started')
