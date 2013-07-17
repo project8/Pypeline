@@ -54,7 +54,7 @@ class App:
         self.setchannelvalueVar = StringVar()
         # which logger to turn on 
         self.logchannelVar = StringVar()
-        self.logintervalVar = IntVar(value=20)
+        self.logintervalVar = StringVar()
         # values in loggers
         self.loggers_list = self.pype.ListWithProperty('logging')
         self.loggers_dict = {}
