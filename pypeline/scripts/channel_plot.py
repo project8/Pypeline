@@ -320,7 +320,7 @@ class channel_plot:
         yname = self.plot_dicts[tab]['yname'].get().replace('_', ' ')
         yunit = '[' + str(self.plot_dicts['yunit']) + ']'
         self.subfigure[tab].set_ylabel(yname + ' ' + yunit)
-        self.subfigure[tab].ticklabel_format(useOffset=false)
+        self.subfigure[tab].ticklabel_format(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure[tab].set_ylim(bottom=self.ymin.get(),
                                          top=self.ymax.get())
