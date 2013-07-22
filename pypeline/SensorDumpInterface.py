@@ -36,7 +36,7 @@ class _SensorDumpInterface:
         '''
         runs = {}
         runcount = self._sensor_dump_database.view('runs/sequence_count',
-                                                  group_level=2)
+                                                   group_level=2)
         for run in runcount:
             runs[run['key']] = {'sequence_count': run['value']}
         runinfo = self._sensor_dump_database.view('runs/run_info',
@@ -45,9 +45,10 @@ class _SensorDumpInterface:
             runs[run['key']]['run_number'] = run['value']['run_number']
             runs[run['key']]['run_timestamp'] = run['value']['run_timestamp']
 
-        dump_doc = {'run_tag': run_tag,
-                    'timestamp': datetime.now().strftime(self._formatstr)
-                   }
+        dump_doc = {
+            'run_tag': run_tag,
+            'timestamp': datetime.now().strftime(self._formatstr)
+        }
         if not run_tag in runs and new_run:
             print('creating new run')
             dump_doc['run_number'] = len(runcount)

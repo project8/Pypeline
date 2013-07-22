@@ -15,7 +15,7 @@ from json import dumps
 # 3rd party imports
 from couchdb import Server as CouchServer
 
-# local imports 
+# local imports
 from .DripResponse import DripResponse
 from .CmdInterface import _CmdInterface
 from .ConfInterface import _ConfInterface
@@ -287,8 +287,8 @@ class DripInterface(_ConfInterface,
             descrip['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
         description = dumps(descrip)
         result = super(DripInterface, self)._RunMantis(output, rate, duration,
-                                                      mode, length, count,
-                                                      description)
+                                                       mode, length, count,
+                                                       description)
         return result
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
@@ -313,8 +313,7 @@ class DripInterface(_ConfInterface,
         '''
         if not timestamp:
             timestamp = datetime.now()
-        return self.LogValue(sensor, uncal_val,
-                                            cal_val, timestamp)
+        return self.LogValue(sensor, uncal_val, cal_val, timestamp)
 
     def DumpSensors(self, dumpdoc=False, runresponse=False):
         '''

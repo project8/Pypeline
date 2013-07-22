@@ -225,7 +225,6 @@ class channel_plot:
         except:
             raise
 
-
     def Update(self, event=None, tab='All', unpend=False):
         '''
             Call whatever sequence is needed to update local data and redraw
@@ -254,7 +253,7 @@ class channel_plot:
         self.status_var.set('updated at: ' +
                             datetime.now().strftime(self._formatstr))
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
-            not self.update_pending):
+                not self.update_pending):
             self.update_pending = True
             self.toplevel.after(120000, lambda: self.Update(unpend=True))
 
@@ -302,7 +301,7 @@ class channel_plot:
         '''
         if self.plot_dicts[tab]['xname'].get() == 'time':
             self.subfigure[tab].plot_date(self.xdata, self.ydata, fmt='o-',
-                label=self.plot_dicts[tab]['yname'].get())
+                                          label=self.plot_dicts[tab]['yname'].get())
             self.subfigure[tab].set_xticklabels(
                 self.subfigure[tab].get_xticklabels(), rotation=-45)
             self.subfigure[tab].xaxis.set_major_formatter(dates.DateFormatter(

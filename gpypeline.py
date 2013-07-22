@@ -52,7 +52,7 @@ class App:
         self.setchannelVar = StringVar()
         # value to set
         self.setchannelvalueVar = StringVar()
-        # which logger to turn on 
+        # which logger to turn on
         self.logchannelVar = StringVar()
         self.logintervalVar = StringVar()
         # values in loggers
@@ -107,7 +107,6 @@ class App:
         Entry(self.frame, textvariable=self.logintervalVar,
               relief=SUNKEN).grid(row=row, column=2, sticky=EW)
         row += 1
-
 
         # Run interface
         self.run_script = Button(self.frame, text="Run",
@@ -165,7 +164,6 @@ class App:
         else:
             print(result)
             raise NoResponseError('no response to start loggers')
-
 
     def ScriptDialog(self):
         #### this section should be added to the later parts asap
