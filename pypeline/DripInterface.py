@@ -93,9 +93,9 @@ class DripInterface(_ConfInterface,
             result = self.EligibleChannels()
         else:
             if channel in self.GetPureSetters():
-                result = self._GetFromSet(channel)
+                result = super(DripInterface, self).GetFromSet(channel)
             else:
-                result = self._Get(channel)
+                result = super(DripInterface, self).Get(channel)
                 if wait:
                     result.Wait()
         return result
@@ -129,7 +129,7 @@ class DripInterface(_ConfInterface,
             print("Please input value to assign to channel")
             result = False
         else:
-            result = self._Set(channel, value)
+            result = super(DripInterface, self).Set(channel, value)
             if wait:
                 result.Wait()
         return result
@@ -159,7 +159,7 @@ class DripInterface(_ConfInterface,
         if not instruments:
             result = self.EligibleLoggers()
         else:
-            result = self._StartLoggers(instruments)
+            result = super(DripInterface, self).StartLoggers(instruments)
             if wait:
                 result.Wait()
         self.AddProperties(instruments, 'logging')
@@ -192,7 +192,7 @@ class DripInterface(_ConfInterface,
         if not instruments:
             result = self.EligibleLoggers()
         else:
-            result = self.StopLoggers(instruments)
+            result = super(DripInterface, self).StopLoggers(instruments)
             if wait:
                 result.Wait()
         return result
@@ -213,7 +213,7 @@ class DripInterface(_ConfInterface,
                 1) Dripline seems to have a bug, these documents are posting
                    but receive no response.
         '''
-        result = self.CurrentLoggers()
+        result = super(DripInterface, self).CurrentLoggers()
         if wait:
             result.Wait()
         return result
@@ -257,7 +257,7 @@ class DripInterface(_ConfInterface,
             return self.EligibleLoggers()
         elif isinstance(instruments, str):
             instruments = [instruments]
-        self.RemoveLoggers(instruments)
+        super(DripInterface, self).RemoveLoggers(instruments)
 
     def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
                   mode=2, length=2097152, count=16,
@@ -286,7 +286,7 @@ class DripInterface(_ConfInterface,
         if not 'lo_cw_freq' in descrip:
             descrip['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
         description = dumps(descrip)
-        result = super(DripInterface, self)._RunMantis(output, rate, duration,
+        result = super(DripInterface, self).RunMantis(output, rate, duration,
                                                        mode, length, count,
                                                        description)
         return result
@@ -313,7 +313,8 @@ class DripInterface(_ConfInterface,
         '''
         if not timestamp:
             timestamp = datetime.now()
-        return self.LogValue(sensor, uncal_val, cal_val, timestamp)
+        return super(DripInterface, self).LogValue(sensor, uncal_val, cal_val,
+                                                   timestamp)
 
     def DumpSensors(self, dumpdoc=False, runresponse=False):
         '''
@@ -321,7 +322,7 @@ class DripInterface(_ConfInterface,
             dump database
         '''
         if not dumpdoc:
-            dumpdoc = self._NewDump(uuid4().hex)
+            dumpdoc = self.NewDump(uuid4().hex)
         if runresponse:
             dumpdoc['mantis'] = runresponse
         for ch in self.ListWithProperty('dump'):
@@ -345,7 +346,8 @@ class DripInterface(_ConfInterface,
             Returns:
                 A pypeline.DripResponse instance.
         '''
-        result = self.RunPowerline(points, events, input_file)
+        result = super(DripInterface, self).RunPowerline(points, events,
+                                                         input_file)
         return result
 
     def CheckHeartbeat(self):

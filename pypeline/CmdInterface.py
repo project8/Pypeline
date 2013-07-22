@@ -41,7 +41,7 @@ class _CmdInterface:
         '''
         self._cmd_database = cmd_database
 
-    def _Get(self, channel):
+    def Get(self, channel):
         '''
             Post a "get" document to the command database.
 
@@ -63,7 +63,7 @@ class _CmdInterface:
         self._cmd_database.save(get_doc)
         return result
 
-    def _GetFromSet(self, channel):
+    def GetFromSet(self, channel):
         '''
         '''
         vw = self._cmd_database.view('latest_set/pure_setters', group_level=2)
@@ -72,7 +72,7 @@ class _CmdInterface:
         result.Update()
         return result
 
-    def _Set(self, channel, value):
+    def Set(self, channel, value):
         '''
             Post a "set" document to the command database
 
@@ -96,7 +96,7 @@ class _CmdInterface:
         self._cmd_database.save(set_doc)
         return result
 
-    def _StartLoggers(self, instruments):
+    def StartLoggers(self, instruments):
         '''
             Posts a "syscmd" document to start one ore more loggers
 
@@ -177,7 +177,7 @@ class _CmdInterface:
         self._cmd_database.save(start_doc)
         return result
 
-    def _RunMantis(self, output, rate, duration, mode, length, count,
+    def RunMantis(self, output, rate, duration, mode, length, count,
                    description):
         '''
             Take a digitizer run of fixed time and sample rate.

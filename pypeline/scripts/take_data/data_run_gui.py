@@ -191,9 +191,9 @@ class take_data:
             Do one sequence within the run
         '''
         mantis_kwargs = self.Mantis_kwargs.copy()
-        run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
-                                     new_run=((not sequence_number) and
-                                     not self.extend_runVar.get()))
+        run_doc = self.pype.NewDump(uuid4().hex, self.params['run_tag'],
+                                    new_run=((not sequence_number) and
+                                    not self.extend_runVar.get()))
         self._SetParams(self.SequenceParams(sequence_number))
         for channel in self.pype.ListWithProperty('dump'):
             run_doc[channel] = self.pype.Get(channel)
