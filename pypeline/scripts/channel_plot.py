@@ -255,7 +255,7 @@ class channel_plot:
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
                 not self.update_pending):
             self.update_pending = True
-            self.toplevel.after(120000, lambda: self.Update(unpend=True))
+            self.toplevel.after(10000, lambda: self.Update(unpend=True))
 
     def _UpdateData(self, tab=0):
         '''
