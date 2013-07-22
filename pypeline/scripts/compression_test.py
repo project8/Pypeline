@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('TkAgg', warn=False)
 
 from sys import version_info
-inpy3 = not version_info[0] <3
+inpy3 = not version_info[0] < 3
 
 # Standard
 import ast
@@ -40,15 +40,15 @@ class compression_test:
         else:
             self.DoubleV = _fake_DoubleVar
         self.kwargs_dict = {
-                            'power_start': self.DoubleV(value=power_start),
-                            'power_start_units': 'dBm',
-                            'power_stop': self.DoubleV(value=power_stop),
-                            'power_stop_units': 'dBm',
-                            'power_step': self.DoubleV(value=power_step),
-                            'power_step_units': 'dBm',
-                            'lo_frequency': self.DoubleV(value=lo_frequency),
-                            'lo_frequency_units': 'MHz',
-                           }
+            'power_start': self.DoubleV(value=power_start),
+            'power_start_units': 'dBm',
+            'power_stop': self.DoubleV(value=power_stop),
+            'power_stop_units': 'dBm',
+            'power_step': self.DoubleV(value=power_step),
+            'power_step_units': 'dBm',
+            'lo_frequency': self.DoubleV(value=lo_frequency),
+            'lo_frequency_units': 'MHz',
+        }
         if not toplevel:
             self.run_compression_test()
         else:
@@ -81,7 +81,7 @@ class compression_test:
     def RunCompressionTest(self):
         '''
             Execute a compression test
-    
+
             Inputs:
                 <pype>: pypeline.DripInterface instance
                 <power_start>: low power for scan (in dBm)
@@ -128,15 +128,15 @@ class compression_test:
         self.subfigure = []
         frame = Frame(self.toplevel)
         frame.grid(row=0, column=3, rowspan=5)
-        self.subfigure.append(self.figure.add_subplot(1,1,1))
-        print('x',self.result['power_in'])
-        print('of type',type(self.result['power_in']))
-        print('len(x)',len(self.result['power_in']))
-        print('len(y)',len(self.result['power_out']))
+        self.subfigure.append(self.figure.add_subplot(1, 1, 1))
+        print('x', self.result['power_in'])
+        print('of type', type(self.result['power_in']))
+        print('len(x)', len(self.result['power_in']))
+        print('len(y)', len(self.result['power_out']))
         self.subfigure[0].plot(self.result['power_in'], self.result['power_out'])
         titlestr = ('Compression Test at ' +
-                   str(self.kwargs_dict['lo_frequency'].get()) + ' ' +
-                   self.kwargs_dict['lo_frequency_units'] + ' LO')
+                    str(self.kwargs_dict['lo_frequency'].get()) + ' ' +
+                    self.kwargs_dict['lo_frequency_units'] + ' LO')
         self.subfigure[0].set_title(titlestr)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
