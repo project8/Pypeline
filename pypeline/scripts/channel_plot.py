@@ -89,16 +89,16 @@ class channel_plot:
 
         Label(self.toplevel, text='Start Time').grid(row=4, column=1)
         start_entry = Entry(self.toplevel, textvariable=self.start_t)
-        start_entry.bind('<Return>', self._SetStart)
-        start_entry.bind('<KP_Enter>', self._SetStart, '+')
+        start_entry.bind('<Return>', self.Update)
+        start_entry.bind('<KP_Enter>', self.Update, '+')
         start_entry.grid(row=4, column=2, columnspan=2)
         Checkbutton(self.toplevel, text='Hours ago',
                     variable=self.relative_start_time).grid(row=5, column=2)
 
         Label(self.toplevel, text='Stop Time').grid(row=6, column=1)
         stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
-        stop_entry.bind('<Return>', self._SetStop)
-        stop_entry.bind('<KP_Enter>', self._SetStop, '+')
+        stop_entry.bind('<Return>', self.Update)
+        stop_entry.bind('<KP_Enter>', self.Update, '+')
         stop_entry.grid(row=6, column=2, columnspan=2)
         Checkbutton(self.toplevel, text='Now',
                     variable=self.relative_stop_time).grid(row=7, column=2)
@@ -127,6 +127,7 @@ class channel_plot:
         Label(self.toplevel, textvariable=self.status_var).grid(row=20,
                                                                 column=1,
                                                                 columnspan=2)
+
     def _SetupCanvas(self):
         '''
         '''
