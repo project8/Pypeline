@@ -2,6 +2,7 @@
     Classes related to building scripts and/or script GUIs will go here
 '''
 
+
 class _fake_guiVar:
     def __init__(self, value=False):
         self.value = value
@@ -11,6 +12,7 @@ class _fake_guiVar:
 
     def set(self, value):
         self.value = value
+
 
 class _fake_BooleanVar:
     def __init__(self, value=False):
@@ -22,6 +24,7 @@ class _fake_BooleanVar:
     def set(self, value):
         self.value = (value is True)
 
+
 class _fake_StingVar:
     def __init__(self, value=''):
         self.value = value
@@ -32,6 +35,7 @@ class _fake_StingVar:
     def set(self, value):
         self.value = str(value)
 
+
 class _fake_IntVar:
     def __init__(self, value=''):
         self.value = value
@@ -41,6 +45,7 @@ class _fake_IntVar:
 
     def set(self, value):
         self.value = int(value)
+
 
 class _fake_DoubleVar:
     def __init__(self, value=''):
