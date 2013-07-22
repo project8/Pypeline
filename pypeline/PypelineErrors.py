@@ -31,10 +31,11 @@ class NoResponseError(DriplineError, IndexError):
         self.msg = msg
         DriplineError.__init__(self, msg)
 
+
 class RunTagNotUnique(Exception):
     '''
     '''
-    
+
     def __init__(self, msg):
         '''
         '''

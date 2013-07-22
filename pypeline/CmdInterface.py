@@ -67,7 +67,7 @@ class _CmdInterface:
         '''
         '''
         vw = self._cmd_database.view('latest_set/pure_setters', group_level=2)
-        doc_id = [row['value']['_id'] for row in vw if row['key']==channel][0]
+        doc_id = [row['value']['_id'] for row in vw if row['key'] == channel][0]
         result = DripResponse(self._cmd_database, doc_id)
         result.Update()
         return result
@@ -178,7 +178,7 @@ class _CmdInterface:
         return result
 
     def _RunMantis(self, output, rate, duration, mode, length, count,
-                  description):
+                   description):
         '''
             Take a digitizer run of fixed time and sample rate.
 

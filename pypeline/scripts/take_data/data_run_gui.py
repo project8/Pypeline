@@ -64,7 +64,7 @@ class take_data:
         Label(self.toplevel, text='Number of Sequences').grid(row=row,
                                                               column=0)
         Entry(self.toplevel, textvariable=self.num_sequencesVar).grid(row=row,
-                                                                     column=1)
+                                                                      column=1)
         row += 1
 
         builtins_list = ['default_run', 'noise_analysis_run']
@@ -86,8 +86,7 @@ class take_data:
                ).grid(row=row, column=0)
         Button(self.toplevel, text="ABORT", command=self._Abort, bg='red'
                ).grid(row=row, column=1)
-        Label(self.toplevel, textvariable=self.stateVar#, command=self._IsRunning
-               ).grid(row=row, column=2)
+        Label(self.toplevel, textvariable=self.stateVar).grid(row=row, column=2)
 
     def _ParamFuncFile(self):
         '''
@@ -193,8 +192,8 @@ class take_data:
         '''
         mantis_kwargs = self.Mantis_kwargs.copy()
         run_doc = self.pype._NewDump(uuid4().hex, self.params['run_tag'],
-                                new_run=((not sequence_number) and 
-                                          not self.extend_runVar.get()))
+                                     new_run=((not sequence_number) and
+                                     not self.extend_runVar.get()))
         self._SetParams(self.SequenceParams(sequence_number))
         for channel in self.pype.ListWithProperty('dump'):
             run_doc[channel] = self.pype.Get(channel)
@@ -204,15 +203,15 @@ class take_data:
         outfilename = '/data/{:s}_{:05d}_{:05d}.egg'.format(
             self.FilenamePrefix(sequence_number),
             run_doc['run_number'],
-            run_doc['sequence_number']) 
+            run_doc['sequence_number'])
         print('outputting '+outfilename)
         run_descrip = ast.literal_eval(mantis_kwargs['description'])
-        for (chan,val) in self.SequenceParams(sequence_number):
+        for (chan, val) in self.SequenceParams(sequence_number):
             run_descrip[chan] = val
         run_descrip['run_tag'] = self.params['run_tag']
         run_doc['sequence_tag'] = dumps(run_descrip)
         mantis_kwargs.update({'output': outfilename,
-                              'description':dumps(run_descrip)})
+                              'description': dumps(run_descrip)})
         run = self.pype.RunMantis(**mantis_kwargs)
         print('mantis run starting')
         run.Wait()

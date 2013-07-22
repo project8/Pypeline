@@ -3,15 +3,16 @@ def Mantis_kwargs():
         Return a dict of kwargs for DripInterface.RunMantis()
     '''
     kwargs = {
-              'output': '/data/temp.egg',
-              'rate': 250.,
-              'duration': 60000.,
-              'mode': 1,
-              'length': 2097152,
-              'count': 640,
-              'description': '{}'
-             }
+        'output': '/data/temp.egg',
+        'rate': 250.,
+        'duration': 60000.,
+        'mode': 1,
+        'length': 2097152,
+        'count': 640,
+        'description': '{}'
+    }
     return kwargs
+
 
 def DefaultParams():
     '''
@@ -20,11 +21,12 @@ def DefaultParams():
         These will all be set once before the run starts.
     '''
     defaults = [
-                ('trap_current', 0),
-                ('dpph_current', 0),
-                ('waveguide_cell_heater_current', 0)
-               ]
+        ('trap_current', 0),
+        ('dpph_current', 0),
+        ('waveguide_cell_heater_current', 0)
+    ]
     return defaults
+
 
 def SequenceParams(sequence_number):
     '''
@@ -40,6 +42,7 @@ def SequenceParams(sequence_number):
     else:
         raise ValueError("catchall case shouldn't be reached")
     return params
+
 
 def FilenamePrefix(sequence_number):
     '''
