@@ -241,12 +241,12 @@ class channel_plot:
             tab = [tab]
         else:
             raise ValueError('tab should be "All" or an int')
+        self._SetStart(event=None, isFirst=False)
+        self._SetStop(event=None, isFirst=False)
         #git dat gibblit grayvy
         for tabi in tab:
             self._UpdateData(tab=tabi)
             self._MakePlot(tab=tabi)
-        self._SetStart(event=None, isFirst=False)
-        self._SetStop(event=None, isFirst=False)
         #dont stop git it git it
         self.figure.legends = []
         self.figure.legend(*self.subfigure[0].get_legend_handles_labels())
