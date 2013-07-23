@@ -31,7 +31,7 @@ class _SensorDumpInterface:
             self._sensor_dump_database = svr['sensor_dump_debug']
         self._formatstr = '%Y-%m-%d %H:%M:%S'
 
-    def _NewDump(self, doc_id, run_tag='', new_run=False):
+    def NewDump(self, doc_id, run_tag='', new_run=False):
         '''
         '''
         runs = {}
