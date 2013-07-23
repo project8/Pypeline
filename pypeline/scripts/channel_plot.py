@@ -112,7 +112,7 @@ class channel_plot:
         ymax.grid(row=8, column=3)
         ymax.bind('<Return>', self.Update)
         ymax.bind('<KP_Enter>', self.Update, '+')
-        Checkbutton(self.toplevel, text='manual', variable=self.ManualLimits
+        Checkbutton(self.toplevel, text='Manual Y-limits', variable=self.ManualLimits
                     ).grid(row=9, column=1)
 
         Button(self.toplevel, text="Update All", command=self.Update
