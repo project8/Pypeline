@@ -9,7 +9,7 @@ if inpy3:
     from tkinter.filedialog import askopenfilename
 else:
     from Tkinter import (Button, Label, Entry, Checkbutton, OptionMenu,
-                         StringVar, BooleanVar, IntVar)
+                         StringVar, BooleanVar, IntVar, DoubleVar)
     from tkFileDialog import askopenfilename
 from time import sleep
 import multiprocessing
@@ -39,6 +39,7 @@ class take_data:
         self.extend_runVar = BooleanVar(value=False)
         self.run_tagVar = StringVar(value=run_tag)
         self.num_sequencesVar = IntVar(value=num_sequences)
+        self.len_sequenceVar = DoubleVar()
         self.stateVar = StringVar(value='done')
         self.conf_filename = StringVar(value='')
         self.params = {}
@@ -65,6 +66,12 @@ class take_data:
                                                               column=0)
         Entry(self.toplevel, textvariable=self.num_sequencesVar).grid(row=row,
                                                                       column=1)
+        row += 1
+
+        Label(self.toplevel, text='Sequence Length').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.len_sequenceVar).grid(row=row,
+                                                                     column=1)
+        Label(self.toplevel, text='[ms]').grid(row=row, column=2, sticky='W')
         row += 1
 
         builtins_list = ['default_run', 'noise_analysis_run']
@@ -111,22 +118,6 @@ class take_data:
         '''
         print(self.runthread.is_alive())
 
-    def _Abort(self):
-        '''
-        '''
-        self.keep_runningVar.set(False)
-        if self.runthread.is_alive():
-            print('terminating child process')
-            self.runthread.terminate()
-        else:
-            print('no current thread')
-        self.stateVar.set('aborted')
-
-    def _IsRunning(self):
-        '''
-        '''
-        print(self.runthread.is_alive())
-
     def _GetParamFuncs(self):
         '''
         '''
@@ -145,6 +136,8 @@ class take_data:
         self.SequenceParams = run_params.SequenceParams
         self.FilenamePrefix = run_params.FilenamePrefix
         self.Mantis_kwargs = run_params.Mantis_kwargs()
+        if 'duration' in self.Mantis_kwargs:
+            self.len_sequenceVar.set(self.Mantis_kwargs['duration'])
 
     def DoRun(self):
         '''
@@ -211,7 +204,8 @@ class take_data:
         run_descrip['run_tag'] = self.params['run_tag']
         run_doc['sequence_tag'] = dumps(run_descrip)
         mantis_kwargs.update({'output': outfilename,
-                              'description': dumps(run_descrip)})
+                              'description': dumps(run_descrip),
+                              'duration': self.len_sequenceVar.get()})
         run = self.pype.RunMantis(**mantis_kwargs)
         print('mantis run starting')
         run.Wait()
