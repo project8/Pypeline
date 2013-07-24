@@ -67,11 +67,11 @@ class channel_plot:
             self.toplevel = Tk.Tk()
         self.status_var = StringVar(value='initializing')
         self._SetupCanvas()
-        self.BuildGui()
+        self._BuildGui()
         if not toplevel:
             Tk.mainloop()
 
-    def BuildGui(self):
+    def _BuildGui(self):
         '''
         '''
         self.removei = IntVar(value=0)
@@ -347,6 +347,7 @@ class channel_plot:
 
     def _PlotSet(self, channels):
         '''
+            Plots a set of channels on common axes
         '''
         for plotn, channel in enumerate(channels):
             if (len(self.plot_dicts)-2) <= plotn:

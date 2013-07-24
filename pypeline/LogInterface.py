@@ -34,7 +34,7 @@ class _LogInterface:
         '''
         self._log_database = log_database
 
-    def GetTimeSeries(self, sensor, start, stop):
+    def GetTimeSeries(self, sensor, start, stop, max_len=False):
         '''
             Retrieve data logged on CouchDB in a specified window and return it
             as a numpy array.
@@ -46,6 +46,7 @@ class _LogInterface:
                         you would like to retrieve
                 <stop> (string) is the timestamp of the end of the log you
                        would like to retrieve
+                <max_len> (int) drops enough data to have a series of this length
             Returns:
                 (timelist, valuelist, unitlist)
         '''
@@ -61,6 +62,10 @@ class _LogInterface:
                 valuelist.append(float(row.value[
                                  'calibrated_value'].split()[0]))
                 unitlist.append(str(row.value['calibrated_value'].split()[1]))
+        if max_len and (len(valuelist) > max_len):
+            timelist = [val for n,val in enumerate(timelist) if not n % len(timelist)/max_len]
+            valuelist = [val for n,val in enumerate(valuelist) if not n % len(valuelist)/max_len]
+            unitlist = [val for n,val in enumerate(unitlist) if not n % len(unitlist)/max_len]
         return (timelist, valuelist, unitlist)
 
     def GetLatestValues(self, channels):
