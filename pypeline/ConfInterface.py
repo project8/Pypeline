@@ -65,7 +65,7 @@ class _ConfInterface:
             add_doc = {
                 '_id': uuid4().hex,
                 'channel': instrument,
-                'interval': interval,
+                'interval': str(interval),
                 'type': 'logger',
             }
             self._conf_database.save(add_doc)
