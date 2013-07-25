@@ -65,3 +65,33 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
     stdout.write(' ' * 60 + '\r')
     stdout.flush()
     return VDC
+
+
+def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, sample_period=10):
+    '''
+        Use the lockin's built in ADC to link it to the sweeper and take data
+        <pype> an DripInterface instance
+        <start_freq> lower frequency bound for the sweep (corresponds to 0 V on the ADC)
+        <stop_freq> upper frequency bound for the sweep (corresponds to 10 V on the ADC)
+        <sweep_time> time, in seconds, to do a sweep
+        <power> output power, in dBm, from the sweeper
+        <sample_period> sampling interval, in ms, for the lockin's ADC
+    '''
+    pype.Set('hf_sweep_start', start_freq)
+    pype.Set('hf_sweep_stop', stop_freq)
+    pype.Set('hf_sweep_time', sweep_time)
+    pype.Set('hf_sweeper_power', power)
+    sample_length = int(sweep_time * 1000 / sample_period)
+    pype.Set('lockin_raw_write', "NC").Wait()
+    pype.Set('lockin_raw_write', "CBD 51").Wait()
+    pype.Set('lockin_raw_write', "LEN " + str(sample_length)).Wait()
+    pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
+    pype.Set('lockin_raw_write', "TD").Wait()
+    sleep(sample_length / 1000 + 30)
+    adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
+    x_curve = pype.Get('lockin_x_curve').Wait()['final']
+    y_curve = pype.Get('lockin_y_curve').Wait()['final']
+    amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
+    slope = (stop_freq - start_freq) / 10.
+    frequency_curve = [start_frequency + slope * adc for adc in adc_curve]
+    return (frequency_curve, amplitude_curve)
