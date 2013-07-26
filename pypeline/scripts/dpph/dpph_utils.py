@@ -3,8 +3,9 @@ from __future__ import absolute_import
 # built in
 from time import sleep
 from sys import stdout
+from datetime import datetime
 # 3rd party
-from numpy import sign, sin, pi
+from numpy import sign, sin, pi, sqrt
 # local
 from ...PypelineErrors import NoResponseError
 
@@ -65,3 +66,56 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
     stdout.write(' ' * 60 + '\r')
     stdout.flush()
     return VDC
+
+
+def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num_points=360):
+    '''
+        Use the lockin's built in ADC to link it to the sweeper and take data
+        <pype> an DripInterface instance
+        <start_freq> lower frequency bound for the sweep (corresponds to 0 V on the ADC)
+        <stop_freq> upper frequency bound for the sweep (corresponds to 10 V on the ADC)
+        <sweep_time> time, in seconds, to do a sweep
+        <power> output power, in dBm, from the sweeper
+        <num_points> number of samplings for the lockin to take
+    '''
+    print('*' * 60, '\nsetting sweeper', datetime.now())
+    sets = []
+    sets.append(pype.Set('hf_sweep_start', start_freq))
+    sets.append(pype.Set('hf_sweep_stop', stop_freq))
+    sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
+    if power:
+        sets.append(pype.Set('hf_sweeper_power', power))
+    for i in range(100):
+        if not sum([set.Waiting() for set in sets]):
+            break
+    if sum([set.Waiting() for set in sets]):
+        print('sweeper sets failed')
+    print('*' * 60, '\nsweeper complete, setting lockin', datetime.now())
+    sample_length = num_points
+    sample_period = int(((sweep_time + 5) / num_points) * 1000)
+    pype.Set('lockin_raw_write', "NC").Wait()
+    pype.Set('lockin_raw_write', "CBD 51").Wait()
+    #len is number of samples to take, period is how often
+    pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
+    pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
+    print('*' * 60, '\ntaking data', datetime.now())
+    pype.Set('lockin_raw_write', "TD").Wait()
+    sleep(sweep_time + 30)
+    print('*' * 60, '\nretrieving data', datetime.now())
+    adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
+    x_curve = pype.Get('lockin_x_curve').Wait()['final']
+    y_curve = pype.Get('lockin_y_curve').Wait()['final']
+    print('*' * 60, '\ncomputing final form and return', datetime.now())
+    amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
+    slope = (stop_freq - start_freq) / 10000.
+    frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
+    all_curves = zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve)
+    filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
+    frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
+    print('*' * 60, '\ndone')
+    print('*' * 60)
+    return {'adc_curve': adc_curve,
+            'frequency_curve': frequency_curve,
+            'x_curve': x_curve,
+            'y_curve': y_curve,
+            'amplitude_curve': amplitude_curve}
