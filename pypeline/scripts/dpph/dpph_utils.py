@@ -82,8 +82,9 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     sets = []
     sets.append(pype.Set('hf_sweep_start', start_freq))
     sets.append(pype.Set('hf_sweep_stop', stop_freq))
-    sets.append(pype.Set('hf_sweep_time', sweep_time))
-    sets.append(pype.Set('hf_sweeper_power', power))
+    sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
+    if power:
+        sets.append(pype.Set('hf_sweeper_power', power))
     for i in range(100):
         if not sum([set.Waiting() for set in sets]):
             break
@@ -91,7 +92,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         print('sweeper sets failed')
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.now())
     sample_length = num_points
-    sample_period = int((sweep_time / num_points) * 1000)
+    sample_period = int(((sweep_time + 5) / num_points) * 1000)
     pype.Set('lockin_raw_write', "NC").Wait()
     pype.Set('lockin_raw_write', "CBD 51").Wait()
     #len is number of samples to take, period is how often
@@ -108,4 +109,13 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
-    return (frequency_curve, amplitude_curve)
+    all_curves = zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve)
+    filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
+    frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
+    print('*' * 60, '\ndone')
+    print('*' * 60)
+    return {'adc_curve': adc_curve,
+            'frequency_curve': frequency_curve,
+            'x_curve': x_curve,
+            'y_curve': y_curve,
+            'amplitude_curve': amplitude_curve}

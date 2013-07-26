@@ -49,7 +49,7 @@ class swept_dpph_measurement:
         self.toplevel = toplevel
 
         self.powerVar = DoubleVar(value=-75) #dBm
-        self.set_power_BoolVar = BooleanVar(value=False)
+        self.set_power_BoolVar = BooleanVar(value=True)
         self.start_freq_Var = DoubleVar(value=25000) #MHz
         self.stop_freq_Var = DoubleVar(value=26500) #MHz
         self.sweep_time_Var = DoubleVar(value=60) #s
@@ -110,6 +110,7 @@ class swept_dpph_measurement:
         self.figure.subplots_adjust(left=0.15, bottom=0.2)
         self.subfigure = self.figure.add_subplot(1, 1, 1)
         self.subfigure.plot([0],[0])
+        self.subfigure.plot([0],[0])
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
         self.canvas.get_tk_widget().grid(row=row, column=column, rowspan=10)
@@ -117,21 +118,31 @@ class swept_dpph_measurement:
     def _CollectSweep(self):
         '''
         '''
+        tmp_power = self.powerVar.get()
+        if self.set_power_BoolVar.get():
+            tmp_power = False
         sweep = _GetSweptVoltages(pype=self.pype,
                                   start_freq=self.start_freq_Var.get(),
                                   stop_freq=self.stop_freq_Var.get(),
                                   sweep_time=self.sweep_time_Var.get(),
-                                  power=self.powerVar.get(),
+                                  power=tmp_power,
                                   num_points=self.num_points_Var.get())
-        #self.subfigure.clear()
-        print('frequencies:\n', sweep[0])
-        print('voltages:\n', sweep[1])
-        [xdata, ydata] = zip(*sorted(zip(sweep[0], sweep[1])))
-        self.subfigure.set_xlim(left=xdata[0], right=xdata[-1])
-        self.subfigure.set_ylim(bottom=min(ydata), top=max(ydata))
+        freqdata = sweep['frequency_curve']
+        ydata = sweep['y_curve']
+        xdata = sweep['x_curve']
+        self.subfigure.set_xlim(left=freqdata[0], right=freqdata[-1])
+        self.subfigure.set_ylim(bottom=min(ydata + xdata), top=max(ydata + xdata))
         line = self.subfigure.get_lines()[0]
-        line.set_xdata(array(xdata))
+        line.set_xdata(array(freqdata))
+        line.set_ydata(array(xdata))
+        line.set_label('x output')
+        line = self.subfigure.get_lines()[1]
+        line.set_xdata(array(freqdata))
         line.set_ydata(array(ydata))
+        line.set_label('y output')
+        self.figure.legends = []
+        self.figure.legend(*self.subfigure.get_legend_handles_labels())
+        self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.canvas.show()
 
