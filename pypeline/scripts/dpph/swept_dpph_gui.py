@@ -23,7 +23,7 @@ from matplotlib.figure import Figure
 # local
 from .linear_fit import linear_fit
 from .fft_filter import fft_filter
-from .dpph_utils import _GetSweptVoltages
+from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
 class __non_guiVar:
@@ -52,10 +52,13 @@ class swept_dpph_measurement:
         self.set_power_BoolVar = BooleanVar(value=True)
         self.start_freq_Var = DoubleVar(value=25000) #MHz
         self.stop_freq_Var = DoubleVar(value=26500) #MHz
+        self.start_search_freq_Var = DoubleVar(value=25000) #MHz
+        self.stop_search_freq_Var = DoubleVar(value=26500) #MHz
         self.sweep_time_Var = DoubleVar(value=60) #s
         self.num_points_Var = IntVar(value=360) #ms
         self.spanVar = DoubleVar(value=100)
         self.stepVar = DoubleVar(value=4)
+        self.fit_channel_Var = StringVar(value='xdata')
 
         self.BuildGui()
 
@@ -64,7 +67,8 @@ class swept_dpph_measurement:
             Dpph popup window
         '''
         row = 0
-        # input power
+        ##################################################################
+        # Lockin Scan
         Label(self.toplevel, text='Input Power'
               ).grid(row=row, column=0, sticky='ew')
         Entry(self.toplevel, textvariable=self.powerVar
@@ -75,7 +79,7 @@ class swept_dpph_measurement:
                     variable=self.set_power_BoolVar).grid(row=row, column=3)
         row += 1
 
-        Label(self.toplevel, text='Frequency Range'
+        Label(self.toplevel, text='Scan Frequency Range'
               ).grid(row=row, column=0, sticky='ew')
         Entry(self.toplevel, textvariable=self.start_freq_Var
               ).grid(row=row, column=1, sticky='ew')
@@ -99,6 +103,28 @@ class swept_dpph_measurement:
 
         Button(self.toplevel, text='take data', command=self._CollectSweep
                ).grid(row=row, column=0)
+        row += 1
+
+        Label(self.toplevel, text='-'*60).grid(row=row, column=0, columnspan=4)
+        row += 1
+
+
+        ##################################################################
+        # Resonance Search
+        Label(self.toplevel, text='Search Frequency Range'
+              ).grid(row=row, column=0, sticky='ew')
+        Entry(self.toplevel, textvariable=self.start_search_freq_Var
+              ).grid(row=row, column=1, sticky='ew')
+        Entry(self.toplevel, textvariable=self.stop_search_freq_Var
+              ).grid(row=row, column=2, columnspan=2, sticky='ew')
+        Label(self.toplevel, text='[MHz]').grid(row=row, column=4, sticky='w')
+        row += 1
+
+        ch_options = ['xdata', 'ydata']
+        OptionMenu(self.toplevel, self.fit_channel_Var, *ch_options
+                   ).grid(row=row, column=0, sticky='ew')
+        Button(self.toplevel, text='find resonance', command=self._FindResonance
+               ).grid(row=row, column=1, sticky='ew')
 
         self._SetupPlot(row=0, column=5)
 
@@ -109,8 +135,9 @@ class swept_dpph_measurement:
         self.figure = Figure()
         self.figure.subplots_adjust(left=0.15, bottom=0.2)
         self.subfigure = self.figure.add_subplot(1, 1, 1)
-        self.subfigure.plot([0],[0])
-        self.subfigure.plot([0],[0])
+        self.subfigure.plot([0], [0])
+        self.subfigure.plot([0], [0])
+        self.subfigure.plot([0], [0])
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
         self.canvas.get_tk_widget().grid(row=row, column=column, rowspan=10)
@@ -145,6 +172,43 @@ class swept_dpph_measurement:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.canvas.show()
+
+    def _FindResonance(self):
+        '''
+        '''
+        if self.fit_channel_Var.get() == 'xdata':
+            line = self.subfigure.get_lines()[0]
+        elif self.fit_channel_Var.get() == 'ydata':
+            line = self.subfigure.get_lines()[1]
+        else:
+            raise ValueError('not a valid dataset selection')
+        xdata = line.get_xdata()
+        ydata = line.get_ydata()
+        fit = _FindFieldFFT(min_freq=self.start_search_freq_Var.get(),
+                            max_freq=self.stop_search_freq_Var.get(),
+                            freq_data=xdata,
+                            volts_data=ydata)
+        outline = self.subfigure.get_lines()[2]
+        factor = 2000. / max(fit['result'])
+        scaled_data = [val * factor for val in fit['result']]
+        outline.set_xdata(fit['freqs'])
+        outline.set_ydata(scaled_data)
+        outline.set_label('filter result')
+        self.figure.legends = []
+        self.figure.legend(*self.subfigure.get_legend_handles_labels())
+        self.figure.legends[0].draggable(True)
+        self.canvas.draw()
+        self.canvas.show()
+        res_freq = max(zip(fit['result'], fit['freqs']))[1]
+        res_unct = fit['freqs'][1] - fit['freqs'][0]
+        print('resonance found at:', res_freq, 'MHz')
+        print('err is:', res_unct)
+        geff = 2.0036
+        chargemass = 1.758e11
+        freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
+        print('for a field of', freq_to_field * res_freq)
+        print('field unct of', freq_to_field * res_unct)
+
 
 #        #######################
 #        # Tabs for different methods

@@ -5,7 +5,8 @@ from time import sleep
 from sys import stdout
 from datetime import datetime
 # 3rd party
-from numpy import sign, sin, pi, sqrt
+from numpy import sign, sin, pi, sqrt, exp, multiply, mean, concatenate
+from scipy import fftpack
 # local
 from ...PypelineErrors import NoResponseError
 
@@ -100,7 +101,14 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
     print('*' * 60, '\ntaking data', datetime.now())
     pype.Set('lockin_raw_write', "TD").Wait()
-    sleep(sweep_time + 30)
+    #sleep(sweep_time + 30)
+    maxsleep = 100
+    sleep(10)
+    for i in range(maxsleep):
+        sleep(1)
+        statusfull = pype.Get('lockin_data_status').Wait()['final']
+        if statusfull[0] == '0':
+            break
     print('*' * 60, '\nretrieving data', datetime.now())
     adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
     x_curve = pype.Get('lockin_x_curve').Wait()['final']
@@ -119,3 +127,28 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
             'x_curve': x_curve,
             'y_curve': y_curve,
             'amplitude_curve': amplitude_curve}
+
+
+def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
+    '''
+    '''
+    #cut down to a window
+    all_data = zip(freq_data, volts_data)
+    cut_data = [point for point in all_data if (min_freq < point[0] and point[0] < max_freq)]
+    frequencies, voltages = zip(*cut_data)
+    #build target
+    target_signal = []
+    expected_width = 3
+    for f in frequencies:
+        x = (f - mean([min_freq, max_freq])) / expected_width
+        gderiv = x * exp(-x * x / 2.)
+        target_signal.append(0.00001 * gderiv)
+    target_fft = fftpack.fft(target_signal)
+    data_fft = fftpack.fft(voltages)
+    data_fft[0] = 0
+    #apply filter
+    filtered_fft = multiply(data_fft, target_fft)
+    filtered = fftpack.ifft(filtered_fft)
+    idx = int(len(filtered)/2)
+    return {'freqs': frequencies,
+            'result': abs(concatenate([filtered[idx:], filtered[0:idx]]))}
