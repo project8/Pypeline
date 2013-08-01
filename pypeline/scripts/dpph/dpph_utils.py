@@ -101,14 +101,14 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
     print('*' * 60, '\ntaking data', datetime.now())
     pype.Set('lockin_raw_write', "TD").Wait()
-    #sleep(sweep_time + 30)
-    maxsleep = 100
-    sleep(10)
-    for i in range(maxsleep):
-        sleep(1)
-        statusfull = pype.Get('lockin_data_status').Wait()['final']
-        if statusfull[0] == '0':
-            break
+    sleep(sweep_time + 30)
+#    maxsleep = 100
+#    sleep(10)
+#    for i in range(maxsleep):
+#        sleep(1)
+#        statusfull = pype.Get('lockin_data_status').Wait()['final']
+#        if statusfull[0] == '0':
+#            break
     print('*' * 60, '\nretrieving data', datetime.now())
     adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
     x_curve = pype.Get('lockin_x_curve').Wait()['final']
