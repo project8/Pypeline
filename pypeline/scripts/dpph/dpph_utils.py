@@ -8,7 +8,7 @@ from datetime import datetime
 from numpy import sign, sin, pi, sqrt, exp, multiply, mean, concatenate
 from scipy import fftpack
 # local
-from ...PypelineErrors import NoResponseError
+from ...PypelineErrors import NoResponseError, DriplineError
 
 
 def _GetLockinValue(interface, freq=25553.440, slptime=2):
@@ -91,6 +91,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
             break
     if sum([set.Waiting() for set in sets]):
         print('sweeper sets failed')
+        raise DriplineError('Sweeper sets failed or not yet complete')
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.now())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) / num_points) * 1000)

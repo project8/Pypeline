@@ -9,13 +9,14 @@ matplotlib.use('TkAgg', warn=False)
 if inpy3:
     from tkinter import (DoubleVar, StringVar, BooleanVar, IntVar,
                          Button, Checkbutton, Entry, Label, OptionMenu)
-    from tkinter.filedialog import asksaveasfile
+    from tkinter.filedialog import asksaveasfile, asksaveasfilename
     from tkinter.ttk import Notebook, Frame
 else:
     from Tkinter import (DoubleVar, StringVar, BooleanVar, IntVar,
                          Button, Checkbutton, Entry, Label, OptionMenu)
-    from tkFileDialog import asksaveasfile
+    from tkFileDialog import asksaveasfile, asksaveasfilename
     from ttk import Notebook, Frame
+from json import dump
 # 3rd party
 from numpy import pi, array
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -107,7 +108,7 @@ class swept_dpph_measurement:
                ).grid(row=row, column=0)
         row += 1
 
-        Label(self.toplevel, text='-'*60).grid(row=row, column=0, columnspan=4)
+        Label(self.toplevel, text='-'*100).grid(row=row, column=0, columnspan=4, sticky='ew')
         row += 1
 
 
@@ -124,15 +125,19 @@ class swept_dpph_measurement:
 
         ch_options = ['xdata', 'ydata']
         OptionMenu(self.toplevel, self.fit_channel_Var, *ch_options
-                   ).grid(row=row, column=0, sticky='ew')
+                   ).grid(row=row, column=0, rowspan=2, sticky='ew')
         Button(self.toplevel, text='find resonance', command=self._FindResonance
-               ).grid(row=row, column=1, sticky='ew')
+               ).grid(row=row, column=1, rowspan=2, sticky='ew')
         Label(self.toplevel, textvariable=self.result_str_Var
-              ).grid(row=row, column=2, columnspan=3, sticky='ew')
-        row += 1
+              ).grid(row=row, column=2, rowspan=2, columnspan=3, sticky='ew')
+        row += 2
 
         Button(self.toplevel, text='Dump To json', command=self.store_dpph_data_json
                ).grid(row=row, column=0)
+        Button(self.toplevel, text='Save Image', command=self.SaveFigure
+               ).grid(row=row, column=1)
+        Button(self.toplevel, text='Log DPPH', command=self.log_dpph
+               ).grid(row=row, column=2)
 
         self._SetupPlot(row=0, column=5)
 
@@ -198,7 +203,7 @@ class swept_dpph_measurement:
                             freq_data=xdata,
                             volts_data=ydata)
         outline = self.subfigure.get_lines()[2]
-        factor = 2000. / max(fit['result'])
+        factor = max(ydata) / max(fit['result'])
         scaled_data = [val * factor for val in fit['result']]
         outline.set_xdata(fit['freqs'])
         outline.set_ydata(scaled_data)
@@ -219,7 +224,7 @@ class swept_dpph_measurement:
         res_field_unct = freq_to_field * res_unct
         print('for a field of', res_field)
         print('field unct of', res_field_unct)
-        self.result_str_Var.set('{:.2E} +/- {:.1E} MHz -> {:.2E} +/- {:.1E} kG'.format(
+        self.result_str_Var.set('{:.2E} +/- {:.1E} MHz \n({:.2E} +/- {:.1E} kG)'.format(
             res_freq, res_unct, res_field, res_field_unct))
         self.sweep_result.update({'res_freq': res_freq,
                                   'res_freq_unct': res_unct,
@@ -227,42 +232,33 @@ class swept_dpph_measurement:
                                   'res_field_unct': res_field_unct})
 
     def store_dpph_data_json(self):
-        if not self.dpph_dataset:
-            print('no dpph_dataset stored')
+        '''
+        '''
+        if not self.sweep_result:
+            print('no result stored')
             return
         outfile = asksaveasfile(defaultextension='.json')
         dump(self.sweep_result, outfile, indent=4)
         outfile.close()
 
-# deprecated..........................................................................
-    def DoRun(self, method):
+    def SaveFigure(self):
         '''
         '''
-        geff = 2.0036
-        chargemass = 1.758e11
-        freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
-        if self.guessunits.get() == "kG":
-            self.guessval.set(self.guessval.get() / freq_to_field)
-            self.guessunits.set("MHz")
-        if method == 'linear_fit':
-            dpph_result, dpph_dataset = (linear_fit(self.pype,
-                                         guess=self.guessval.get(),
-                                         stop_nsigma=self.nsigmavar.get(),
-                                         stop_voltage=self.nvoltsvar.get(),
-                                         power=self.powerVar.get()))
-        elif method == 'fft_filter':
-            dpph_result, dpph_dataset = (fft_filter(self.pype,
-                                         guess=self.guessval.get(),
-                                         power=self.powerVar.get(),
-                                         span=self.spanVar.get(),
-                                         step=self.stepVar.get()))
-
-        self.dpph_result = dpph_result
-        self.dpph_dataset = dpph_dataset
-
+        file_extensions = [('vectorized', '.eps'), ('adobe', '.pdf'), ('image', '.png'), ('all', '.*')]
+        outfile = asksaveasfilename(defaultextension='.pdf',
+                                    filetypes=file_extensions)
+        self.figure.savefig(outfile)
 
     def log_dpph(self):
-        if not self.dpph_result:
+        if not self.sweep_result:
             print('no dpph_result stored')
             return
+        result = {
+                  'uncal': self.sweep_result['res_freq'],
+                  'uncal_err': self.sweep_result['fres_freq_unct'],
+                  'uncal_units': 'MHz',
+                  'cal': self.sweep_result['res_field'],
+                  'cal_err': self.sweep_result['res_field_unct'],
+                  'cal_units': 'kG',
+                 }
         self.pype.LogValue(sensor='dpph_field', **self.dpph_result)
