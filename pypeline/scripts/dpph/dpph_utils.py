@@ -117,7 +117,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
-    all_curves = zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve)
+    all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
     filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
     frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
     print('*' * 60, '\ndone')

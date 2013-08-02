@@ -47,6 +47,7 @@ class swept_dpph_measurement:
         self.pype = pype
         self.runargs = runargs
         self.toplevel = toplevel
+        self.sweep_result = {}
 
         self.powerVar = DoubleVar(value=-75) #dBm
         self.set_power_BoolVar = BooleanVar(value=True)
@@ -59,6 +60,7 @@ class swept_dpph_measurement:
         self.spanVar = DoubleVar(value=100)
         self.stepVar = DoubleVar(value=4)
         self.fit_channel_Var = StringVar(value='xdata')
+        self.result_str_Var = StringVar(value='')
 
         self.BuildGui()
 
@@ -125,6 +127,12 @@ class swept_dpph_measurement:
                    ).grid(row=row, column=0, sticky='ew')
         Button(self.toplevel, text='find resonance', command=self._FindResonance
                ).grid(row=row, column=1, sticky='ew')
+        Label(self.toplevel, textvariable=self.result_str_Var
+              ).grid(row=row, column=2, columnspan=3, sticky='ew')
+        row += 1
+
+        Button(self.toplevel, text='Dump To json', command=self.store_dpph_data_json
+               ).grid(row=row, column=0)
 
         self._SetupPlot(row=0, column=5)
 
@@ -154,6 +162,7 @@ class swept_dpph_measurement:
                                   sweep_time=self.sweep_time_Var.get(),
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
+        self.sweep_result = sweep.copy()
         freqdata = sweep['frequency_curve']
         ydata = sweep['y_curve']
         xdata = sweep['x_curve']
@@ -206,57 +215,26 @@ class swept_dpph_measurement:
         geff = 2.0036
         chargemass = 1.758e11
         freq_to_field = 4 * pi * 10 ** 7 / (geff * chargemass)
-        print('for a field of', freq_to_field * res_freq)
-        print('field unct of', freq_to_field * res_unct)
+        res_field = freq_to_field * res_freq
+        res_field_unct = freq_to_field * res_unct
+        print('for a field of', res_field)
+        print('field unct of', res_field_unct)
+        self.result_str_Var.set('{:.2E} +/- {:.1E} MHz -> {:.2E} +/- {:.1E} kG'.format(
+            res_freq, res_unct, res_field, res_field_unct))
+        self.sweep_result.update({'res_freq': res_freq,
+                                  'res_freq_unct': res_unct,
+                                  'res_field': res_field,
+                                  'res_field_unct': res_field_unct})
 
+    def store_dpph_data_json(self):
+        if not self.dpph_dataset:
+            print('no dpph_dataset stored')
+            return
+        outfile = asksaveasfile(defaultextension='.json')
+        dump(self.sweep_result, outfile, indent=4)
+        outfile.close()
 
-#        #######################
-#        # Tabs for different methods
-#        self.notebook = Notebook(self.toplevel)
-#        self.notebook.grid(row=2, column=0, rowspan=5, columnspan=3)
-#        # linear fit ############################
-#        # entries
-#        linear_frame = Frame(self.notebook)
-#        linear_frame.pack(side='top', fill='both', expand='y')
-#        Label(linear_frame, text='Sigma limit').grid(row=0, column=0,
-#                                                     sticky='ew')
-#        Entry(linear_frame, textvariable=self.nsigmavar
-#              ).grid(row=0, column=1, sticky='ew')
-#        Label(linear_frame, text='(a real)', justify='left'
-#              ).grid(row=0, column=2)
-#        Label(linear_frame, text='Voltage limit').grid(row=1, column=0,
-#                                                       sticky='ew')
-#        Entry(linear_frame, textvariable=self.nvoltsvar
-#              ).grid(row=1, column=1, sticky='ew')
-#        Label(linear_frame, text='[V]', justify='left').grid(row=1, column=2)
-#        # actions
-#        Button(linear_frame, text="Start Scan",
-#               command=lambda: self.DoRun('linear_fit')).grid(row=2, column=0)
-#        Button(linear_frame, text="Save Plot Data",
-#               command=self.store_dpph_data_json).grid(row=2, column=1)
-#        Button(linear_frame, text="Log Result", command=self.log_dpph
-#               ).grid(row=2, column=2)
-#        self.notebook.add(linear_frame, text='linear fit')
-#        # fft filter #################################
-#        # entries
-#        fft_frame = Frame(self.notebook)
-#        fft_frame.pack(side='top', fill='both', expand='y')
-#        Label(fft_frame, text='Search Span').grid(row=0, column=0, sticky='ew')
-#        Entry(fft_frame, textvariable=self.spanVar
-#              ).grid(row=0, column=1, sticky='ew')
-#        Label(fft_frame, text='MHz', justify='left').grid(row=0, column=2)
-#
-#        Label(fft_frame, text='Step Size').grid(row=1, column=0, sticky='ew')
-#        Entry(fft_frame, textvariable=self.stepVar
-#              ).grid(row=1, column=1, sticky='ew')
-#        Label(fft_frame, text='MHz', justify='left').grid(row=1, column=2)
-#        # actions
-#        Button(fft_frame, text="Start Scan",
-#               command=lambda: self.DoRun('fft_filter')).grid(row=2, column=0)
-#        Button(fft_frame, text="Log Result", command=self.log_dpph
-#               ).grid(row=2, column=2)
-#        self.notebook.add(fft_frame, text='fft filter')
-
+# deprecated..........................................................................
     def DoRun(self, method):
         '''
         '''
@@ -282,15 +260,6 @@ class swept_dpph_measurement:
         self.dpph_result = dpph_result
         self.dpph_dataset = dpph_dataset
 
-    def store_dpph_data_json(self):
-        if not self.dpph_dataset:
-            print('no dpph_dataset stored')
-            return
-        outfile = asksaveasfile(defaultextension='.json')
-        dump({"frequencies": self.dpph_dataset[0],
-              "voltages": self.dpph_dataset[1]},
-             outfile, indent=4)
-        outfile.close()
 
     def log_dpph(self):
         if not self.dpph_result:
