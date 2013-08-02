@@ -22,8 +22,8 @@ from numpy import pi, array
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 # local
-from .linear_fit import linear_fit
-from .fft_filter import fft_filter
+#from .linear_fit import linear_fit
+#from .fft_filter import fft_filter
 from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
@@ -38,7 +38,7 @@ class __non_guiVar:
         self.value = value
 
 
-class swept_dpph_measurement:
+class dpph_measurement:
     '''
     '''
 
@@ -63,9 +63,9 @@ class swept_dpph_measurement:
         self.fit_channel_Var = StringVar(value='xdata')
         self.result_str_Var = StringVar(value='')
 
-        self.BuildGui()
+        self._BuildGui()
 
-    def BuildGui(self):
+    def _BuildGui(self):
         '''
             Dpph popup window
         '''
@@ -132,11 +132,11 @@ class swept_dpph_measurement:
               ).grid(row=row, column=2, rowspan=2, columnspan=3, sticky='ew')
         row += 2
 
-        Button(self.toplevel, text='Dump To json', command=self.store_dpph_data_json
+        Button(self.toplevel, text='Dump To json', command=self._SaveJson
                ).grid(row=row, column=0)
-        Button(self.toplevel, text='Save Image', command=self.SaveFigure
+        Button(self.toplevel, text='Save Image', command=self._SaveFigure
                ).grid(row=row, column=1)
-        Button(self.toplevel, text='Log DPPH', command=self.log_dpph
+        Button(self.toplevel, text='Log DPPH', command=self._LogDPPH
                ).grid(row=row, column=2)
 
         self._SetupPlot(row=0, column=5)
@@ -231,7 +231,7 @@ class swept_dpph_measurement:
                                   'res_field': res_field,
                                   'res_field_unct': res_field_unct})
 
-    def store_dpph_data_json(self):
+    def _SaveJson(self):
         '''
         '''
         if not self.sweep_result:
@@ -241,7 +241,7 @@ class swept_dpph_measurement:
         dump(self.sweep_result, outfile, indent=4)
         outfile.close()
 
-    def SaveFigure(self):
+    def _SaveFigure(self):
         '''
         '''
         file_extensions = [('vectorized', '.eps'), ('adobe', '.pdf'), ('image', '.png'), ('all', '.*')]
@@ -249,7 +249,7 @@ class swept_dpph_measurement:
                                     filetypes=file_extensions)
         self.figure.savefig(outfile)
 
-    def log_dpph(self):
+    def _LogDPPH(self):
         if not self.sweep_result:
             print('no dpph_result stored')
             return

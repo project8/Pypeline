@@ -89,8 +89,10 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     for i in range(100):
         if not sum([set.Waiting() for set in sets]):
             break
+        sleep(1)
     if sum([set.Waiting() for set in sets]):
-        print('sweeper sets failed')
+        for set in sets:
+            print(set)
         raise DriplineError('Sweeper sets failed or not yet complete')
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.now())
     sample_length = num_points
