@@ -37,6 +37,7 @@ pip-log.txt
 #saved data
 *.txt
 *.jpg
+*.log
 
 #compiled python files
 *.pyc
