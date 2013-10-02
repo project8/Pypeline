@@ -177,8 +177,7 @@ class _CmdInterface:
         self._cmd_database.save(start_doc)
         return result
 
-    def RunMantis(self, output, rate, duration, mode, length, count,
-                   description):
+    def RunMantis(self, output, rate, duration, mode, description):
         '''
             Take a digitizer run of fixed time and sample rate.
 
@@ -205,8 +204,6 @@ class _CmdInterface:
                 "rate": str(rate),
                 "duration": str(duration),
                 "mode": str(mode),
-                "length": str(length),
-                "count": str(count),
                 "description": str(description)
             },
         }

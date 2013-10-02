@@ -9,9 +9,7 @@ def Mantis_kwargs():
         'output': '/data/temp.egg',
         'rate': 500.,
         'duration': 1000.,
-        'mode': 1,
-        'length': 2097152,
-        'count': 128,
+        'mode': 0,
         'description': '{}'
     }
     return kwargs
