@@ -26,7 +26,7 @@ from numpy import arange, sin, cos, pi, array
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2TkAgg)
 from matplotlib.figure import Figure
-from matplotlib import dates
+from matplotlib import dates, ticker
 
 #local libs
 
@@ -364,6 +364,8 @@ class channel_plot:
                                            rotation=-45)
             self.subfigure.xaxis.set_major_formatter(dates.DateFormatter(
                 "%m/%d %H:%M"))
+            self.subfigure.yaxis.set_major_formatter(ticker.ScalarFormatter(
+                useOffset=False))
         else:
             self.subfigure.plot(self.xdata, self.ydata,
                                 label=self.plot_dicts[tab]['yname'].get())
@@ -379,6 +381,7 @@ class channel_plot:
         yunit = '[' + str(self.plot_dicts['yunit']) + ']'
         self.subfigure.set_ylabel(yname + ' ' + yunit)
         #self.subfigure[tab].ticklabel_format(useOffset=False)
+        tickformat = ticker.ScalarFormatter(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
 
