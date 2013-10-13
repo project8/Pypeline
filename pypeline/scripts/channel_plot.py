@@ -79,6 +79,7 @@ class channel_plot:
         self.relative_stop_time = BooleanVar(value=False)
         self.continuous_updates = BooleanVar(value=False)
         self.ManualLimits = BooleanVar(value=False)
+        self.ConnectedPts = BooleanVar(value=True)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
         self._AddSubplot()
@@ -116,6 +117,8 @@ class channel_plot:
         ymax.bind('<KP_Enter>', self.Update, '+')
         Checkbutton(self.toplevel, text='Manual Y-limits', variable=self.ManualLimits
                     ).grid(row=9, column=1)
+        Checkbutton(self.toplevel, text='Connected Points', variable=self.ConnectedPts
+                    ).grid(row=9, column=2)
 
         Button(self.toplevel, text="Update All", command=self.Update
                ).grid(row=10, column=1)
@@ -356,9 +359,13 @@ class channel_plot:
     def _MakePlot(self, tab=0):
         '''
         '''
+        if self.ConnectedPts.get():
+            plotformat='o-'
+        else:
+            plotformat='o'
         #self.figure.get_axes()[0].clear()
         if self.plot_dicts[tab]['xname'].get() == 'time':
-            self.subfigure.plot_date(self.xdata, self.ydata, fmt='o-',
+            self.subfigure.plot_date(self.xdata, self.ydata, plotformat,
                                           label=self.plot_dicts[tab]['yname'].get())
             self.subfigure.set_xticklabels(self.subfigure.get_xticklabels(),
                                            rotation=-45)
@@ -367,7 +374,7 @@ class channel_plot:
             self.subfigure.yaxis.set_major_formatter(ticker.ScalarFormatter(
                 useOffset=False))
         else:
-            self.subfigure.plot(self.xdata, self.ydata,
+            self.subfigure.plot(self.xdata, self.ydata, plotformat,
                                 label=self.plot_dicts[tab]['yname'].get())
         self.subfigure.set_title(self.plot_dicts[tab]['yname'].get() +
                                  ' vs ' +
