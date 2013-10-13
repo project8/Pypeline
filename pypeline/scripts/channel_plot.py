@@ -9,7 +9,7 @@ if version_info[0] < 3:
     import Tkinter as Tk
     from Tkinter import (StringVar, BooleanVar, IntVar, DoubleVar, Label,
                          OptionMenu, Entry, Button, Checkbutton)
-    from tkFileDialog import asksaveasfilename
+    from tkFileDialog import asksaveasfilename, asksaveasfile
     from ttk import Notebook, Frame
     from tkMessageBox import showwarning
 else:
@@ -20,6 +20,7 @@ else:
     from tkinter.ttk import Notebook, Frame
     from tkinter.messagebox import showwarning
 from datetime import datetime, timedelta
+from json import dump
 
 #3rd party libs
 from numpy import arange, sin, cos, pi, array
@@ -122,8 +123,10 @@ class channel_plot:
 
         Button(self.toplevel, text="Update All", command=self.Update
                ).grid(row=10, column=1)
-        Button(self.toplevel, text="Save", command=self.SaveFigure
+        Button(self.toplevel, text="Save Plot", command=self.SaveFigure
                ).grid(row=10, column=2)
+        Button(self.toplevel, text="Save Json", command=self.SaveJson
+               ).grid(row=10, column=3)
         Checkbutton(self.toplevel, text='Continuous (Button above to start)',
                     variable=self.continuous_updates
                     ).grid(row=11, column=1, columnspan=2)
@@ -433,3 +436,25 @@ class channel_plot:
         outfile = asksaveasfilename(defaultextension='.pdf',
                                     filetypes=file_extensions)
         self.figure.savefig(outfile)
+
+
+    def SaveJson(self):
+        '''
+        '''
+        outfile = asksaveasfile(defaultextension='.json')
+        outdict = {'xunit':self.plot_dicts['xunit'],
+                   'yunit':self.plot_dicts['yunit']
+                  }
+        for tab in range(len(self.plot_dicts)-2):
+            outdict[tab] = {}
+            outdict[tab]['xname']=self.plot_dicts[tab]['xname'].get()
+            outdict[tab]['yname']=self.plot_dicts[tab]['yname'].get()
+            this_line = self.subfigure.get_lines()[tab]
+            if outdict['xunit'] == 't':
+                outdict[tab]['xdata'] = [str(t) for t in this_line.get_xdata()]
+            else:
+                outdict[tab]['xdata'] = list(this_line.get_xdata())
+            outdict[tab]['ydata'] = list(this_line.get_ydata())
+
+        dump(outdict, outfile, indent=4)
+        outfile.close()
