@@ -66,4 +66,3 @@ class pid_gremlin:
         #some call that computes the needed change to the current
         if not self.pype.Set(self.setting_channel, new_cur).Wait()['final'] == 'ok'
             raise ValueError('failed to set current')
-        self.last_set = new_cur
