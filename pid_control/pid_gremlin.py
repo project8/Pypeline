@@ -1,11 +1,12 @@
-from __future__ import print_function, absolute_imports
+from __future__ import print_function, absolute_import
 from sys import version_info
 inpy3 = not version_info[0] < 3
 
 # Standard
+from multiprocessing import Process, Pipe
 # 3rd party
 # Local
-from ..pypeline import DripInterface
+#from pypeline import DripInterface
 
 
 class pid_gremlin:
@@ -14,7 +15,7 @@ class pid_gremlin:
     '''
 
 
-    def __init__():
+    def __init__(self):
         '''
             Set default values
         '''
@@ -22,19 +23,19 @@ class pid_gremlin:
         self.panic_T = 450. # in K
         self.goal_T = False # needs to be set, in K
 
-        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
+#        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
         self.reading_channel = False # give me a temperature sensor
         self.setting_channel = False # give me a heater
         self.last_set = False
         self.max_readings = 50
         self.readings = []
 
-    def TempToK(value, units='C'):
+    def TempToK(self, value, units='C'):
         '''
             Convert a temperature to Kelvin
         '''
         if units == 'F':
-            print('Did you really use Fahrenheit?\n\n
+            print('Did you really use Fahrenheit?\n\n\
                    You know that this is science right?')
             value = (5./9.)*(value-32.)
             units = 'C'
@@ -46,23 +47,37 @@ class pid_gremlin:
         else:
             return value
 
-    def GetReading():
+    def GetReading(self):
         '''
             Update the list of Readings with the current value.
         '''
-        reading = self.pype.Get(self.reading_channel).Wait()
+#        reading = self.pype.Get(self.reading_channel).Wait()
         if not len(self.readings) < self.max_readings:
             self.readings.pop(0)
         self.readings.append((reading['timestamp'],
                               TempToK(reading['final'].split())))
 
-    def UpdateCurrent():
+    def UpdateCurrent(self):
         '''
             Call algorithm to get new setting and pype.Set() that value
         '''
         self.GetReading()
         if not self.last_set:
-            self.last_set = self.pype.Get(self.setting_channel)['final']
+            pass
+#            self.last_set = self.pype.Get(self.setting_channel)['final']
         #some call that computes the needed change to the current
-        if not self.pype.Set(self.setting_channel, new_cur).Wait()['final'] == 'ok'
-            raise ValueError('failed to set current')
+#        if not self.pype.Set(self.setting_channel, new_cur).Wait()['final'] == 'ok':
+#            raise ValueError('failed to set current')
+
+    def __call__(self, connection):
+        '''
+        '''
+        print('got to call')
+        connection.send('some win?')
+
+if __name__ == '__main__':
+    parent_connection, child_connection = Pipe()
+    p = Process(target=pid_gremlin, args=(child_connection,))
+    p.start()
+    print(parent_connection.recv())
+    p.join()
