@@ -13,9 +13,18 @@ class pid_interface
     def __init__(self):
         '''
         '''
-        pass
+        self.controllers = {}
 
     def AddController():
         '''
         '''
-        pass
+        q_in = Queue()
+        q_out = Queue()
+        ctrl = pid_control(q_in, q_out)
+        self.controllers[len(self.controllers)]={
+            'q_input': q_in,
+            'q_response': q_out,
+            'controller': ctrl,
+            'process': Process(target=ctrl.StartControl, args())
+        }
+        self.controllers['process'].start()
