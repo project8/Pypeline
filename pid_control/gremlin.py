@@ -19,24 +19,31 @@ class pid_control:
         '''
         '''
         #internal vars
+        self.filename = open('/home/laroque/tempstatus.txt','a')
+        self.filename.write('again....\n')
+        self.filename.flush()
         self.time_stamps = [datetime.now()]
         self.input_queue = input_q
         self.response_queue = response_q
         self._abort = False
 
         #adjustable attributes
-        self.min_update_time = timedelta(seconds=30)
+        self.min_update_time = timedelta(seconds=10)
         self.max_times = 10
 
     def StartControl(self):
         '''
         '''
+        self.filename.write('... starting control...\n')
+        self.filename.flush()
         while not self._abort:
             if self.input_queue.empty():
                 if (datetime.now() - self.time_stamps[-1]) > self.min_update_time:
                     self._UpdateCurrent()
+                    self.filename.write(str(self.time_stamps[-1]) + '\n')
+                    self.filename.flush()
                 else:
-                    sleep(10)
+                    sleep(2)
             else:
                 self._QueueResponse(self.input_queue.get())
 
@@ -67,30 +74,6 @@ class pid_control:
             self.response_queue.put(attr)
             print('attr put')
 
-def start_gremlin(q_in, q_out):
-    '''
-    '''
-    print('starting')
-    grem = pid_control(q_in, q_out)
-    grem.StartControl()
-    q_in.put(['Set', 'min_update_time', timedelta(seconds=5)])
-    sleep(3)
-    print('supposedly set')
-    print(grem.min_update_time)
-    q_in.put(['min_update_time'])
-    sleep(3)
-    while not q_out.empty():
-        print(q_out.get())
-        sleep(3)
-    
-
-if __name__ == '__main__1':
-    q_in = Queue()
-    q_out = Queue()
-    p = Process(target=start_gremlin, args=(q_in, q_out))
-    p.start()
-    sleep(2)
-    p.join()
 if __name__ == '__main__':
     q_in = Queue()
     q_out = Queue()
@@ -98,6 +81,7 @@ if __name__ == '__main__':
     grem = pid_control(q_in, q_out)
     p = Process(target=grem.StartControl, args=())
     p.start()
+    sleep(120)
     print('setting min update time')
     q_in.put(['Set', 'min_update_time', timedelta(seconds=5)])
     sleep(3)
