@@ -11,7 +11,7 @@ import types
 # Local
 
 
-class pid_control:
+class pid_controller:
     '''
     '''
 
@@ -19,7 +19,7 @@ class pid_control:
         '''
         '''
         #internal vars
-        self.filename = open('/home/laroque/tempstatus.txt','a')
+        self.filename = open('/tmp/tempstatus.txt','a')
         self.filename.write('again....\n')
         self.filename.flush()
         self.time_stamps = [datetime.now()]
@@ -34,7 +34,7 @@ class pid_control:
     def StartControl(self):
         '''
         '''
-        self.filename.write('... starting control...\n')
+        self.filename.write('... starting main loop...\n')
         self.filename.flush()
         while not self._abort:
             if self.input_queue.empty():
@@ -51,7 +51,7 @@ class pid_control:
         '''
             call setattr (for queue command access)
         '''
-        print('setting', name, 'to', value)
+        self.response_queue.put(['setting', name, 'to', value])
         setattr(self, name, value)
 
     def _UpdateCurrent(self):
@@ -66,9 +66,9 @@ class pid_control:
         '''
         attr = getattr(self, q_item[0])
         if isinstance(attr, types.MethodType):
-            print('calling method')
+            self.response_queue.put(['calling method'])
             self.response_queue.put(attr(*q_item[1:]))
-            print('method call complete')
+            self.response_queue.put(['method call complete'])
         else:
             print('getting attr')
             self.response_queue.put(attr)
