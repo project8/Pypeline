@@ -27,22 +27,21 @@ class pid_interface:
         self.controllers[interface_name]={
             'q_input': q_in,
             'q_response': q_out,
-            'controller': ctrl,
-            'process': Process(target=ctrl.StartControl, args=())
+            'controller': ctrl
         }
-        print(dir(self.controllers[interface_name]['process']))
-        self.controllers[interface_name]['process'].start()
 
     def StopController(self, interface_name):
         '''
         '''
-        self.controllers[interface_name]['q_input'].put(['Set', '_abort', True])
+        self.controllers[interface_name]['process'].terminate()
 
     def StartController(self, interface_name):
         '''
         '''
-        print('restarting...')
-        self.controllers[interface_name]['q_input'].put(['Set', '_abort', False])
+        print('starting...')
+        self.controllers[interface_name]['process'] = Process(
+            target=self.controllers[interface_name]['controller'].StartControl, args=())
+        print(dir(self.controllers[interface_name]['process']))
+        self.controllers[interface_name]['process'].start()
         sleep(5)
-        self.controllers[interface_name]['q_input'].put(['StartControl'])
         print('should be done')
