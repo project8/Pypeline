@@ -31,11 +31,12 @@ class pid_controller:
         #adjustable attributes
         self.min_update_time = timedelta(seconds=10)
         self.max_history = 20 
-        self.target_temp = 4
+        self.target_temp = 75.
         self.temp_channel = ''
-        self.Kproportional = 0
-        self.Kintegral = 0
-        self.Kdifferential = 0
+        self.Kproportional = 1./40.
+        self.Kintegral = 1./40./200.
+        self.Kdifferential = 1./40./200./50.
+        self.max_current = 1.0
 
     def StartControl(self):
         '''
@@ -54,6 +55,7 @@ class pid_controller:
             else:
                 if (datetime.now() - self.time_stamps[-1]) > self.min_update_time:
                     self._UpdateValues()
+                    self._PIDAdjust()
                     self.filename.write(str(self.time_stamps[-1]) + ': ')
                     self.filename.write(str(self.temperatures[-1]))
                     self.filename.write(' -> ' + str(self.deltas[-1]) + '\n')
@@ -79,7 +81,21 @@ class pid_controller:
         '''
         '''
         P = self.Kproportional * self.deltas[-1]
-        I = self.Kintegral 
+        I = (self.Kintegral / len(self.deltas)) *\
+            (self.time_stamps[-1] - self.time_stamps[0]).seconds *\
+            (0.5 * (self.deltas[0] + self.deltas[-1]) + sum(self.deltas[1:-1]))
+        D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
+            (self.time_stamps[-1] - self.time_stamps[-2]).seconds
+        new_current = self.last_current + P + I - D
+        if new_current > self.max_current:
+            new_current = self.max_current
+        if new_current < 0.:
+            new_current = 0
+        self.filename.write('P->' + str(P) + '\n')
+        self.filename.write('I->' + str(I) + '\n')
+        self.filename.write('D->' + str(D) + '\n')
+        self.filename.write('New Current: ' + str(new_current) + '\n')
+        self.filename.flush()
 
     def Set(self, name, value):
         '''
