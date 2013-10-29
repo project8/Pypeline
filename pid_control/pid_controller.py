@@ -9,6 +9,7 @@ import types
 # 3rd party
 
 # Local
+from pypeline import DripInterface
 
 
 class pid_controller:
@@ -22,30 +23,38 @@ class pid_controller:
         self.filename = open('/tmp/tempstatus.txt','a')
         self.filename.write('again....\n')
         self.filename.flush()
-        self.time_stamps = [datetime.now()]
         self.input_queue = input_q
         self.response_queue = response_q
-        self._abort = False
+        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
 
         #adjustable attributes
         self.min_update_time = timedelta(seconds=10)
-        self.max_times = 10
+        self.max_history = 4 
+        self.target_temp = 0
 
     def StartControl(self):
         '''
         '''
+        self.filename.write('... prep main loop...\n')
+        self.filename.flush()
+        self.time_stamps = []
+        self.temperatures = []
+        self.deltas = []
+        self._UpdateValues()
         self.filename.write('... starting main loop...\n')
         self.filename.flush()
-        while not self._abort:
-            if self.input_queue.empty():
+        while True:
+            if not self.input_queue.empty():
+                self._QueueResponse(self.input_queue.get())
+            else:
                 if (datetime.now() - self.time_stamps[-1]) > self.min_update_time:
-                    self._UpdateCurrent()
-                    self.filename.write(str(self.time_stamps[-1]) + '\n')
+                    self._UpdateValues()
+                    self.filename.write(str(self.time_stamps[-1]) + ': ')
+                    self.filename.write(str(self.temperatures[-1]))
+                    self.filename.write(' -> ' + str(self.deltas[-1]) + '\n')
                     self.filename.flush()
                 else:
                     sleep(2)
-            else:
-                self._QueueResponse(self.input_queue.get())
 
     def Set(self, name, value):
         '''
@@ -54,12 +63,19 @@ class pid_controller:
         self.response_queue.put(['setting', name, 'to', value])
         setattr(self, name, value)
 
-    def _UpdateCurrent(self):
+    def _UpdateValues(self):
         '''
         '''
-        if len(self.time_stamps) >= self.max_times:
+        if len(self.time_stamps) >= self.max_history:
             self.time_stamps.pop(0)
+            self.temperatures.pop(0)
+            self.deltas.pop(0)
+
         self.time_stamps.append(datetime.now())
+        temp_doc = self.pype.Get('terminator_temp').Wait()
+        assert temp_doc['final'].split()[1] == 'K', 'No valid dripline response'
+        self.temperatures.append(float(temp_doc['final'].split()[0]))
+        self.deltas.append(self.target_temp - self.temperatures[-1])
 
     def _QueueResponse(self, q_item):
         '''
@@ -73,24 +89,3 @@ class pid_controller:
             print('getting attr')
             self.response_queue.put(attr)
             print('attr put')
-
-if __name__ == '__main__':
-    q_in = Queue()
-    q_out = Queue()
-    print('starting')
-    grem = pid_control(q_in, q_out)
-    p = Process(target=grem.StartControl, args=())
-    p.start()
-    sleep(120)
-    print('setting min update time')
-    q_in.put(['Set', 'min_update_time', timedelta(seconds=5)])
-    sleep(3)
-    print('supposedly set')
-    q_in.put(['min_update_time'])
-    sleep(20)
-    while not q_out.empty():
-        print(q_out.get())
-        sleep(3)
-    sleep(2)
-    print('done')
-    p.join()
