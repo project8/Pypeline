@@ -26,11 +26,16 @@ class pid_controller:
         self.input_queue = input_q
         self.response_queue = response_q
         self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
+        self.last_current = 0
 
         #adjustable attributes
         self.min_update_time = timedelta(seconds=10)
-        self.max_history = 4 
-        self.target_temp = 0
+        self.max_history = 20 
+        self.target_temp = 4
+        self.temp_channel = ''
+        self.Kproportional = 0
+        self.Kintegral = 0
+        self.Kdifferential = 0
 
     def StartControl(self):
         '''
@@ -56,13 +61,6 @@ class pid_controller:
                 else:
                     sleep(2)
 
-    def Set(self, name, value):
-        '''
-            call setattr (for queue command access)
-        '''
-        self.response_queue.put(['setting', name, 'to', value])
-        setattr(self, name, value)
-
     def _UpdateValues(self):
         '''
         '''
@@ -76,6 +74,19 @@ class pid_controller:
         assert temp_doc['final'].split()[1] == 'K', 'No valid dripline response'
         self.temperatures.append(float(temp_doc['final'].split()[0]))
         self.deltas.append(self.target_temp - self.temperatures[-1])
+
+    def _PIDAdjust(self):
+        '''
+        '''
+        P = self.Kproportional * self.deltas[-1]
+        I = self.Kintegral 
+
+    def Set(self, name, value):
+        '''
+            call setattr (for queue command access)
+        '''
+        self.response_queue.put(['setting', name, 'to', value])
+        setattr(self, name, value)
 
     def _QueueResponse(self, q_item):
         '''
