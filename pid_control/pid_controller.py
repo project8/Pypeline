@@ -19,16 +19,19 @@ class pid_controller:
     def __init__(self, input_q, response_q):
         '''
         '''
-        #internal vars
         self.filename = open('/tmp/tempstatus.txt','a')
-        self.filename.write('again....\n')
+        self.filename.write('~Initializing controller\n')
         self.filename.flush()
         self.input_queue = input_q
         self.response_queue = response_q
         self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
         self.last_current = 0
 
-        #adjustable attributes
+        self.SetDefaults()
+
+    def SetDefaults(self):  
+        '''
+        '''
         self.min_update_time = timedelta(seconds=10)
         self.max_history = 20 
         self.target_temp = 75.
@@ -43,13 +46,13 @@ class pid_controller:
     def StartControl(self):
         '''
         '''
-        self.filename.write('... prep main loop...\n')
+        self.filename.write('~prep main loop...\n')
         self.filename.flush()
         self.time_stamps = []
         self.temperatures = []
         self.deltas = []
         self._UpdateValues()
-        self.filename.write('... starting main loop...\n')
+        self.filename.write('~starting main loop...\n')
         self.filename.flush()
         while True:
             if not self.input_queue.empty():
@@ -74,7 +77,7 @@ class pid_controller:
             self.deltas.pop(0)
 
         self.time_stamps.append(datetime.now())
-        temp_doc = self.pype.Get('terminator_temp').Wait()
+        temp_doc = self.pype.Get(self.temp_channel).Wait()
         assert temp_doc['final'].split()[1] == 'K', 'No valid dripline response'
         self.temperatures.append(float(temp_doc['final'].split()[0]))
         self.deltas.append(self.target_temp - self.temperatures[-1])

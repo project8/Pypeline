@@ -45,3 +45,8 @@ class pid_interface:
         self.controllers[interface_name]['process'].start()
         sleep(5)
         print('should be done')
+
+    def Set(self, interface_name, attribute, value):
+        '''
+        '''
+        self.controllers[interface_name]['q_input'].put(['Set', attribute, value])
