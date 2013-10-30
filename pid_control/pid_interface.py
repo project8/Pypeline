@@ -58,6 +58,7 @@ class pid_interface:
             members = [mbr for mbr in dir(self.controllers[interface_name]['controller']) if not mbr.startswith('_')]
             members = [mbr for mbr in members if not\
                 isinstance(self.controllers[interface_name]['controller'].mbr, MethodType)]
+            print(members)
         elif not value:
             print('a value is required')
         self.controllers[interface_name]['q_input'].put(['Set', attribute, value])
