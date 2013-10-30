@@ -32,11 +32,13 @@ class pid_controller:
         self.min_update_time = timedelta(seconds=10)
         self.max_history = 20 
         self.target_temp = 75.
-        self.temp_channel = ''
+        self.temp_channel = 'terminator_temp'
+        self.current_channel = ''
         self.Kproportional = 1./40.
         self.Kintegral = 1./40./200.
         self.Kdifferential = 1./40./200./50.
         self.max_current = 1.0
+        self.min_current_change = 0.001
 
     def StartControl(self):
         '''
@@ -86,7 +88,7 @@ class pid_controller:
             (0.5 * (self.deltas[0] + self.deltas[-1]) + sum(self.deltas[1:-1]))
         D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
             (self.time_stamps[-1] - self.time_stamps[-2]).seconds
-        new_current = self.last_current + P + I - D
+        new_current = self.last_current + current_change
         if new_current > self.max_current:
             new_current = self.max_current
         if new_current < 0.:
@@ -96,6 +98,12 @@ class pid_controller:
         self.filename.write('D->' + str(D) + '\n')
         self.filename.write('New Current: ' + str(new_current) + '\n')
         self.filename.flush()
+        if abs(new_current - self.last_current) < self.min_current_change:
+            self.filename.write('current change is small, not changing')
+        else:
+            self.filename.write('would set the dripline current channel.. if ready')
+            self.filename.flush()
+            #self.pype.Set(self.current_channel, str(new_current) + ' A')
 
     def Set(self, name, value):
         '''
