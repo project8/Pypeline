@@ -3,6 +3,7 @@ from __future__ import print_function, absolute_import
 # Standard
 from multiprocessing import Process, Queue
 from time import sleep
+from types import MethodType
 
 # 3rd Party
 
@@ -46,7 +47,17 @@ class pid_interface:
         sleep(5)
         print('should be done')
 
-    def Set(self, interface_name, attribute, value):
+    def Set(self, interface_name=None, attribute=None, value=None):
         '''
         '''
+        if not interface_name:
+            print('valid interfaces are:')
+            print(self.controllers.keys())
+        elif not attribute:
+            print('valid attributes are:')
+            members = [mbr for mbr in dir(self.controllers[interface_name]['controller']) if not mbr.startswith('_')]
+            members = [mbr for mbr in members if not\
+                isinstance(self.controllers[interface_name]['controller'].mbr, MethodType)]
+        elif not value:
+            print('a value is required')
         self.controllers[interface_name]['q_input'].put(['Set', attribute, value])
