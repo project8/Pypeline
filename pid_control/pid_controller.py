@@ -19,13 +19,13 @@ class pid_controller:
     def __init__(self, input_q, response_q):
         '''
         '''
-        self.filename = open('/tmp/tempstatus.txt','a')
-        self.filename.write('~Initializing controller\n')
-        self.filename.flush()
-        self.input_queue = input_q
-        self.response_queue = response_q
-        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
-        self.last_current = 0
+        self._outfile = open('/tmp/tempstatus.txt','a')
+        self._outfile.write('~Initializing controller\n')
+        self._outfile.flush()
+        self._input_queue = input_q
+        self._response_queue = response_q
+        self._pype = DripInterface('http://myrna.phys.washington.edu:5984')
+        self._last_current = 0
 
         self.SetDefaults()
 
@@ -46,25 +46,25 @@ class pid_controller:
     def StartControl(self):
         '''
         '''
-        self.filename.write('~prep main loop...\n')
-        self.filename.flush()
+        self._outfile.write('~prep main loop...\n')
+        self._outfile.flush()
         self.time_stamps = []
         self.temperatures = []
         self.deltas = []
         self._UpdateValues()
-        self.filename.write('~starting main loop...\n')
-        self.filename.flush()
+        self._outfile.write('~starting main loop...\n')
+        self._outfile.flush()
         while True:
-            if not self.input_queue.empty():
-                self._QueueResponse(self.input_queue.get())
+            if not self._input_queue.empty():
+                self._QueueResponse(self._input_queue.get())
             else:
                 if (datetime.now() - self.time_stamps[-1]) > self.min_update_time:
                     self._UpdateValues()
                     self._PIDAdjust()
-                    self.filename.write(str(self.time_stamps[-1]) + ': ')
-                    self.filename.write(str(self.temperatures[-1]))
-                    self.filename.write(' -> ' + str(self.deltas[-1]) + '\n')
-                    self.filename.flush()
+                    self._outfile.write(str(self.time_stamps[-1]) + ': ')
+                    self._outfile.write(str(self.temperatures[-1]))
+                    self._outfile.write(' -> ' + str(self.deltas[-1]) + '\n')
+                    self._outfile.flush()
                 else:
                     sleep(2)
 
@@ -77,7 +77,7 @@ class pid_controller:
             self.deltas.pop(0)
 
         self.time_stamps.append(datetime.now())
-        temp_doc = self.pype.Get(self.temp_channel).Wait()
+        temp_doc = self._pype.Get(self.temp_channel).Wait()
         assert temp_doc['final'].split()[1] == 'K', 'No valid dripline response'
         self.temperatures.append(float(temp_doc['final'].split()[0]))
         self.deltas.append(self.target_temp - self.temperatures[-1])
@@ -91,22 +91,22 @@ class pid_controller:
             (0.5 * (self.deltas[0] + self.deltas[-1]) + sum(self.deltas[1:-1]))
         D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
             (self.time_stamps[-1] - self.time_stamps[-2]).seconds
-        new_current = self.last_current + current_change
+        new_current = self._last_current + current_change
         if new_current > self.max_current:
             new_current = self.max_current
         if new_current < 0.:
             new_current = 0
-        self.filename.write('P->' + str(P) + '\n')
-        self.filename.write('I->' + str(I) + '\n')
-        self.filename.write('D->' + str(D) + '\n')
-        self.filename.write('New Current: ' + str(new_current) + '\n')
-        self.filename.flush()
-        if abs(new_current - self.last_current) < self.min_current_change:
-            self.filename.write('current change is small, not changing')
+        self._outfile.write('P->' + str(P) + '\n')
+        self._outfile.write('I->' + str(I) + '\n')
+        self._outfile.write('D->' + str(D) + '\n')
+        self._outfile.write('New Current: ' + str(new_current) + '\n')
+        self._outfile.flush()
+        if abs(new_current - self._last_current) < self.min_current_change:
+            self._outfile.write('current change is small, not changing')
         else:
-            self.filename.write('would set the dripline current channel.. if ready')
-            self.filename.flush()
-            #self.pype.Set(self.current_channel, str(new_current) + ' A')
+            self._outfile.write('would set the dripline current channel.. if ready')
+            self._outfile.flush()
+            #self._pype.Set(self.current_channel, str(new_current) + ' A')
 
     def Set(self, name, value):
         '''
