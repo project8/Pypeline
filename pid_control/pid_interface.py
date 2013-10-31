@@ -53,12 +53,14 @@ class pid_interface:
         if not interface_name:
             print('valid interfaces are:')
             print(self.controllers.keys())
+            return self.controllers.keys()
         elif not attribute:
             print('valid attributes are:')
             members = [mbr for mbr in dir(self.controllers[interface_name]['controller']) if not mbr.startswith('_')]
-            members = [mbr for mbr in members if not\
-                isinstance(self.controllers[interface_name]['controller'].mbr, MethodType)]
             print(members)
+            members = [mbr for mbr in members if not\
+                isinstance(getattr(self.controllers[interface_name]['controller'], mbr), MethodType)]
+            return members
         elif not value:
             print('a value is required')
         self.controllers[interface_name]['q_input'].put(['Set', attribute, value])
