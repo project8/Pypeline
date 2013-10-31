@@ -20,7 +20,8 @@ class pid_controller:
         '''
         '''
         self._outfile = open('/tmp/tempstatus.txt','a')
-        self._outfile.write('~Initializing controller\n')
+        self._outfile.write('~Initializing controller @ ')
+        self._outfile.write(str(datetime.now()) + str('\n'))
         self._outfile.flush()
         self._input_queue = input_q
         self._response_queue = response_q
@@ -113,6 +114,8 @@ class pid_controller:
             call setattr (for queue command access)
         '''
         self.response_queue.put(['setting', name, 'to', value])
+        self._outfile.write('setting ' + str(name) + ' to ' + str(value))
+        self._outfile.flush()
         setattr(self, name, value)
 
     def _QueueResponse(self, q_item):

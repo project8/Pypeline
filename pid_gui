@@ -22,7 +22,10 @@ class App:
         self.frame.grid()
         self.pid_interface = pid_interface()
         self.pid_interface.AddController('this')
+        self.pid_interface.StartController('this')
         self.property_dict = {}
+        self.which_prop_var = StringVar()
+        self.prop_value = StringVar()
 
         self._BuildGUI()
 
@@ -30,16 +33,14 @@ class App:
         row = 0
 
         properties = self.pid_interface.Set('this')
-        for property in properties:
-            Label(self.frame, text=property).grid(row=row, column=0)
-            self.property_dict[property] = DoubleVar()
-            Entry(self.frame, textvariable=self.property_dict[property],
-                  relief=SUNKEN).grid(row=row, column=1)
-            row += 1
+        OptionMenu(self.frame, self.which_prop_var, *properties).grid(row=row, column=0)
+        Entry(self.frame, textvariable=self.prop_value, relief=SUNKEN).grid(row=row, column=1)
+        Button(self.frame, text="Set", command=self._SetValue).grid(row=row, column=2)
+        row += 1
+        
 
-    def _SetValues(self):
-        for property in self.property_dict.keys():
-            self.pid_interface.Set('this', property, self.property_dict[property].get())
+    def _SetValue(self):
+        self.pid_interface.Set('this', self.which_prop_var.get(), self.prop_value.get())
 
 
 if __name__ == "__main__":

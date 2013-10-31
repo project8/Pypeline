@@ -50,6 +50,10 @@ class pid_interface:
     def Set(self, interface_name=None, attribute=None, value=None):
         '''
         '''
+        try:
+            value = float(value)
+        except:
+            pass
         if not interface_name:
             print('valid interfaces are:')
             print(self.controllers.keys())
