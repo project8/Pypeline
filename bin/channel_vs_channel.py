@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 # third party libraries
 # pypeline and 'internal' libraries
 import pypeline
+from pypeline import time_format
 
 
 def channel_vs_channel(channely, channelx, start, stop):
@@ -22,11 +23,11 @@ def channel_vs_channel(channely, channelx, start, stop):
     '''
     ldh = pypeline.LoggedDataHandler(
         'http://p8portal.phys.washington.edu:5984')
-    string_format = '%Y-%m-%d %H:%M:%S'
+    #string_format = '%Y-%m-%d %H:%M:%S'
     xdata = ldh.Get(channelx, start.strftime(
-        string_format), stop.strftime(string_format))
+        time_format), stop.strftime(time_format))
     ydata = ldh.Get(channely, start.strftime(
-        string_format), stop.strftime(string_format))
+        time_format), stop.strftime(time_format))
     ys = []
     xs = []
     for tx, x in zip(xdata[0], xdata[1]):
