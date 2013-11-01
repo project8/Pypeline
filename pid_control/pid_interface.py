@@ -1,3 +1,4 @@
+#!/bin/python2
 from __future__ import print_function, absolute_import
 
 # Standard
@@ -30,13 +31,9 @@ class pid_interface:
             'q_response': q_out,
             'controller': ctrl
         }
+        self._StartLoop(interface_name)
 
-    def StopController(self, interface_name):
-        '''
-        '''
-        self.controllers[interface_name]['process'].terminate()
-
-    def StartController(self, interface_name):
+    def _StartLoop(self, interface_name):
         '''
         '''
         print('starting...')
@@ -46,6 +43,23 @@ class pid_interface:
         self.controllers[interface_name]['process'].start()
         sleep(5)
         print('should be done')
+
+    def Abort(self, interface_name):
+        '''
+        '''
+        self.controllers[interface_name]['process'].terminate()
+
+    def Start(self, interface_name):
+        '''
+        '''
+        qitem = ['Set', '_controlling', True]
+        self.controllers[interface_name]['q_input'].put(qitem)
+
+    def Stop(self, interface_name):
+        '''
+        '''
+        qitem = ['Set', '_controlling', False]
+        self.controllers[interface_name]['q_input'].put(qitem)
 
     def Set(self, interface_name=None, attribute=None, value=None):
         '''

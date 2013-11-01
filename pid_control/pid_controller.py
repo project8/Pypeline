@@ -19,7 +19,7 @@ class pid_controller:
     def __init__(self, input_q, response_q):
         '''
         '''
-        self._outfile = open('/tmp/tempstatus.txt','a')
+        self._outfile = open('/tmp/tempstatus.txt','w')
         self._outfile.write('~Initializing controller @ ')
         self._outfile.write(str(datetime.now()) + str('\n'))
         self._outfile.flush()
@@ -27,6 +27,7 @@ class pid_controller:
         self._response_queue = response_q
         self._pype = DripInterface('http://myrna.phys.washington.edu:5984')
         self._last_current = 0
+        self._controlling = False
 
         self.SetDefaults()
 
@@ -52,22 +53,24 @@ class pid_controller:
         self.time_stamps = []
         self.temperatures = []
         self.deltas = []
-        self._UpdateValues()
+#        self._UpdateValues()
         self._outfile.write('~starting main loop...\n')
         self._outfile.flush()
+        last_update = datetime.now()
         while True:
             if not self._input_queue.empty():
                 self._QueueResponse(self._input_queue.get())
-            else:
-                if (datetime.now() - self.time_stamps[-1]) > self.min_update_time:
-                    self._UpdateValues()
-                    self._PIDAdjust()
-                    self._outfile.write(str(self.time_stamps[-1]) + ': ')
-                    self._outfile.write(str(self.temperatures[-1]))
-                    self._outfile.write(' -> ' + str(self.deltas[-1]) + '\n')
-                    self._outfile.flush()
-                else:
-                    sleep(2)
+                continue
+            elif self._controlling and ((datetime.now() - last_update)\
+                                        > self.min_update_time):
+                last_update = datetime.now()
+                self._UpdateValues()
+                self._PIDAdjust()
+                self._outfile.write(str(self.time_stamps[-1]) + ': ')
+                self._outfile.write(str(self.temperatures[-1]))
+                self._outfile.write(' -> ' + str(self.deltas[-1]) + '\n')
+                self._outfile.flush()
+            sleep(1)
 
     def _UpdateValues(self):
         '''
