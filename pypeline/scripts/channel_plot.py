@@ -30,6 +30,7 @@ from matplotlib.figure import Figure
 from matplotlib import dates, ticker
 
 #local libs
+from ..PypelineConsts import time_format
 
 
 class channel_plot:
@@ -45,16 +46,15 @@ class channel_plot:
             stop_t = datetime.now()
         self.update_pending = False
         self.pype = interface
-        self._formatstr = '%Y-%m-%d %H:%M:%S'
         self.plot_dicts = {}
         if isinstance(start_t, datetime):
-            self.start_t = StringVar(value=start_t.strftime(self._formatstr))
+            self.start_t = StringVar(value=start_t.strftime(time_format))
         elif isinstance(start_t, str):
             self.start_t = StringVar(value=start_t)
         else:
             raise TypeError('start_t must be string or datetime')
         if isinstance(stop_t, datetime):
-            self.stop_t = StringVar(value=stop_t.strftime(self._formatstr))
+            self.stop_t = StringVar(value=stop_t.strftime(time_format))
         elif isinstance(stop_t, str):
             self.stop_t = StringVar(value=stop_t)
         else:
@@ -182,10 +182,10 @@ class channel_plot:
                 start_time = datetime.now() - timedelta(hours=hours)
             else:
                 start_time = datetime.strptime(self.start_t.get(),
-                                               self._formatstr)
-            stop = datetime.strptime(self.stop_t.get(), self._formatstr)
+                                               time_format)
+            stop = datetime.strptime(self.stop_t.get(), time_format)
             assert (start_time < stop)
-            self.time_interval[0] = start_time.strftime(self._formatstr)
+            self.time_interval[0] = start_time.strftime(time_format)
             if isFirst:
                 self._SetStop(event, isFirst=False)
             #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
@@ -213,15 +213,14 @@ class channel_plot:
             if self.relative_stop_time.get():
                 stop_time = datetime.now()
             else:
-                stop_time = datetime.strptime(self.stop_t.get(),
-                                              self._formatstr)
+                stop_time = datetime.strptime(self.stop_t.get(), time_format)
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
                 start = datetime.now() - timedelta(hours=hours)
             else:
-                start = datetime.strptime(self.start_t.get(), self._formatstr)
+                start = datetime.strptime(self.start_t.get(), time_format)
             assert (start < stop_time)
-            self.time_interval[1] = stop_time.strftime(self._formatstr)
+            self.time_interval[1] = stop_time.strftime(time_format)
             if isFirst:
                 self._SetStart(event, isFirst=False)
             #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
@@ -271,7 +270,7 @@ class channel_plot:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.status_var.set('updated at: ' +
-                            datetime.now().strftime(self._formatstr))
+                            datetime.now().strftime(time_format)
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
                 not self.update_pending):
             self.update_pending = True

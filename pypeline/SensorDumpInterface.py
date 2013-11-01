@@ -8,6 +8,7 @@ from datetime import datetime
 # local imports
 from .SensorDumpDocument import SensorDumpDocument
 from .PypelineErrors import RunTagNotUnique
+from .PypelineConsts import time_format
 
 
 class _SensorDumpInterface:
@@ -29,7 +30,7 @@ class _SensorDumpInterface:
             import couchdb
             svr = couchdb.Server('http://localhost:5984')
             self._sensor_dump_database = svr['sensor_dump_debug']
-        self._formatstr = '%Y-%m-%d %H:%M:%S'
+        #self._formatstr = time_format
 
     def NewDump(self, doc_id, run_tag='', new_run=False):
         '''
@@ -47,12 +48,12 @@ class _SensorDumpInterface:
 
         dump_doc = {
             'run_tag': run_tag,
-            'timestamp': datetime.now().strftime(self._formatstr)
+            'timestamp': datetime.now().strftime(time_format)
         }
         if not run_tag in runs and new_run:
             print('creating new run')
             dump_doc['run_number'] = len(runcount)
-            dump_doc['run_timestamp'] = datetime.now().strftime(self._formatstr)
+            dump_doc['run_timestamp'] = datetime.now().strftime(time_format)
             dump_doc['sequence_number'] = 0
             dump_doc['sequence_tag'] = ''
         elif run_tag in runs and not new_run:

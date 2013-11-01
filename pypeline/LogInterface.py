@@ -16,6 +16,7 @@ try:
     from .DripResponse import DripResponse
 except ImportError:
     from DripResponse import DripResponse
+from .PypelineConsts import time_format
 
 
 class _LogInterface:
@@ -56,7 +57,7 @@ class _LogInterface:
         for row in self._log_database.view('log_access/all_logged_data',
                                            startkey=start, endkey=stop):
             timestamp = datetime.strptime(row.value['timestamp_localstring'],
-                                          "%Y-%m-%d %H:%M:%S")
+                                          time_format)
             if row.value['sensor_name'] == sensor:
                 timelist.append(timestamp)
                 valuelist.append(float(row.value[
@@ -106,7 +107,7 @@ class _LogInterface:
         log_doc = {
             '_id': result['_id'],
             'sensor_name': sensor,
-            'timestamp_localstring': timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'timestamp_localstring': timestamp.strftime(time_format),
             'uncalibrated_value': str(uncal_val),
             'calibrated_value': str(cal_val),
         }
