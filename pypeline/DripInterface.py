@@ -311,7 +311,7 @@ class DripInterface(_ConfInterface,
                   **extras allows a unpacking a dict with extra keys
         '''
         if not timestamp:
-            timestamp = datetime.now()
+            timestamp = datetime.utcnow()
         return super(DripInterface, self).LogValue(sensor, uncal_val, cal_val,
                                                    timestamp)
 

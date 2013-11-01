@@ -49,7 +49,7 @@ def FilenamePrefix(sequence_number):
         Return the string filename prefix for a particular sequence.
         Does NOT inlcude the run number or sequence number
     '''
-    prefix = datetime.now().strftime("%B%Y")
+    prefix = datetime.utcnow().strftime("%B%Y")
     if (sequence_number % 3 == 0):
         prefix += 'anti'
     elif (sequence_number % 3 == 1):

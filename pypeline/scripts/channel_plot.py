@@ -41,9 +41,9 @@ class channel_plot:
         '''
         '''
         if not start_t:
-            start_t = datetime.now() - timedelta(hours=2)
+            start_t = datetime.utcnow() - timedelta(hours=2)
         if not stop_t:
-            stop_t = datetime.now()
+            stop_t = datetime.utcnow()
         self.update_pending = False
         self.pype = interface
         self.plot_dicts = {}
@@ -179,7 +179,7 @@ class channel_plot:
         try:
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
-                start_time = datetime.now() - timedelta(hours=hours)
+                start_time = datetime.utcnow() - timedelta(hours=hours)
             else:
                 start_time = datetime.strptime(self.start_t.get(),
                                                time_format)
@@ -211,12 +211,12 @@ class channel_plot:
         '''
         try:
             if self.relative_stop_time.get():
-                stop_time = datetime.now()
+                stop_time = datetime.utcnow()
             else:
                 stop_time = datetime.strptime(self.stop_t.get(), time_format)
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
-                start = datetime.now() - timedelta(hours=hours)
+                start = datetime.utcnow() - timedelta(hours=hours)
             else:
                 start = datetime.strptime(self.start_t.get(), time_format)
             assert (start < stop_time)
@@ -270,9 +270,9 @@ class channel_plot:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.status_var.set('updated at: ' +
-                            datetime.now().strftime(time_format)
+                            datetime.utcnow().strftime(time_format))
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
-                not self.update_pending):
+                 not self.update_pending):
             self.update_pending = True
             self.toplevel.after(10000, lambda: self.Update(unpend=True))
 

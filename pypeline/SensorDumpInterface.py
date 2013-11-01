@@ -48,12 +48,12 @@ class _SensorDumpInterface:
 
         dump_doc = {
             'run_tag': run_tag,
-            'timestamp': datetime.now().strftime(time_format)
+            'timestamp': datetime.utcnow().strftime(time_format)
         }
         if not run_tag in runs and new_run:
             print('creating new run')
             dump_doc['run_number'] = len(runcount)
-            dump_doc['run_timestamp'] = datetime.now().strftime(time_format)
+            dump_doc['run_timestamp'] = datetime.utcnow().strftime(time_format)
             dump_doc['sequence_number'] = 0
             dump_doc['sequence_tag'] = ''
         elif run_tag in runs and not new_run:
