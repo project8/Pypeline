@@ -13,3 +13,4 @@ from .DripInterface import DripInterface
 from .DripResponse import DripResponse
 from .PypelineErrors import NoResponseError
 from .scripts import *
+#import .scripts

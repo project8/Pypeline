@@ -79,7 +79,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         <power> output power, in dBm, from the sweeper
         <num_points> number of samplings for the lockin to take
     '''
-    print('*' * 60, '\nsetting sweeper', datetime.now())
+    print('*' * 60, '\nsetting sweeper', datetime.utcnow())
     sets = []
     sets.append(pype.Set('hf_sweep_start', start_freq))
     sets.append(pype.Set('hf_sweep_stop', stop_freq))
@@ -94,7 +94,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         for set in sets:
             print(set)
         raise DriplineError('Sweeper sets failed or not yet complete')
-    print('*' * 60, '\nsweeper complete, setting lockin', datetime.now())
+    print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) / num_points) * 1000)
     pype.Set('lockin_raw_write', "NC").Wait()
@@ -102,7 +102,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     #len is number of samples to take, period is how often
     pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
-    print('*' * 60, '\ntaking data', datetime.now())
+    print('*' * 60, '\ntaking data', datetime.utcnow())
     pype.Set('lockin_raw_write', "TD").Wait()
     sleep(sweep_time + 30)
 #    maxsleep = 100
@@ -112,11 +112,11 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
 #        statusfull = pype.Get('lockin_data_status').Wait()['final']
 #        if statusfull[0] == '0':
 #            break
-    print('*' * 60, '\nretrieving data', datetime.now())
+    print('*' * 60, '\nretrieving data', datetime.utcnow())
     adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
     x_curve = pype.Get('lockin_x_curve').Wait()['final']
     y_curve = pype.Get('lockin_y_curve').Wait()['final']
-    print('*' * 60, '\ncomputing final form and return', datetime.now())
+    print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]

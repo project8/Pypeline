@@ -39,6 +39,7 @@ class take_data:
         self.extend_runVar = BooleanVar(value=False)
         self.run_tagVar = StringVar(value=run_tag)
         self.num_sequencesVar = IntVar(value=num_sequences)
+        self.sequence_spacingVar = DoubleVar(value=0)
         self.len_sequenceVar = DoubleVar()
         self.stateVar = StringVar(value='done')
         self.conf_filename = StringVar(value='')
@@ -72,6 +73,11 @@ class take_data:
         Entry(self.toplevel, textvariable=self.len_sequenceVar).grid(row=row,
                                                                      column=1)
         Label(self.toplevel, text='[ms]').grid(row=row, column=2, sticky='W')
+        row += 1
+
+        Label(self.toplevel, text='Sequence Spacing').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.sequence_spacingVar).grid(row=row, column=1)
+        Label(self.toplevel, text='[s]').grid(row=row, column=2, sticky='W')
         row += 1
 
         builtins_list = ['default_run', 'noise_analysis_run']
@@ -166,6 +172,7 @@ class take_data:
                 break
             self._DoSequence(sequence_num)
             print('--> sequence {0}/{1} complete.'.format(sequence_num, self.params['num_sequences'] - 1))
+            sleep(self.sequence_spacingVar.get())
         print('-> run (tag: {0}) complete.'.format(self.params['run_tag']))
         self.stateVar.set('run complete')
 

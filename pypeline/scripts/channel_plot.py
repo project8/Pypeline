@@ -9,7 +9,7 @@ if version_info[0] < 3:
     import Tkinter as Tk
     from Tkinter import (StringVar, BooleanVar, IntVar, DoubleVar, Label,
                          OptionMenu, Entry, Button, Checkbutton)
-    from tkFileDialog import asksaveasfilename
+    from tkFileDialog import asksaveasfilename, asksaveasfile
     from ttk import Notebook, Frame
     from tkMessageBox import showwarning
 else:
@@ -20,15 +20,17 @@ else:
     from tkinter.ttk import Notebook, Frame
     from tkinter.messagebox import showwarning
 from datetime import datetime, timedelta
+from json import dump
 
 #3rd party libs
 from numpy import arange, sin, cos, pi, array
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2TkAgg)
 from matplotlib.figure import Figure
-from matplotlib import dates
+from matplotlib import dates, ticker
 
 #local libs
+from ..PypelineConsts import time_format
 
 
 class channel_plot:
@@ -39,21 +41,20 @@ class channel_plot:
         '''
         '''
         if not start_t:
-            start_t = datetime.now() - timedelta(hours=2)
+            start_t = datetime.utcnow() - timedelta(hours=2)
         if not stop_t:
-            stop_t = datetime.now()
+            stop_t = datetime.utcnow()
         self.update_pending = False
         self.pype = interface
-        self._formatstr = '%Y-%m-%d %H:%M:%S'
         self.plot_dicts = {}
         if isinstance(start_t, datetime):
-            self.start_t = StringVar(value=start_t.strftime(self._formatstr))
+            self.start_t = StringVar(value=start_t.strftime(time_format))
         elif isinstance(start_t, str):
             self.start_t = StringVar(value=start_t)
         else:
             raise TypeError('start_t must be string or datetime')
         if isinstance(stop_t, datetime):
-            self.stop_t = StringVar(value=stop_t.strftime(self._formatstr))
+            self.stop_t = StringVar(value=stop_t.strftime(time_format))
         elif isinstance(stop_t, str):
             self.stop_t = StringVar(value=stop_t)
         else:
@@ -79,6 +80,7 @@ class channel_plot:
         self.relative_stop_time = BooleanVar(value=False)
         self.continuous_updates = BooleanVar(value=False)
         self.ManualLimits = BooleanVar(value=False)
+        self.ConnectedPts = BooleanVar(value=True)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
         self._AddSubplot()
@@ -116,11 +118,15 @@ class channel_plot:
         ymax.bind('<KP_Enter>', self.Update, '+')
         Checkbutton(self.toplevel, text='Manual Y-limits', variable=self.ManualLimits
                     ).grid(row=9, column=1)
+        Checkbutton(self.toplevel, text='Connected Points', variable=self.ConnectedPts
+                    ).grid(row=9, column=2)
 
         Button(self.toplevel, text="Update All", command=self.Update
                ).grid(row=10, column=1)
-        Button(self.toplevel, text="Save", command=self.SaveFigure
+        Button(self.toplevel, text="Save Plot", command=self.SaveFigure
                ).grid(row=10, column=2)
+        Button(self.toplevel, text="Save Json", command=self.SaveJson
+               ).grid(row=10, column=3)
         Checkbutton(self.toplevel, text='Continuous (Button above to start)',
                     variable=self.continuous_updates
                     ).grid(row=11, column=1, columnspan=2)
@@ -173,13 +179,13 @@ class channel_plot:
         try:
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
-                start_time = datetime.now() - timedelta(hours=hours)
+                start_time = datetime.utcnow() - timedelta(hours=hours)
             else:
                 start_time = datetime.strptime(self.start_t.get(),
-                                               self._formatstr)
-            stop = datetime.strptime(self.stop_t.get(), self._formatstr)
+                                               time_format)
+            stop = datetime.strptime(self.stop_t.get(), time_format)
             assert (start_time < stop)
-            self.time_interval[0] = start_time.strftime(self._formatstr)
+            self.time_interval[0] = start_time.strftime(time_format)
             if isFirst:
                 self._SetStop(event, isFirst=False)
             #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
@@ -205,17 +211,16 @@ class channel_plot:
         '''
         try:
             if self.relative_stop_time.get():
-                stop_time = datetime.now()
+                stop_time = datetime.utcnow()
             else:
-                stop_time = datetime.strptime(self.stop_t.get(),
-                                              self._formatstr)
+                stop_time = datetime.strptime(self.stop_t.get(), time_format)
             if self.relative_start_time.get():
                 hours = float(self.start_t.get())
-                start = datetime.now() - timedelta(hours=hours)
+                start = datetime.utcnow() - timedelta(hours=hours)
             else:
-                start = datetime.strptime(self.start_t.get(), self._formatstr)
+                start = datetime.strptime(self.start_t.get(), time_format)
             assert (start < stop_time)
-            self.time_interval[1] = stop_time.strftime(self._formatstr)
+            self.time_interval[1] = stop_time.strftime(time_format)
             if isFirst:
                 self._SetStart(event, isFirst=False)
             #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
@@ -265,9 +270,9 @@ class channel_plot:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.status_var.set('updated at: ' +
-                            datetime.now().strftime(self._formatstr))
+                            datetime.utcnow().strftime(time_format))
         if (self.continuous_updates.get() and self.relative_stop_time.get() and
-                not self.update_pending):
+                 not self.update_pending):
             self.update_pending = True
             self.toplevel.after(10000, lambda: self.Update(unpend=True))
 
@@ -356,16 +361,22 @@ class channel_plot:
     def _MakePlot(self, tab=0):
         '''
         '''
+        if self.ConnectedPts.get():
+            plotformat='o-'
+        else:
+            plotformat='o'
         #self.figure.get_axes()[0].clear()
         if self.plot_dicts[tab]['xname'].get() == 'time':
-            self.subfigure.plot_date(self.xdata, self.ydata, fmt='o-',
+            self.subfigure.plot_date(self.xdata, self.ydata, plotformat,
                                           label=self.plot_dicts[tab]['yname'].get())
             self.subfigure.set_xticklabels(self.subfigure.get_xticklabels(),
                                            rotation=-45)
             self.subfigure.xaxis.set_major_formatter(dates.DateFormatter(
                 "%m/%d %H:%M"))
+            self.subfigure.yaxis.set_major_formatter(ticker.ScalarFormatter(
+                useOffset=False))
         else:
-            self.subfigure.plot(self.xdata, self.ydata,
+            self.subfigure.plot(self.xdata, self.ydata, plotformat,
                                 label=self.plot_dicts[tab]['yname'].get())
         self.subfigure.set_title(self.plot_dicts[tab]['yname'].get() +
                                  ' vs ' +
@@ -379,6 +390,7 @@ class channel_plot:
         yunit = '[' + str(self.plot_dicts['yunit']) + ']'
         self.subfigure.set_ylabel(yname + ' ' + yunit)
         #self.subfigure[tab].ticklabel_format(useOffset=False)
+        tickformat = ticker.ScalarFormatter(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
 
@@ -423,3 +435,25 @@ class channel_plot:
         outfile = asksaveasfilename(defaultextension='.pdf',
                                     filetypes=file_extensions)
         self.figure.savefig(outfile)
+
+
+    def SaveJson(self):
+        '''
+        '''
+        outfile = asksaveasfile(defaultextension='.json')
+        outdict = {'xunit':self.plot_dicts['xunit'],
+                   'yunit':self.plot_dicts['yunit']
+                  }
+        for tab in range(len(self.plot_dicts)-2):
+            outdict[tab] = {}
+            outdict[tab]['xname']=self.plot_dicts[tab]['xname'].get()
+            outdict[tab]['yname']=self.plot_dicts[tab]['yname'].get()
+            this_line = self.subfigure.get_lines()[tab]
+            if outdict['xunit'] == 't':
+                outdict[tab]['xdata'] = [str(t) for t in this_line.get_xdata()]
+            else:
+                outdict[tab]['xdata'] = list(this_line.get_xdata())
+            outdict[tab]['ydata'] = list(this_line.get_ydata())
+
+        dump(outdict, outfile, indent=4)
+        outfile.close()
