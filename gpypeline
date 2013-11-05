@@ -16,7 +16,7 @@ from inspect import getargspec, getmembers, isclass, isfunction
 # 3rd party Libs
 from numpy import pi
 # internal Libs
-from pypeline import DripInterface, scripts, NoResponseError
+from pypeline import DripInterface, scripts, NoResponseError, DriplineError
 
 
 class App:
@@ -144,6 +144,8 @@ class App:
             result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
         except KeyError:
             result = "No response from dripline"
+        except DriplineError,e:
+            result = str(e)
         except:
             raise
         self.getchannelvalueVar.set(result)

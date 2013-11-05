@@ -10,5 +10,5 @@ from os import environ
 
 from .DripInterface import DripInterface
 from .DripResponse import DripResponse
-from .PypelineErrors import NoResponseError
+from .PypelineErrors import NoResponseError, DriplineError
 #import .scripts
