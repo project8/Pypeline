@@ -39,7 +39,6 @@ class pid_interface:
         print('starting...')
         self.controllers[interface_name]['process'] = Process(
             target=self.controllers[interface_name]['controller'].StartControl, args=())
-        print(dir(self.controllers[interface_name]['process']))
         self.controllers[interface_name]['process'].start()
         sleep(5)
         print('should be done')
@@ -52,6 +51,7 @@ class pid_interface:
     def Start(self, interface_name):
         '''
         '''
+        self.controllers[interface_name]['q_input'].put(['_UpdateValues'])
         qitem = ['Set', '_controlling', True]
         self.controllers[interface_name]['q_input'].put(qitem)
 

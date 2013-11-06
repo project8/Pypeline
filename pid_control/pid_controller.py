@@ -95,6 +95,7 @@ class pid_controller:
             (0.5 * (self.deltas[0] + self.deltas[-1]) + sum(self.deltas[1:-1]))
         D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
             (self.time_stamps[-1] - self.time_stamps[-2]).seconds
+        current_change = P + I + D
         new_current = self._last_current + current_change
         if new_current > self.max_current:
             new_current = self.max_current
@@ -108,7 +109,7 @@ class pid_controller:
         if abs(new_current - self._last_current) < self.min_current_change:
             self._outfile.write('current change is small, not changing')
         else:
-            self._outfile.write('would set the dripline current channel.. if ready')
+            self._outfile.write('would set the dripline current channel.. if ready\n')
             self._outfile.flush()
             #self._pype.Set(self.current_channel, str(new_current) + ' A')
 
@@ -116,8 +117,8 @@ class pid_controller:
         '''
             call setattr (for queue command access)
         '''
-        self.response_queue.put(['setting', name, 'to', value])
-        self._outfile.write('setting ' + str(name) + ' to ' + str(value))
+        self._response_queue.put(['setting', name, 'to', value])
+        self._outfile.write('setting ' + str(name) + ' to ' + str(value) + '\n')
         self._outfile.flush()
         setattr(self, name, value)
 
@@ -126,10 +127,10 @@ class pid_controller:
         '''
         attr = getattr(self, q_item[0])
         if isinstance(attr, types.MethodType):
-            self.response_queue.put(['calling method'])
-            self.response_queue.put(attr(*q_item[1:]))
-            self.response_queue.put(['method call complete'])
+            self._response_queue.put(['calling method'])
+            self._response_queue.put(attr(*q_item[1:]))
+            self._response_queue.put(['method call complete'])
         else:
             print('getting attr')
-            self.response_queue.put(attr)
+            self._response_queue.put(attr)
             print('attr put')
