@@ -34,14 +34,14 @@ class pid_controller:
     def SetDefaults(self):  
         '''
         '''
-        self.min_update_time = timedelta(seconds=10)
+        self.min_update_time = timedelta(seconds=5)
         self.max_history = 20 
         self.target_temp = 75.
         self.temp_channel = 'terminator_temp'
-        self.current_channel = ''
-        self.Kproportional = 1./40.
-        self.Kintegral = 1./40./200.
-        self.Kdifferential = 1./40./200./50.
+        self.current_channel = 'terminator_heater_current'
+        self.Kproportional = 0.05
+        self.Kintegral = 0.0005
+        self.Kdifferential = 30.0
         self.max_current = 1.0
         self.min_current_change = 0.001
 
@@ -53,7 +53,6 @@ class pid_controller:
         self.time_stamps = []
         self.temperatures = []
         self.deltas = []
-#        self._UpdateValues()
         self._outfile.write('~starting main loop...\n')
         self._outfile.flush()
         last_update = datetime.now()
@@ -71,6 +70,17 @@ class pid_controller:
                 self._outfile.write(' -> ' + str(self.deltas[-1]) + '\n')
                 self._outfile.flush()
             sleep(1)
+
+    def Start(self):
+        self._UpdateValues()
+        sleep(1)
+        self._controlling = True
+
+    def Stop(self):
+        self.time_stamps = []
+        self.temperatures = []
+        self.deltas = []
+        self._controlling = False
 
     def _UpdateValues(self):
         '''
@@ -93,8 +103,10 @@ class pid_controller:
         I = (self.Kintegral / len(self.deltas)) *\
             (self.time_stamps[-1] - self.time_stamps[0]).seconds *\
             (0.5 * (self.deltas[0] + self.deltas[-1]) + sum(self.deltas[1:-1]))
-        D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
-            (self.time_stamps[-1] - self.time_stamps[-2]).seconds
+        D = 0
+        if len(self.time_stamps) > 2:
+            D = self.Kdifferential * (self.deltas[-1] - self.deltas[-2]) /\
+                (self.time_stamps[-1] - self.time_stamps[-2]).seconds
         current_change = P + I + D
         new_current = self._last_current + current_change
         if new_current > self.max_current:
@@ -104,14 +116,14 @@ class pid_controller:
         self._outfile.write('P->' + str(P) + '\n')
         self._outfile.write('I->' + str(I) + '\n')
         self._outfile.write('D->' + str(D) + '\n')
-        self._outfile.write('New Current: ' + str(new_current) + '\n')
         self._outfile.flush()
         if abs(new_current - self._last_current) < self.min_current_change:
-            self._outfile.write('current change is small, not changing')
+            self._outfile.write('current change is small, not changing \n')
         else:
-            self._outfile.write('would set the dripline current channel.. if ready\n')
+            self._outfile.write('setting current to ' + str(new_current) + '\n')
             self._outfile.flush()
-            #self._pype.Set(self.current_channel, str(new_current) + ' A')
+            self._pype.Set(self.current_channel, str(new_current) + 'A')
+            self._last_current = new_current
 
     def Set(self, name, value):
         '''

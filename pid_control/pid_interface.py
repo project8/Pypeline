@@ -51,15 +51,12 @@ class pid_interface:
     def Start(self, interface_name):
         '''
         '''
-        self.controllers[interface_name]['q_input'].put(['_UpdateValues'])
-        qitem = ['Set', '_controlling', True]
-        self.controllers[interface_name]['q_input'].put(qitem)
+        self.controllers[interface_name]['q_input'].put(['Start'])
 
     def Stop(self, interface_name):
         '''
         '''
-        qitem = ['Set', '_controlling', False]
-        self.controllers[interface_name]['q_input'].put(qitem)
+        self.controllers[interface_name]['q_input'].put(['Stop'])
 
     def Set(self, interface_name=None, attribute=None, value=None):
         '''
