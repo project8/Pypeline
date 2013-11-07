@@ -34,13 +34,13 @@ class pid_controller:
     def SetDefaults(self):  
         '''
         '''
-        self.min_update_time = timedelta(seconds=5)
-        self.max_history = 20 
+        self.min_update_time = timedelta(seconds=1)
+        self.max_history = 40 
         self.target_temp = 75.
         self.temp_channel = 'terminator_temp'
         self.current_channel = 'terminator_heater_current'
         self.Kproportional = 0.05
-        self.Kintegral = 0.0005
+        self.Kintegral = 0.002
         self.Kdifferential = 30.0
         self.max_current = 1.0
         self.min_current_change = 0.001
