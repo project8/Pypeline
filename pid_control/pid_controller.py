@@ -39,9 +39,9 @@ class pid_controller:
         self.target_temp = 75.
         self.temp_channel = 'terminator_temp'
         self.current_channel = 'terminator_heater_current'
-        self.Kproportional = 0.05
-        self.Kintegral = 0.002
-        self.Kdifferential = 30.0
+        self.Kproportional = 0.005
+        self.Kintegral = 0.0002
+        self.Kdifferential = 3.0
         self.max_current = 1.0
         self.min_current_change = 0.001
 
