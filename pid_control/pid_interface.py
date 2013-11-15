@@ -43,10 +43,15 @@ class pid_interface:
         sleep(5)
         print('should be done')
 
-    def Abort(self, interface_name):
+    def Abort(self, interface_names=False):
         '''
         '''
-        self.controllers[interface_name]['process'].terminate()
+        if not interface_names:
+            interface_names = self.controllers.keys()
+        if isinstance(interface_names, str):
+            interface_names = [interface_name]
+        for iface in interface_names:
+            self.controllers[iface]['process'].terminate()
 
     def Start(self, interface_name):
         '''
