@@ -28,7 +28,7 @@ class MantisResponse():
                              "record-size": 4194304,
                              "port": 98342
         }
-        pass
+        self.actions = []
 
     def Run(self):
         '''
@@ -51,7 +51,8 @@ class MantisResponse():
         ####### build the execution string
         client_exe = '/home/laroque/Repos/mantis/cbuild/bin/mantis_client'
         self.mantis_client = Popen(split(client_exe + 'config=/tmp/mantis_client_conf.json'),
-                                   stdout=out_file_name)
+                                   stdout=out_file_name,
+                                   stderr=out_file_name)
 
     def Update(self):
         '''
