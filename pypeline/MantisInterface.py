@@ -38,7 +38,7 @@ class MantisResponse():
         ####### deal with files
         status_files = glob('/tmp/mantis_client_*.status')
         out_file_name = '/tmp/mantis_client_' + uuid4().hex[0:8] + '.status'
-        while out_file_name in statusfiles:
+        while out_file_name in status_files:
             out_file_name = '/tmp/mantis_client_' + uuid4().hex[0:8] + '.status'
         self.out_file_name = out_file_name
         self.out_file = open(out_file_name, 'w')
@@ -50,21 +50,30 @@ class MantisResponse():
 
         ####### build the execution string
         client_exe = '/home/laroque/Repos/mantis/cbuild/bin/mantis_client'
-        self.mantis_client = Popen(split(client_exe + 'config=/tmp/mantis_client_conf.json'),
-                                   stdout=out_file_name,
-                                   stderr=out_file_name)
+        self.mantis_client = Popen(split(client_exe + ' config=/tmp/mantis_client_conf.json'),
+                                   stdout=self.out_file,
+                                   stderr=self.out_file)
 
     def Update(self):
         '''
         '''
-        #This should read the file to which output is being redirected and determine the status,
-        #should also see if the client process has been started and if so, if it is finished
-        pass
+        if not isinstance(self.mantis_client, Popen):
+            ret_val = 'client not started'
+        else:
+            line = self.reading_file.readline()
+            while not line == '':
+                if line.startswith('['):
+                    self.actions.append([line])
+                else:
+                    self.actions[-1].append(line)
+                line = self.reading_file.readline()
+            ret_val = self.actions[-1]
+        return ret_val
 
     def Waiting(self):
         '''
         '''
-        return if self.mantis_client.poll() is None
+        return self.mantis_client.poll() is None
 
     def Wait(self, timeout=60):
         '''
