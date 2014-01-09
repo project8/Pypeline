@@ -177,39 +177,6 @@ class _CmdInterface:
         self._cmd_database.save(start_doc)
         return result
 
-    def RunMantis(self, output, rate, duration, mode, description):
-        '''
-            Take a digitizer run of fixed time and sample rate.
-
-            Inputs:
-                <output> the output file to which we should write
-                <rate> digitization rate in MHz
-                <duration> duration in ms
-                <mode> channel mode to use (1 or 2)
-                <length> length of record to use in bytes
-                <count> number of circular buffer nodes to use
-                <description> string description
-
-            Returns:
-                A DripResponse instance
-        '''
-        result = DripResponse(self._cmd_database, uuid4().hex)
-        run_doc = {
-            '_id': result['_id'],
-            'type': 'command',
-            'command': {
-                "do": "run",
-                "subprocess": "mantis",
-                "output": output,
-                "rate": str(rate),
-                "duration": str(duration),
-                "mode": str(mode),
-                "description": str(description)
-            },
-        }
-        self._cmd_database.save(run_doc)
-        return result
-
     def RunPowerline(self, points, events, input_file):
         '''
             Posts a "run" document calling a non-mantis process

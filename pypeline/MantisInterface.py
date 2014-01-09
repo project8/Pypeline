@@ -12,7 +12,7 @@ from uuid import uuid4
 from glob import glob
 from json import dump
 
-class MantisResponse():
+class MantisInterface():
     '''
     '''
 
@@ -22,19 +22,20 @@ class MantisResponse():
             
         '''
         self.mantis_client = None
-        self.conf_dict = {"data-chunk-size": 1024,
-                             "digitizer": "px1500",
-                             "buffer-size": 512,
-                             "record-size": 4194304,
-                             "port": 98342
+        self.conf_dict = {"file-writer": "server",
+                          "host": "localhost",
+                          "buffer-size": 512,
+                          "port": 98342,
+                          "description": ""
         }
         self.actions = []
 
-    def Run(self):
+    def Run(self, conf_dict={}):
         '''
         '''
         #should use <something> = subprocess.Popen(shlex.split(<command_string>),
         #                                          stdout=<some_file_object>)
+        self.conf_dict.update(conf_dict)
         ####### deal with files
         status_files = glob('/tmp/mantis_client_*.status')
         out_file_name = '/tmp/mantis_client_' + uuid4().hex[0:8] + '.status'
@@ -53,6 +54,7 @@ class MantisResponse():
         self.mantis_client = Popen(split(client_exe + ' config=/tmp/mantis_client_conf.json'),
                                    stdout=self.out_file,
                                    stderr=self.out_file)
+        return self
 
     def Update(self):
         '''
