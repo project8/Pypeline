@@ -1,0 +1,50 @@
+#!/bin/python
+
+from __future__ import print_function, absolute_import
+from sys import version_info
+inpy3 = not version_info[0] < 3
+
+# standard libs
+if inpy3:
+    from tkinter import *
+else:
+    from Tkinter import *
+# non-standard libs
+# custom libs
+from pid_control import pid_interface
+
+
+class App:
+    
+    def __init__(self, master):
+        self.master = master
+        self.frame = Frame(master)
+        self.frame.grid()
+        self.pid_interface = pid_interface()
+        self.pid_interface.AddController('this')
+        self.pid_interface.StartController('this')
+        self.property_dict = {}
+        self.which_prop_var = StringVar()
+        self.prop_value = StringVar()
+
+        self._BuildGUI()
+
+    def _BuildGUI(self):
+        row = 0
+
+        properties = self.pid_interface.Set('this')
+        OptionMenu(self.frame, self.which_prop_var, *properties).grid(row=row, column=0)
+        Entry(self.frame, textvariable=self.prop_value, relief=SUNKEN).grid(row=row, column=1)
+        Button(self.frame, text="Set", command=self._SetValue).grid(row=row, column=2)
+        row += 1
+        
+
+    def _SetValue(self):
+        self.pid_interface.Set('this', self.which_prop_var.get(), self.prop_value.get())
+
+
+if __name__ == "__main__":
+    root = Tk()
+    root.title("PID control")
+    app = App(root)
+    root.mainloop()

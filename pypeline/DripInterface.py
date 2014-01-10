@@ -17,6 +17,7 @@ from couchdb import Server as CouchServer
 
 # local imports
 from .DripResponse import DripResponse
+from .MantisInterface import MantisInterface
 from .CmdInterface import _CmdInterface
 from .ConfInterface import _ConfInterface
 from .LogInterface import _LogInterface
@@ -260,8 +261,7 @@ class DripInterface(_ConfInterface,
         super(DripInterface, self).RemoveLoggers(instruments)
 
     def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
-                  mode=0,
-                  description="None provided"):
+                  mode=0, description="None provided"):
         '''
             Posts a document to the command database instructing dripline to
             start a mantis run.
@@ -280,14 +280,24 @@ class DripInterface(_ConfInterface,
         '''
         if not output:
             output = '/data/' + uuid4().hex + '.egg'
-        descrip = literal_eval(description)
-        if isinstance(descrip, str):
-            descrip = {'comment': descrip}
-        if not 'lo_cw_freq' in descrip:
-            descrip['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
-        description = dumps(descrip)
-        result = super(DripInterface, self).RunMantis(output, rate, duration,
-                                                       mode, description)
+        if isinstance(description, str):
+            try:
+                description = literal_eval(description)
+            except:
+                pass
+            if isinstance(description, str):
+                description = {'comment': description}
+        if not 'lo_cw_freq' in description:
+            description['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
+        description = dumps(description)
+        mantis_args = {
+            "file": output,
+            "rate": rate,
+            "duration": duration,
+            "mode": mode,
+            "description": description
+        }
+        result = MantisInterface().Run(mantis_args)
         return result
 
     def LogValue(self, sensor, uncal_val, cal_val, timestamp=False, **extras):
