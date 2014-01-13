@@ -54,7 +54,18 @@ class MantisInterface():
         self.mantis_client = Popen(split(client_exe + ' config=/tmp/mantis_client_conf.json'),
                                    stdout=self.out_file,
                                    stderr=self.out_file)
+        print(client_exe + ' config=/tmp/mantis_client_conf.json')
         return self
+
+    def GetConf(self, param=None):
+        '''
+        '''
+        print(self.conf_dict)
+        if not param is None:
+            ret_val = self.conf_dict[param]
+        else:
+            ret_val = self.conf_dict
+        return ret_val
 
     def Update(self):
         '''

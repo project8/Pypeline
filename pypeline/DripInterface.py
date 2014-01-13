@@ -290,11 +290,12 @@ class DripInterface(_ConfInterface,
         if not 'lo_cw_freq' in description:
             description['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
         description = dumps(description)
+        print('~\n',description,'\n~')
         mantis_args = {
             "file": output,
-            "rate": rate,
-            "duration": duration,
-            "mode": mode,
+            "rate": int(rate),
+            "duration": int(duration),
+            "mode": int(mode),
             "description": description
         }
         result = MantisInterface().Run(mantis_args)

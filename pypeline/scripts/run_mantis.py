@@ -78,8 +78,7 @@ class run_mantis:
         response.Wait()
         if response.Waiting():
             raise NoResponseError('')
-        filename = [line.split()[-1] for line in response['final'].split('\n')
-                    if line.startswith(' *output')]
+        filename = response.GetConf('file')
         if self.dodump.get():
             sensor_dump['mantis'].Update()
             sensor_dump._UpdateTo()
