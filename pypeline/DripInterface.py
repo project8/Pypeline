@@ -260,7 +260,7 @@ class DripInterface(_ConfInterface,
             instruments = [instruments]
         super(DripInterface, self).RemoveLoggers(instruments)
 
-    def RunMantis(self, output="/data/temp.egg", rate=500, duration=1000,
+    def RunMantis(self, output="/data/temp.egg", rate=200, duration=100,
                   mode=0, description="None provided"):
         '''
             Posts a document to the command database instructing dripline to

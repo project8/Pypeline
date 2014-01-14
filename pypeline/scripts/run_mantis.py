@@ -102,7 +102,7 @@ class run_mantis:
                 Label(self.toplevel, text="mode").grid(row=rowi, column=0)
                 Spinbox(self.toplevel,
                         textvariable=self.gui_input_dict[keyname],
-                        values=(1, 2)).grid(row=rowi, column=1)
+                        values=(0, 1, 2)).grid(row=rowi, column=1)
             else:
                 Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
                 Entry(self.toplevel,

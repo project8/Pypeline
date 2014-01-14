@@ -51,7 +51,7 @@ class MantisInterface():
 
         ####### build the execution string
         client_exe = '/home/laroque/Repos/mantis/cbuild/bin/mantis_client'
-        self.mantis_client = Popen(split(client_exe + ' config=/tmp/mantis_client_conf.json'),
+        self.mantis_client = Popen(split(client_exe + ' config="/tmp/mantis_client_conf.json"'),
                                    stdout=self.out_file,
                                    stderr=self.out_file)
         print(client_exe + ' config=/tmp/mantis_client_conf.json')
