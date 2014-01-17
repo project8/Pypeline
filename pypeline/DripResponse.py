@@ -49,13 +49,13 @@ class DripResponse(dict):
         if 'result' in self:
             if self['result'] == 'error':
                 msg = ''
-                if isinstance(self['final'], dict):
-                    msg = self['final']['error']
+                if isinstance(self['result'], dict):
+                    msg = self['result']['error']
                 else:
-                    msg = self['final']
+                    msg = self['result']
                 raise DriplineError(msg)
             if self['result'] == 'ok':
-                self['final'] = self['command']['value']
+                self['result'] = self['command']['value']
         return self
 
     def Waiting(self):

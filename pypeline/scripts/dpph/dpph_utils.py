@@ -26,13 +26,11 @@ def _GetLockinValue(interface, freq=25553.440, slptime=2):
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
         drip_resp = interface.Get('dpph_magphase').Wait()
         sleep(slptime)
-        magphase = [float(val) for val in drip_resp['final'].split(',')]
+        magphase = [float(val) for val in drip_resp['result'].popitem()['result'].split(',')]
         return magphase[0] * sign(sin(magphase[1] * pi / 180))
     except KeyError as keyname:
         if keyname[0] == 'result':
             raise NoReponseError('Sweeper did not respond')
-        elif keyname[0] == 'final':
-            raise NoResponseError('No response from lock-in')
         else:
             raise
 
@@ -50,7 +48,7 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
         <stop_volts>:   absolute voltage to stop looping
     '''
     pype.Set('hf_sweeper_power', power).Wait()
-    if not float(pype.Get('hf_sweeper_power').Wait()['final']):
+    if not float(pype.Get('hf_sweeper_power').Wait()['result'].popitem()['result']):
         raise AssertionError('power setting not stable')
     VDC = []
     for count, freq in enumerate(freq_list):
@@ -104,13 +102,6 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     print('*' * 60, '\ntaking data', datetime.utcnow())
     pype.Set('lockin_raw_write', "TD").Wait()
     sleep(sweep_time + 30)
-#    maxsleep = 100
-#    sleep(10)
-#    for i in range(maxsleep):
-#        sleep(1)
-#        statusfull = pype.Get('lockin_data_status').Wait()['final']
-#        if statusfull[0] == '0':
-#            break
     portal = 'p8portal.phys.washington.edu'
     print('*' * 60, '\nretrieving data', datetime.utcnow())
     adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'][portal]['result']

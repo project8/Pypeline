@@ -141,7 +141,7 @@ class _CmdInterface:
                 a DripResponse instance
         '''
         if instruments == 'all':
-            instruments = self.CurrentLoggers().Wait()['final']
+            instruments = self.CurrentLoggers().Wait()['result'].popitem()['result']
         if isinstance(instruments, str):
             instruments = [instruments]
         result = DripResponse(self._cmd_database, uuid4().hex)

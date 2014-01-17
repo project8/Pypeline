@@ -288,7 +288,7 @@ class DripInterface(_ConfInterface,
             if isinstance(description, str):
                 description = {'comment': description}
         if not 'lo_cw_freq' in description:
-            description['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['final']
+            description['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['result'].popitem()['result']
         description = dumps(description)
         print('~\n',description,'\n~')
         mantis_args = {
@@ -369,7 +369,7 @@ class DripInterface(_ConfInterface,
                 no inputs
 
             Returns:
-                The 'final' field fron the couch document produced by calling
+                The 'result' field fron the couch document produced by calling
                 pypeline.DripInterface.Get("heartbeat")
         '''
         status = self.Get("heartbeat")
