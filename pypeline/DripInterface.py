@@ -374,7 +374,7 @@ class DripInterface(_ConfInterface,
         '''
         status = self.Get("heartbeat")
         status.Wait()
-        if not status['final'] == 'thump':
+        if not 'result' in status:
             raise UserWarning(
                 'Could not find dripline pulse. Make sure it is running.')
-        return status['final']
+        return status
