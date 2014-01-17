@@ -111,10 +111,11 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
 #        statusfull = pype.Get('lockin_data_status').Wait()['final']
 #        if statusfull[0] == '0':
 #            break
+    portal = 'p8portal.phys.washington.edu'
     print('*' * 60, '\nretrieving data', datetime.utcnow())
-    adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
-    x_curve = pype.Get('lockin_x_curve').Wait()['final']
-    y_curve = pype.Get('lockin_y_curve').Wait()['final']
+    adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'][portal]['result']
+    x_curve = pype.Get('lockin_x_curve').Wait()['result'][portal]['result']
+    y_curve = pype.Get('lockin_y_curve').Wait()['result'][portal]['result']
     print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
