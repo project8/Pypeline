@@ -29,6 +29,7 @@ class MantisInterface():
                           "description": ""
         }
         self.actions = []
+        self.errors = []
 
     def Run(self, conf_dict={}):
         '''
@@ -54,7 +55,7 @@ class MantisInterface():
         self.mantis_client = Popen(split(client_exe + ' config="/tmp/mantis_client_conf.json"'),
                                    stdout=self.out_file,
                                    stderr=self.out_file)
-        print(client_exe + ' config=/tmp/mantis_client_conf.json')
+        #print(client_exe + ' config=/tmp/mantis_client_conf.json')
         return self
 
     def GetConf(self, param=None):
@@ -70,13 +71,18 @@ class MantisInterface():
     def Update(self):
         '''
         '''
+        which_list = self.actions
         if not isinstance(self.mantis_client, Popen):
             ret_val = 'client not started'
         else:
             line = self.reading_file.readline()
             while not line == '':
-                if line.startswith('['):
-                    self.actions.append([line])
+                if line.startswith('\033[1;32m'):
+                    which_list = self.actions
+                    which_list.append([line])
+                elif line.startswith('\033[1;21m'):
+                    which_list = self.errors
+                    which_list.append([line])
                 else:
                     self.actions[-1].append(line)
                 line = self.reading_file.readline()

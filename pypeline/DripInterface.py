@@ -288,9 +288,8 @@ class DripInterface(_ConfInterface,
             if isinstance(description, str):
                 description = {'comment': description}
         if not 'lo_cw_freq' in description:
-            description['lo_cw_freq'] = self.Get('lo_cw_freq').Update()['result'].popitem()['result']
+            description['lo_cw_freq'] = float(self.Get('lo_cw_freq').Update()['result'])
         description = dumps(description)
-        print('~\n',description,'\n~')
         mantis_args = {
             "file": output,
             "rate": int(rate),
