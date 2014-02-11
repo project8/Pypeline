@@ -108,7 +108,7 @@ class dpph_measurement:
                ).grid(row=row, column=0)
         row += 1
 
-        Label(self.toplevel, text='-'*100).grid(row=row, column=0, columnspan=4, sticky='ew')
+        Label(self.toplevel, text='-'*50).grid(row=row, column=0, columnspan=4, sticky='ew')
         row += 1
 
 

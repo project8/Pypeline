@@ -97,14 +97,18 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) / num_points) * 1000)
+    sample_period = sample_period - (sample_period % 5)
     pype.Set('lockin_raw_write', "NC").Wait()
+    pype.Set('lockin_raw_write', "TADC 4").Wait()
     pype.Set('lockin_raw_write', "CBD 51").Wait()
     #len is number of samples to take, period is how often
     pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
     print('*' * 60, '\ntaking data', datetime.utcnow())
     pype.Set('lockin_raw_write', "TD").Wait()
-    sleep(sweep_time + 30)
+    sleep(sweep_time + 10)
+    if not _WaitForLockinData(pype):
+        raise DriplineError('lockin is taking longer than expected')
 #    maxsleep = 100
 #    sleep(10)
 #    for i in range(maxsleep):
@@ -112,10 +116,15 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
 #        statusfull = pype.Get('lockin_data_status').Wait()['final']
 #        if statusfull[0] == '0':
 #            break
+    status = pype.Get('lockin_data_status').Wait()
+    status = status['result']['claude.phys.washington.edu']['result'].strip().split(';')
+    if not status[1] > 0:
+        print('no data taken')
+        raise DriplineError('data not taken')
     print('*' * 60, '\nretrieving data', datetime.utcnow())
-    adc_curve = pype.Get('lockin_adc1_curve').Wait()['final']
-    x_curve = pype.Get('lockin_x_curve').Wait()['final']
-    y_curve = pype.Get('lockin_y_curve').Wait()['final']
+    adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'].popitem()['result']
+    x_curve = pype.Get('lockin_x_curve').Wait()['result'].popitem()['result']
+    y_curve = pype.Get('lockin_y_curve').Wait()['result'].popitem()['result']
     print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
@@ -130,6 +139,22 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
             'x_curve': x_curve,
             'y_curve': y_curve,
             'amplitude_curve': amplitude_curve}
+
+def _WaitForLockinData(pype, timeout=100):
+    '''
+        timeout is in [10s]
+    '''
+    return_value = None
+    count = 0
+    status = pype.Get('lockin_data_status').Wait()['result'].popitem()['result'].strip().split(';')
+    while (not status[0] == 0) and (count < timeout) :
+        count += 1
+        sleep(10)
+        status = pype.Get('lockin_data_status').Wait()['result'].popitem()['result'].strip().split(';')
+    if status[0] == 0:
+        return_value = status
+    return return_value
+        
 
 
 def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
