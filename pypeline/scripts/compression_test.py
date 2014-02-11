@@ -115,9 +115,10 @@ class compression_test:
             mantis_out.Wait(digitization_time / 1000. + 20)
             if mantis_out.Waiting():
                 raise DriplineError('failed to digitize')
-            powerline_out = self.pype.RunPowerline(input_file=tempfile)
+            powerline_out = self.pype.RunPowerline(input_file=tempfile).Wait()
             powerline_out.Wait(60)
-            power_out.append(max(ast.literal_eval(powerline_out['final'])['data']))
+            pl_result = powerline['result'].popitem()['result']
+            power_out.append(max(ast.literal_eval(pl_result)['data']))
         self.result = {'power_in': powers, 'power_out': power_out}
 
     def _PlotResult(self):

@@ -151,8 +151,10 @@ class App:
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
-        result = self.pype.Set(self.setchannelVar.get(),
-                               self.setchannelvalueVar.get()).Wait()['final']
+        resp = self.pype.Set(self.setchannelVar.get(),
+                             self.setchannelvalueVar.get()).Wait()
+        resp_host = resp['result'].keys()[0]
+        result = resp['result'][resp_host]['result']
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):

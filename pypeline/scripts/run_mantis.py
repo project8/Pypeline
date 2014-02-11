@@ -78,8 +78,7 @@ class run_mantis:
         response.Wait()
         if response.Waiting():
             raise NoResponseError('')
-        filename = [line.split()[-1] for line in response['final'].split('\n')
-                    if line.startswith(' *output')]
+        filename = response.GetConf('file')
         if self.dodump.get():
             sensor_dump['mantis'].Update()
             sensor_dump._UpdateTo()
@@ -103,7 +102,7 @@ class run_mantis:
                 Label(self.toplevel, text="mode").grid(row=rowi, column=0)
                 Spinbox(self.toplevel,
                         textvariable=self.gui_input_dict[keyname],
-                        values=(1, 2)).grid(row=rowi, column=1)
+                        values=(0, 1, 2)).grid(row=rowi, column=1)
             else:
                 Label(self.toplevel, text=keyname).grid(row=rowi, column=0)
                 Entry(self.toplevel,
