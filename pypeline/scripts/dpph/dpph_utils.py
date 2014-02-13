@@ -96,9 +96,9 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     sample_period = int(((sweep_time + 5) / num_points) * 1000)
     sample_period = sample_period - (sample_period % 5)
     pype.Set('lockin_raw_write', "NC").Wait()
-    pype.Set('lockin_raw_write', "TADC 4").Wait()
+    pype.Set('lockin_raw_write', "TADC 0").Wait()
     pype.Set('lockin_raw_write', "CBD 51").Wait()
-    #len is number of samples to take, period is how often
+    #LEN is number of samples to take, STR is how often in ms (must be a multiple of 5ms)
     pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
     print('*' * 60, '\ntaking data', datetime.utcnow())
