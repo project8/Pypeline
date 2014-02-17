@@ -60,7 +60,7 @@ class dpph_measurement:
         self.num_points_Var = IntVar(value=360) #ms
         self.spanVar = DoubleVar(value=100)
         self.stepVar = DoubleVar(value=4)
-        self.fit_channel_Var = StringVar(value='xdata')
+        #self.fit_channel_Var = StringVar(value='xdata')
         self.result_str_Var = StringVar(value='')
 
         self._BuildGui()
@@ -123,9 +123,9 @@ class dpph_measurement:
         Label(self.toplevel, text='[MHz]').grid(row=row, column=4, sticky='w')
         row += 1
 
-        ch_options = ['xdata', 'ydata']
-        OptionMenu(self.toplevel, self.fit_channel_Var, *ch_options
-                   ).grid(row=row, column=0, rowspan=2, sticky='ew')
+        #ch_options = ['xdata', 'ydata']
+        #OptionMenu(self.toplevel, self.fit_channel_Var, *ch_options
+        #           ).grid(row=row, column=0, rowspan=2, sticky='ew')
         Button(self.toplevel, text='find resonance', command=self._FindResonance
                ).grid(row=row, column=1, rowspan=2, sticky='ew')
         Label(self.toplevel, textvariable=self.result_str_Var
@@ -150,7 +150,6 @@ class dpph_measurement:
         self.subfigure = self.figure.add_subplot(1, 1, 1)
         self.subfigure.plot([0], [0])
         self.subfigure.plot([0], [0])
-        self.subfigure.plot([0], [0])
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
         self.canvas.get_tk_widget().grid(row=row, column=column, rowspan=10)
@@ -169,19 +168,20 @@ class dpph_measurement:
                                   num_points=self.num_points_Var.get())
         self.sweep_result = sweep.copy()
         freqdata = sweep['frequency_curve']
-        ydata = sweep['y_curve']
-        xdata = sweep['x_curve']
-        y_range = (max(ydata + xdata) - min(ydata + xdata)) * .05
+        magdata = sweep['amplitude_curve']
+        #ydata = sweep['y_curve']
+        #xdata = sweep['x_curve']
+        y_range = max((max(magdata) - min(magdata)) * .05, 1)
         self.subfigure.set_xlim(left=freqdata[0], right=freqdata[-1])
-        self.subfigure.set_ylim(bottom=min(ydata + xdata) - y_range, top=max(ydata + xdata) + y_range)
+        self.subfigure.set_ylim(bottom=(min(magdata) - y_range), top=(max(magdata) + y_range))
         line = self.subfigure.get_lines()[0]
         line.set_xdata(array(freqdata))
-        line.set_ydata(array(xdata))
-        line.set_label('x output')
-        line = self.subfigure.get_lines()[1]
-        line.set_xdata(array(freqdata))
-        line.set_ydata(array(ydata))
-        line.set_label('y output')
+        line.set_ydata(array(magdata))
+        line.set_label('lockin output')
+        #line = self.subfigure.get_lines()[1]
+        #line.set_xdata(array(freqdata))
+        #line.set_ydata(array(ydata))
+        #line.set_label('y output')
         self.figure.legends = []
         self.figure.legend(*self.subfigure.get_legend_handles_labels())
         self.figure.legends[0].draggable(True)
@@ -191,19 +191,20 @@ class dpph_measurement:
     def _FindResonance(self):
         '''
         '''
-        if self.fit_channel_Var.get() == 'xdata':
-            line = self.subfigure.get_lines()[0]
-        elif self.fit_channel_Var.get() == 'ydata':
-            line = self.subfigure.get_lines()[1]
-        else:
-            raise ValueError('not a valid dataset selection')
+        #if self.fit_channel_Var.get() == 'xdata':
+        #    line = self.subfigure.get_lines()[0]
+        #elif self.fit_channel_Var.get() == 'ydata':
+        #    line = self.subfigure.get_lines()[1]
+        line = self.subfigure.get_lines()[0]
+        #else:
+        #    raise ValueError('not a valid dataset selection')
         xdata = line.get_xdata()
         ydata = line.get_ydata()
         fit = _FindFieldFFT(min_freq=self.start_search_freq_Var.get(),
                             max_freq=self.stop_search_freq_Var.get(),
                             freq_data=xdata,
                             volts_data=ydata)
-        outline = self.subfigure.get_lines()[2]
+        outline = self.subfigure.get_lines()[1]
         factor = max(ydata) / max(fit['result'])
         scaled_data = [val * factor for val in fit['result']]
         outline.set_xdata(fit['freqs'])
