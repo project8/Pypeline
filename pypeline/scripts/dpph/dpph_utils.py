@@ -34,7 +34,6 @@ def _GetLockinValue(interface, freq=25553.440, slptime=2):
         else:
             raise
 
-
 def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
                  stop_sigma=1e10, stop_volts=20):
     '''
@@ -64,7 +63,6 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
     stdout.write(' ' * 60 + '\r')
     stdout.flush()
     return VDC
-
 
 def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num_points=360):
     '''
@@ -97,7 +95,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     sample_period = sample_period - (sample_period % 5)
     pype.Set('lockin_raw_write', "NC").Wait()
     pype.Set('lockin_raw_write', "TADC 0").Wait()
-    pype.Set('lockin_raw_write', "CBD 51").Wait()
+    pype.Set('lockin_raw_write', "CBD 55").Wait()
     #LEN is number of samples to take, STR is how often in ms (must be a multiple of 5ms)
     pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
@@ -114,8 +112,9 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'].popitem()[1]['result']
     x_curve = pype.Get('lockin_x_curve').Wait()['result'].popitem()[1]['result']
     y_curve = pype.Get('lockin_y_curve').Wait()['result'].popitem()[1]['result']
+    amplitude_curve = pype.Get('lockin_mag_curve').Wait()['result'].popitem()[1]['result']
     print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
-    amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
+    #amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
     all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
@@ -125,8 +124,6 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     print('*' * 60)
     return {'adc_curve': adc_curve,
             'frequency_curve': frequency_curve,
-            'x_curve': x_curve,
-            'y_curve': y_curve,
             'amplitude_curve': amplitude_curve}
 
 def _WaitForLockinData(pype, timeout=100):
