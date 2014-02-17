@@ -26,7 +26,7 @@ def _GetLockinValue(interface, freq=25553.440, slptime=2):
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
         drip_resp = interface.Get('dpph_magphase').Wait()
         sleep(slptime)
-        magphase = [float(val) for val in drip_resp['result'].popitem()['result'].split(',')]
+        magphase = [float(val) for val in drip_resp['result'].popitem()[1]['result'].split(',')]
         return magphase[0] * sign(sin(magphase[1] * pi / 180))
     except KeyError as keyname:
         if keyname[0] == 'result':
@@ -48,7 +48,7 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
         <stop_volts>:   absolute voltage to stop looping
     '''
     pype.Set('hf_sweeper_power', power).Wait()
-    if not float(pype.Get('hf_sweeper_power').Wait()['result'].popitem()['result']):
+    if not float(pype.Get('hf_sweeper_power').Wait()['result'].popitem()[1]['result']):
         raise AssertionError('power setting not stable')
     VDC = []
     for count, freq in enumerate(freq_list):
@@ -93,7 +93,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         raise DriplineError('Sweeper sets failed or not yet complete')
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
-    sample_period = int(((sweep_time + 5) / num_points) * 1000)
+    sample_period = int(((sweep_time + 5) * 1000 / float(num_points)))
     sample_period = sample_period - (sample_period % 5)
     pype.Set('lockin_raw_write', "NC").Wait()
     pype.Set('lockin_raw_write', "TADC 0").Wait()
@@ -104,24 +104,16 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     print('*' * 60, '\ntaking data', datetime.utcnow())
     pype.Set('lockin_raw_write', "TD").Wait()
     sleep(sweep_time + 10)
-    if not _WaitForLockinData(pype):
+    #wait for it to finish if needed
+    status = _WaitForLockinData(pype)
+    if not status:
         raise DriplineError('lockin is taking longer than expected')
-#    maxsleep = 100
-#    sleep(10)
-#    for i in range(maxsleep):
-#        sleep(1)
-#        statusfull = pype.Get('lockin_data_status').Wait()['final']
-#        if statusfull[0] == '0':
-#            break
-    status = pype.Get('lockin_data_status').Wait()
-    status = status['result']['claude.phys.washington.edu']['result'].strip().split(';')
     if not status[1] > 0:
-        print('no data taken')
         raise DriplineError('data not taken')
     print('*' * 60, '\nretrieving data', datetime.utcnow())
-    adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'].popitem()['result']
-    x_curve = pype.Get('lockin_x_curve').Wait()['result'].popitem()['result']
-    y_curve = pype.Get('lockin_y_curve').Wait()['result'].popitem()['result']
+    adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'].popitem()[1]['result']
+    x_curve = pype.Get('lockin_x_curve').Wait()['result'].popitem()[1]['result']
+    y_curve = pype.Get('lockin_y_curve').Wait()['result'].popitem()[1]['result']
     print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
     amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
@@ -143,17 +135,15 @@ def _WaitForLockinData(pype, timeout=100):
     '''
     return_value = None
     count = 0
-    status = pype.Get('lockin_data_status').Wait()['result'].popitem()['result'].strip().split(';')
-    while (not status[0] == 0) and (count < timeout) :
+    status = pype.Get('lockin_data_status').Wait()['result'].popitem()[1]['result'].strip().split(';')
+    while (not int(status[0]) == 0) and (count < timeout) :
         count += 1
         sleep(10)
-        status = pype.Get('lockin_data_status').Wait()['result'].popitem()['result'].strip().split(';')
-    if status[0] == 0:
-        return_value = status
+        status = pype.Get('lockin_data_status').Wait()['result'].popitem()[1]['result'].strip().split(';')
+    if int(status[0]) == 0:
+        return_value = [int(entry) for entry in status]
     return return_value
         
-
-
 def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
     '''
     '''

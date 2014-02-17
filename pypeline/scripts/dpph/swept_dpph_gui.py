@@ -171,8 +171,9 @@ class dpph_measurement:
         freqdata = sweep['frequency_curve']
         ydata = sweep['y_curve']
         xdata = sweep['x_curve']
+        y_range = (max(ydata + xdata) - min(ydata + xdata)) * .05
         self.subfigure.set_xlim(left=freqdata[0], right=freqdata[-1])
-        self.subfigure.set_ylim(bottom=min(ydata + xdata), top=max(ydata + xdata))
+        self.subfigure.set_ylim(bottom=min(ydata + xdata) - y_range, top=max(ydata + xdata) + y_range)
         line = self.subfigure.get_lines()[0]
         line.set_xdata(array(freqdata))
         line.set_ydata(array(xdata))
