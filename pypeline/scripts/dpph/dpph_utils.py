@@ -76,10 +76,10 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     '''
     print('*' * 60, '\nsetting sweeper', datetime.utcnow())
     sets = []
-    sets.append(pype.Set('hf_sweep_start', start_freq))
-    sets.append(pype.Set('hf_sweep_stop', stop_freq))
-    sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
     if power:
+        sets.append(pype.Set('hf_sweep_start', start_freq))
+        sets.append(pype.Set('hf_sweep_stop', stop_freq))
+        sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
         sets.append(pype.Set('hf_sweeper_power', power))
     for i in range(100):
         if not sum([set.Waiting() for set in sets]):
