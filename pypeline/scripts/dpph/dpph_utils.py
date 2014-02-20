@@ -74,13 +74,18 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         <power> output power, in dBm, from the sweeper
         <num_points> number of samplings for the lockin to take
     '''
-    print('*' * 60, '\nsetting sweeper', datetime.utcnow())
     sets = []
     if power:
+        print('*' * 60, '\nsetting sweeper', datetime.utcnow())
         sets.append(pype.Set('hf_sweep_start', start_freq))
         sets.append(pype.Set('hf_sweep_stop', stop_freq))
         sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
         sets.append(pype.Set('hf_sweeper_power', power))
+    else:
+        print('*' * 60, '\ngetting values from sweeper', datetime.utcnow())
+        start_freq = float(pype.Get('hf_sweep_start').Wait()['result'].popitem()[1]['result'])/10**6
+        stop_freq = float(pype.Get('hf_sweep_stop').Wait()['result'].popitem()[1]['result'])/10**6
+        sweep_time = float(pype.Get('hf_sweep_time').Wait()['result'].popitem()[1]['result'])
     for i in range(100):
         if not sum([set.Waiting() for set in sets]):
             break
