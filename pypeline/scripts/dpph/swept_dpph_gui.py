@@ -18,7 +18,7 @@ else:
     from ttk import Notebook, Frame
 from json import dump
 # 3rd party
-from numpy import pi, array
+from numpy import pi, array, mean
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 # local
@@ -150,6 +150,7 @@ class dpph_measurement:
         self.subfigure = self.figure.add_subplot(1, 1, 1)
         self.subfigure.plot([0], [0])
         self.subfigure.plot([0], [0])
+        self.subfigure.set_xlabel('Freq [MHz]')
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
         self.canvas.get_tk_widget().grid(row=row, column=column, rowspan=10)
@@ -169,11 +170,13 @@ class dpph_measurement:
         self.sweep_result = sweep.copy()
         freqdata = sweep['frequency_curve']
         magdata = sweep['amplitude_curve']
+        magdata = magdata - mean(magdata)
         #ydata = sweep['y_curve']
+        print('freq range is ', min(freqdata), ' to ', max(freqdata))
         #xdata = sweep['x_curve']
-        y_range = max((max(magdata) - min(magdata)) * .05, 1)
+        y_del = max((max(magdata) - min(magdata)) * .05, 1)
         self.subfigure.set_xlim(left=freqdata[0], right=freqdata[-1])
-        self.subfigure.set_ylim(bottom=(min(magdata) - y_range), top=(max(magdata) + y_range))
+        self.subfigure.set_ylim(bottom=(min(magdata) - y_del), top=(max(magdata) + y_del))
         line = self.subfigure.get_lines()[0]
         line.set_xdata(array(freqdata))
         line.set_ydata(array(magdata))
@@ -207,6 +210,7 @@ class dpph_measurement:
         outline = self.subfigure.get_lines()[1]
         factor = max(ydata) / max(fit['result'])
         scaled_data = [val * factor for val in fit['result']]
+        scaled_data = scaled_data - mean(scaled_data)
         outline.set_xdata(fit['freqs'])
         outline.set_ydata(scaled_data)
         outline.set_label('filter result')
