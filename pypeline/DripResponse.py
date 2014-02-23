@@ -88,3 +88,12 @@ class DripResponse(dict):
             timer = timer + self._delta_t
         self.Update()
         return self
+
+    def Result(self):
+        '''
+        '''
+        result = None
+        self.Wait()
+        if not self.Waiting():
+            result = self['result'].popitem()[1]['result']
+        return result
