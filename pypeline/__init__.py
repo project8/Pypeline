@@ -7,10 +7,7 @@
 '''
 from __future__ import print_function, absolute_import
 
-from os import environ
-
 from .DripInterface import DripInterface
 from .DripResponse import DripResponse
 from .PypelineErrors import NoResponseError, DriplineError
 from .scripts import *
-#import .scripts
