@@ -141,7 +141,7 @@ class App:
 
     def GetChannel(self):
         try:
-            result = self.pype.Get(self.getchannelVar.get()).Wait()['final']
+            result = self.pype.Get(self.getchannelVar.get()).Result()
         except KeyError:
             result = "No response from dripline"
         except DriplineError,e:
