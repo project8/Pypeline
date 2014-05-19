@@ -11,7 +11,8 @@ from uuid import uuid4
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
-fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
+fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(
+    datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
 tempf = '/data/' + uuid4().hex + '.egg'
 transferx = []
 transfery = []
@@ -21,16 +22,17 @@ lostop = 2000
 lostep = 10
 
 lo = lostart
-drip.Set('hf_sweeper_power','-65')
-drip.Set('hf_sweep_time',10)
+drip.Set('hf_sweeper_power', '-65')
+drip.Set('hf_sweep_time', 10)
 while lo <= lostop:
-    drip.Set('lo_cw_freq',lo)
+    drip.Set('lo_cw_freq', lo)
     print "lo set to " + str(lo)
-    drip.Set('hf_sweep_start',lo+24500)
-    drip.Set('hf_sweep_stop',lo+24600)
-    run = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(filename=tempf, rate=250).Wait(), sp="sweepline").Wait()))['result'])
+    drip.Set('hf_sweep_start', lo + 24500)
+    drip.Set('hf_sweep_stop', lo + 24600)
+    run = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(
+        filename=tempf, rate=250).Wait(), sp="sweepline").Wait()))['result'])
     power = run['data']
-    freq = np.linspace(0,run['sampling_rate']/2,len(power))
+    freq = np.linspace(0, run['sampling_rate'] / 2, len(power))
     for i in range(len(freq)):
         if freq[i] > 90:
             stop = i
@@ -41,9 +43,9 @@ while lo <= lostop:
             break
     power = power[start:stop]
     freq = freq[start:stop]
-    logpower = [10*math.log(a,10) for a in power]
+    logpower = [10 * math.log(a, 10) for a in power]
     transferx.append(freq)
-    transfery.append(np.linspace(lo,lo,len(freq)))
+    transfery.append(np.linspace(lo, lo, len(freq)))
     transferz.append(logpower)
     lo = lo + lostep
 
@@ -52,5 +54,6 @@ transfery = np.array(transfery)
 transferz = np.array(transferz)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-surf = ax.plot_surface(transferx, transfery, transferz, rstride=1, cstride=1, cmap=cm.jet, linewidth=0)
+surf = ax.plot_surface(transferx, transfery, transferz,
+                       rstride=1, cstride=1, cmap=cm.jet, linewidth=0)
 plt.show()

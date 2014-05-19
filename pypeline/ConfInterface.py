@@ -2,6 +2,7 @@
     Class specifically for interactions with dripline's configuration database.
 '''
 
+from __future__ import print_function
 # standard imports
 from time import sleep
 from uuid import uuid4
@@ -14,16 +15,20 @@ try:
 except ImportError:
     from DripResponse import DripResponse
 
-class _ConfInterface:
-    '''
-        Class for interactions with the configurations database
 
-        This class is meant to be internal to pypeline and should NOT be used directly.
+class _ConfInterface:
+
+    '''
+        Class for interactions with the dripline configurations database
+
+        This class is meant to be internal to pypeline and
+        should NOT be used directly.
     '''
 
     def __init__(self, conf_database):
         '''
-            <conf_database> is the dripline configuration database (element of a couchdb Server object)
+            <conf_database> is the dripline configuration database
+            (element of a couchdb Server object)
         '''
         self._conf_database = conf_database
 
@@ -47,27 +52,30 @@ class _ConfInterface:
 
     def AddLoggers(self, instruments, intervals):
         '''
-            Add each element of instruments to the configuration database as a logger
+            Add each element of instruments to the configuration database
+            as a logger
         '''
-        for (instrument,interval) in zip(instruments,intervals):
+        for (instrument, interval) in zip(instruments, intervals):
             match = False
-            match = sum([instrument == row.key for row in self._conf_database.view('objects/loggers')])
+            match = sum([instrument == row.key for row in
+                         self._conf_database.view('objects/loggers')])
             if match:
-                print(instruments[i] + " already added")
+                print(instrument + " already added")
                 continue
             add_doc = {
-                '_id':uuid4().hex,
-                'channel':instruments[i],
-                'interval':intervals[i],
-                'type':'logger',
+                '_id': uuid4().hex,
+                'channel': instrument,
+                'interval': str(interval),
+                'type': 'logger',
             }
             self._conf_database.save(add_doc)
 
     def RemoveLoggers(self, instruments):
         '''
-            Remove each element of instruments from the configuration database as a logger
+            Remove each element of instruments from the configuration database
+            as a logger
         '''
-        #for inst in instruments:
+        # for inst in instruments:
         for row in self._conf_database.view('objects/loggers'):
             if instruments.count(row.key):
                 self._conf_database.delete(self._conf_database.get(row.id))

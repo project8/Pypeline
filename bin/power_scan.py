@@ -1,20 +1,21 @@
-#system
+# system
 import sys
 import math
 import time
 from datetime import datetime
 from uuid import uuid4
-#custom
+# custom
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
-#custom
+# custom
 from pypeline import DripInterface, peakdet
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
-fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
+fname = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day) + str(
+    datetime.today().hour) + str(datetime.today().minute) + str(datetime.today().second)
 tempf = '/data/' + uuid4().hex + '.egg'
 busycount = 0
 busylim = 10
@@ -35,16 +36,17 @@ drip.Set('hf_sweeper_power', '-75')
 j = jstart
 while j <= jstop:
     i = istart
-    drip.Set('lo_cw_freq',str(j))
+    drip.Set('lo_cw_freq', str(j))
     print "LO set for " + str(j) + " MHz"
     dumx = []
     dumy = []
     dumz = []
     while i <= istop:
-        drip.Set('hf_cw_freq',str(24500+j+i))
+        drip.Set('hf_cw_freq', str(24500 + j + i))
         print str(i) + " MHz"
         try:
-            run = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(filename=tempf).Wait(), sp="powerline").Wait()))['result'])
+            run = eval(eval(repr(drip.CreatePowerSpectrum(drip.Run(
+                filename=tempf).Wait(), sp="powerline").Wait()))['result'])
             i = i + istep
             keycount = 0
             syncount = 0
@@ -82,11 +84,11 @@ while j <= jstop:
                 transferz = np.array(transferz)
                 fig = plt.figure()
                 ax = fig.add_subplot(111, projection='3d')
-                ax.plot_surface(transferx,transfery,transferz,cmap=cm.jet)
-                #plt.plot(transferx, transfery, 'o')
-                #plt.xlabel("Frequency (MHz)")
-                #plt.ylabel("Peak Height (dBm)")
-                #plt.title("Transfer Function")
+                ax.plot_surface(transferx, transfery, transferz, cmap=cm.jet)
+                # plt.plot(transferx, transfery, 'o')
+                # plt.xlabel("Frequency (MHz)")
+                # plt.ylabel("Peak Height (dBm)")
+                # plt.title("Transfer Function")
                 plt.show()
                 raise
             else:
@@ -100,33 +102,34 @@ while j <= jstop:
             transferz = np.array(transferz)
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
-            ax.plot_surface(transferx,transfery,transferz,cmap=cm.jet)
-            #plt.plot(transferx, transfery, 'o')
-            #plt.xlabel("Frequency (MHz)")
-            #plt.ylabel("Peak Height (dBm)")
-            #plt.title("Transfer Function")
+            ax.plot_surface(transferx, transfery, transferz, cmap=cm.jet)
+            # plt.plot(transferx, transfery, 'o')
+            # plt.xlabel("Frequency (MHz)")
+            # plt.ylabel("Peak Height (dBm)")
+            # plt.title("Transfer Function")
             plt.show()
             raise
         power = run['data']
-        freq = np.linspace(0,run['sampling_rate']/2,len(power))
+        freq = np.linspace(0, run['sampling_rate'] / 2, len(power))
         power = power[1:-1]
         freq = freq[1:-1]
-        logpower = [10*math.log(a,10) for a in power]
-        #plt.plot(x,logy)
-        peaks = peakdet(logpower,2,freq)
-        #print peaks[0]
+        logpower = [10 * math.log(a, 10) for a in power]
+        # plt.plot(x,logy)
+        peaks = peakdet(logpower, 2, freq)
+        # print peaks[0]
         for k in peaks[0]:
-            #print j
-            #print i-step
-            if round(k[0]) == (i-istep):
+            # print j
+            # print i-step
+            if round(k[0]) == (i - istep):
                 dumx.append(k[0])
                 dumy.append(j)
                 dumz.append(k[1])
-        f = open('/Users/Micah/project8/pypeline/scripts/run_data/' + fname + '.txt', 'a')
-        f.write(repr([dumx,dumy,dumz]))
+        f = open(
+            '/Users/Micah/project8/pypeline/scripts/run_data/' + fname + '.txt', 'a')
+        f.write(repr([dumx, dumy, dumz]))
         f.close()
-        #print transferx
-        #print transfery
+        # print transferx
+        # print transfery
     transferx.append(dumx)
     transfery.append(dumy)
     transferz.append(dumz)
@@ -137,10 +140,12 @@ transfery = np.array(transfery)
 transferz = np.array(transferz)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-surf = ax.plot_surface(transferx,transfery,transferz,rstride=istep,cstride=jstep,cmap=cm.jet)
-#plt.plot(transferx, transfery, 'o')
-#plt.xlabel("Output Frequency (hf_cw_freq - 24.5 GHz - lo_cw_freq) (MHz)")
-#plt.ylabel("Peak Height (dBm)")
-#plt.title("Transfer Function")
-plt.savefig('/Users/Micah/project8/pypeline/scripts/run_images/' + fname + '.jpg')
+surf = ax.plot_surface(
+    transferx, transfery, transferz, rstride=istep, cstride=jstep, cmap=cm.jet)
+# plt.plot(transferx, transfery, 'o')
+# plt.xlabel("Output Frequency (hf_cw_freq - 24.5 GHz - lo_cw_freq) (MHz)")
+# plt.ylabel("Peak Height (dBm)")
+# plt.title("Transfer Function")
+plt.savefig(
+    '/Users/Micah/project8/pypeline/scripts/run_images/' + fname + '.jpg')
 plt.show()

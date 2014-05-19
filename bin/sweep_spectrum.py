@@ -1,9 +1,10 @@
-#standard libs
+# standard libs
 import sys
 from uuid import uuid4
-#custom
+# custom
 from pypeline import DripInterface
 from power_spectrum import power_spectrum
+
 
 def sweep_spectrum():
     '''
@@ -25,16 +26,16 @@ def sweep_spectrum():
     if '-h' in sys.argv:
         print(sweep_spectrum.__doc__)
     if '-p' in sys.argv:
-        power = sys.argv[sys.argv.index('-p')+1]
+        power = sys.argv[sys.argv.index('-p') + 1]
         drip.Set('hf_sweeper_power', power)
     if '-start' in sys.argv:
-        start = sys.argv[sys.argv.index('-start')+1]
+        start = sys.argv[sys.argv.index('-start') + 1]
         drip.Set('hf_sweep_start', start)
     if '-stop' in sys.argv:
-        stop = sys.argv[sys.argv.index('-stop')+1]
+        stop = sys.argv[sys.argv.index('-stop') + 1]
         drip.Set('hf_sweep_stop', stop)
     if '-t' in sys.argv:
-        time = sys.argv[sys.argv.index('-time')+1]
+        time = sys.argv[sys.argv.index('-time') + 1]
         drip.Set('hf_sweep_time', time)
 
     power_spectrum(args=sys.argv, subprocess='sweepline')

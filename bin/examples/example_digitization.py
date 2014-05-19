@@ -12,7 +12,7 @@ import time
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
 
-drip.Set('test_6v','0.25V')
+drip.Set('test_6v', '0.25V')
 short_run = drip.Run(duration=250, rate=500, filename=None)
 
 valve_temps = []

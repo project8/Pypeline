@@ -1,9 +1,10 @@
-#standard libs
+# standard libs
 import sys
 from uuid import uuid4
-#custom
+# custom
 from pypeline import DripInterface
 from power_spectrum import power_spectrum
+
 
 def cw_spectrum():
     '''
@@ -22,12 +23,12 @@ def cw_spectrum():
     if '-h' in sys.argv:
         print(cw_spectrum.__doc__)
     if '-p' in sys.argv:
-        power = sys.argv[sys.argv.index('-p')+1]
+        power = sys.argv[sys.argv.index('-p') + 1]
         drip.Set('hf_sweeper_power', power)
     if '-hf' in sys.argv:
-        hf = sys.argv[sys.argv.index('-hf')+1]
+        hf = sys.argv[sys.argv.index('-hf') + 1]
         drip.Set('hf_cw_freq', hf)
-    
+
     power_spectrum(args=sys.argv)
 
 if __name__ == '__main__':

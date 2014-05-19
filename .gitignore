@@ -26,12 +26,18 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
+#eclipse
+.project
+.pydevproject
+
 #editor temp files
 *.swp
+*~
 
 #saved data
 *.txt
 *.jpg
+*.log
 
 #compiled python files
 *.pyc

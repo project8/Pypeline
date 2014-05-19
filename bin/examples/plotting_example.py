@@ -36,9 +36,9 @@ logg.Plot('right_gas_line_upper_t', start='2012-09-06 10:00:00',
 logg.Fit('right_gas_line_upper_t')
 
 # An exponential fit can also be used with the keyword 'exponential'.
-logg.Fit('right_gas_line_upper_t','exponential')
+logg.Fit('right_gas_line_upper_t', 'exponential')
 
 # Finally, an arbitrary function can be specified in the following manner:
-func = lambda p, x: p[0] + p[1]*x + p[2]*x**2
-p0 = [0, 1, 1] #You also have to specify a set of guess parameters.
+func = lambda p, x: p[0] + p[1] * x + p[2] * x ** 2
+p0 = [0, 1, 1]  # You also have to specify a set of guess parameters.
 logg.Fit('right_gas_line_upper_t', func, p0)

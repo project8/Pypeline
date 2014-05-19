@@ -26,9 +26,9 @@
     pump_valve_t
     vent_valve_t
 '''
-#system
+# system
 import sys
-#custom
+# custom
 from pypeline import DripInterface
 
 drip = DripInterface('http://p8portal.phys.washington.edu:5984')
@@ -56,7 +56,7 @@ while not val and tries < 2:
         print "bore_pressure unexpected error", sys.exc_info()[0]
 if not val:
     print "bore_pressure not responding"
-        
+
 # ============== Check bypass valve temp =================
 val = False
 tries = 0
@@ -78,7 +78,7 @@ while not val and tries < 2:
         print "bypass_valve_t unexpected error:", sys.exc_info()[0]
 if not val:
     print "bypass_valve_t not responding"
-            
+
 # =========== Check cernox temperature sensors on cable A ================
 val = False
 tries = 0
@@ -199,7 +199,7 @@ while not val and tries < 2:
         print "hall_probe_voltage unexpected error:", sys.exc_info()[0]
 if not val:
     print "hall_probe_voltage not responding"
-        
+
 # ========================= Check high frequency ==============================
 val = False
 tries = 0
@@ -253,8 +253,8 @@ while not val and tries < 2:
         else:
             print "hf_sweep_stop ok " + str(hf_sweep_stop)
     except KeyError:
-       tries += 1
-       continue
+        tries += 1
+        continue
     except:
         val = True
         print "hf_sweep_stop unexpected error:", sys.exc_info()[0]
@@ -316,7 +316,7 @@ while not val and tries < 2:
         print "ignatius_data_disk unexpected error", sys.exc_info()[0]
 if not val:
     print "ignatius_data_disk not responding"
-    
+
 # ========================= Check Inlet Pressure ==========================
 val = False
 tries = 0
@@ -376,7 +376,7 @@ try:
         "lo_power_level not responding"
 except:
     "lo_power_level not responding", sys.exc_info()[0]
-    
+
 # ========================= Check Outlet Pressure =========================
 val = False
 tries = 0
@@ -415,7 +415,7 @@ while not val and tries < 2:
         print "p8portal_root_disk unexpected error", sys.exc_info()[0]
 if not val:
     print "p8portal_root_disk not responding"
-    
+
 # ============== Check Pt temperature sensors on cable C ==================
 val = False
 tries = 0
@@ -500,7 +500,7 @@ while not val and tries < 2:
         print "platinum_rtd_c_t4 unexpected error:", sys.exc_info()[0]
 if not val:
     print "platinum_rtd_c_t4 not responding"
-    
+
 # ====================== Check Pump Valve Temperature =====================
 val = True
 tries = 0
