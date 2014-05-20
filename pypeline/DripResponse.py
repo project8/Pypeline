@@ -97,3 +97,23 @@ class DripResponse(dict):
         if not self.Waiting():
             result = self['result'].popitem()[1]['result']
         return result
+
+    def Final(self, orResult=True):
+        '''
+        '''
+        final = None
+        self.Wait()
+        if not self.Waiting():
+            final = self['result'].popitem()[1]['final']
+        if final is None and isResult:
+            final = self.Result()
+        return final
+
+    def TimeStamp(self):
+        '''
+        '''
+        timestamp = None
+        self.Wait()
+        if not self.Waiting():
+            timestamp = self['result'].popitem()[1]['timestamp']
+        return timestamp
