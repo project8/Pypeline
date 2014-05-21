@@ -92,8 +92,30 @@ class DripResponse(dict):
     def Result(self):
         '''
         '''
-        result = None
+        return self._RespField('result')
+
+    def Final(self, orResult=True):
+        '''
+        '''
+        final = self._RespField('final')
+        if final is None and orResult:
+            final = self._RespField('result')
+        return final
+
+    def TimeStamp(self):
+        '''
+        '''
+        return self._RespField('timestamp')
+    
+    def _RespField(self, field):
+        '''
+        '''
+        value = None
         self.Wait()
         if not self.Waiting():
-            result = self['result'].popitem()[1]['result']
-        return result
+            try:
+                value = self['result'].popitem()[1][field]
+            except KeyError as e:
+                if not e.message == field:
+                    raise
+        return value

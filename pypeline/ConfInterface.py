@@ -45,10 +45,53 @@ class _ConfInterface:
         '''
             Creates a list of all possible channels to log.
         '''
-        rows = []
-        for row in self._conf_database.view('objects/loggers'):
-            rows.append(row.key)
-        return rows
+        try:
+            view_result = self._GetView('loggers')
+        except:
+            raise
+        print(view_result)
+        return [row.key for row in view_result.rows]
+
+    def LoggerConfigurations(self):
+        '''
+            Returns the configuration details for loggers
+        '''
+        view_result = self._GetView('loggers')
+        return view_result.rows
+    
+    def _GetView(self, view_name):
+        '''
+        '''
+        return_value = False
+        if '_design/type_lists' in self._conf_database:
+            des_doc = self._conf_database['_design/type_lists']
+            if 'views' in des_doc:
+                if view_name in des_doc['views']:
+                    return_value = True
+        if not return_value:
+            self._TryAddingView(view_name)
+        return self._conf_database.view('type_lists/'+view_name)
+
+    def _TryAddingView(self, view_name):
+        '''
+        '''
+        # view_name specific part
+        view_map = None
+        if view_name == 'loggers':
+            view_map = "function(doc) {\n  if(doc[\"type\"] == \"logger\") {\n\
+                        emit(doc[\"channel\"], doc);\n  }\n}"
+        else:
+            raise KeyError('unable to add requested view')
+        # grab and update the design document
+        if '_design/type_lists' in self._conf_database:
+            des_doc = self._conf_database['_design/type_lists']
+        else:
+            des_doc = {"_id":"_design/type_lists"}
+        des_doc['language'] = 'javascript'
+        if not 'views' in des_doc:
+            des_doc['views'] = {}
+        des_doc['views'][view_name] = {"map":view_map}
+        self._conf_database.save(des_doc)
 
     def AddLoggers(self, instruments, intervals):
         '''
