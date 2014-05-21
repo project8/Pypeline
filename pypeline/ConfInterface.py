@@ -51,6 +51,13 @@ class _ConfInterface:
             raise
         print(view_result)
         return [row.key for row in view_result.rows]
+
+    def LoggerConfigurations(self):
+        '''
+            Returns the configuration details for loggers
+        '''
+        view_result = self._GetView('loggers')
+        return view_result.rows
     
     def _GetView(self, view_name):
         '''

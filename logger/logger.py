@@ -2,7 +2,10 @@
     The pypeline logger will duplicate the functionality of the integrated dripline logger.  It is meant to serve as an alternative for instances when the loggers are broken. It could also be useful for things that need to be logged but which are not actual dripline channels.
 '''
 
+# system libraries
 from time import sleep
+# custom libs
+from pypeline import DripInterface
 
 class logger:
     '''
@@ -10,6 +13,7 @@ class logger:
     '''
 
     def __init__(self, **kwargs):
+        print('init called')
         if kwargs:
             self.SetupChannel(**kwargs)
         if 'start' in kwargs:
@@ -17,6 +21,7 @@ class logger:
                 self.__call__()
 
     def __call__(self, **kwargs):
+        print('starting a logger loop')
         self.StartLogLoop()
 
     def SetupChannel(self, **kwargs):
@@ -25,15 +30,18 @@ class logger:
 
             Inputs:
                 valid kwargs are:
-                    pype -> a DripInterface instance, used for 'getting'
+                    pype_url -> a url for a DripInterface instance __init__
                     channel -> name of the channel to log
                     interval -> approximate time between logging of values [seconds]
         '''
-        valid_kwargs = {'pype', 'channel', 'interval', 'start'}
+        valid_kwargs = {'pype_url', 'channel', 'interval', 'start'}
         if kwargs and not set(kwargs.keys()).issubset(valid_kwargs):
             raise KeyError('invalid keyword arugment')
         for kwarg in kwargs:
             if kwarg == 'start':
+                continue
+            if kwarg == 'pype_url':
+                self.pype = DripInterface(kwargs[kwarg])
                 continue
             setattr(self, kwarg, kwargs[kwarg])
 
@@ -44,7 +52,9 @@ class logger:
         while True:
             print('log again')
             self._LogChannel()
+            print('channel logged, sleeping for ',self.interval)
             sleep(self.interval)
+            print('sleep complete')
     
     def _LogChannel(self):
         '''
