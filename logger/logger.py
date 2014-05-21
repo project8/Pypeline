@@ -1,7 +1,7 @@
 '''
     The pypeline logger will duplicate the functionality of the integrated dripline logger.  It is meant to serve as an alternative for instances when the loggers are broken. It could also be useful for things that need to be logged but which are not actual dripline channels.
 '''
-
+from __future__ import print_function, absolute_import
 # system libraries
 from time import sleep
 # custom libs
@@ -58,9 +58,9 @@ class logger:
             so here, self.pype.Get could be changed to self.AcquireMethod which is part of the configuration, it could then log non-dripline things, if that is useful.
         '''
         get_result = self.pype.Get(self.channel).Wait()
-        print('logging ', self.channel)
+        print('logging', self.channel)
         log = {'sensor':self.channel,
-               'uncal_val':get_result.Result(),
-               'cal_val':get_result.Final(),
-               'timestamp':get_result.TimeStamp(),}
+               'uncal_val':str(get_result.Result()),
+               'cal_val':str(get_result.Final()),
+               'timestamp':str(get_result.TimeStamp()),}
         self.pype.LogValue(**log)

@@ -1,8 +1,8 @@
 '''
 '''
-
+from __future__ import print_function, absolute_import
 # standard libs
-from multiprocessing import Pool
+from multiprocessing import Pool, Process
 from uuid import uuid4
 # local libs
 from pypeline import DripInterface
@@ -17,7 +17,7 @@ class log_manager:
         '''
         self.db_url = dripline_db_url
         self.loggers = {}
-        self.pool = False
+        self.process_list = []
 
     def __call__(self):
         '''
@@ -29,6 +29,7 @@ class log_manager:
     def ConfFromDatabase(self):
         '''
         '''
+        self.loggers = {}
         db_logger_rows = DripInterface(self.db_url).LoggerConfigurations()
         for logger in db_logger_rows:
             self.AddLogger(logger['key'], logger['value']['channel'], float(logger['value']['interval']))
@@ -52,17 +53,14 @@ class log_manager:
         '''
         '''
         self.StopLoggers()
-        self.pool = Pool(processes=len(self.loggers)+1)
-        self.pool.map_async(_StartLogger, self.loggers.values())
-        #self.pool.map(_StartLogger, self.loggers.values())
+        self.process_list = [Process(target=logger, kwargs=kwargs) for kwargs in self.loggers.values()]
+        for p in self.process_list:
+            p.start()
     
     def StopLoggers(self):
         '''
         '''
-        if self.pool:
-            self.pool.terminate()
-            self.pool = False
-
-def _StartLogger(kwargs_dict):
-    l = logger(**kwargs_dict)
-    l()
+        if self.process_list:
+            for p in self.process_list:
+                p.terminate()
+            self.process_list = []
