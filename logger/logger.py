@@ -50,17 +50,15 @@ class logger:
             Begin continuous logging. This is a blocking function call.
         '''
         while True:
-            print('log again')
             self._LogChannel()
-            print('channel logged, sleeping for ',self.interval)
             sleep(self.interval)
-            print('sleep complete')
     
     def _LogChannel(self):
         '''
             so here, self.pype.Get could be changed to self.AcquireMethod which is part of the configuration, it could then log non-dripline things, if that is useful.
         '''
         get_result = self.pype.Get(self.channel).Wait()
+        print('logging ', self.channel)
         log = {'sensor':self.channel,
                'uncal_val':get_result.Result(),
                'cal_val':get_result.Final(),

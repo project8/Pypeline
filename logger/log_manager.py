@@ -52,7 +52,7 @@ class log_manager:
         '''
         '''
         self.StopLoggers()
-        self.pool = Pool(processes=len(self.loggers))
+        self.pool = Pool(processes=len(self.loggers)+1)
         self.pool.map_async(_StartLogger, self.loggers.values())
         #self.pool.map(_StartLogger, self.loggers.values())
     
