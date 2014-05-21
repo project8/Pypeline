@@ -93,7 +93,8 @@ class DripInterface(_ConfInterface,
         if not channel:
             result = self.EligibleChannels()
         else:
-            if channel in self.GetPureSetters():
+            if False:
+            #if channel in self.GetPureSetters():
                 result = super(DripInterface, self).GetFromSet(channel)
             else:
                 result = super(DripInterface, self).Get(channel)
