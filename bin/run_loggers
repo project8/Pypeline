@@ -4,7 +4,7 @@ from __future__ import print_function, absolute_import
 import pype_logger as PyLog
 import sys
 
-start_fun(url):
+def start_fun(url):
     '''
     '''
     log_sup = PyLog.log_manager(url)
