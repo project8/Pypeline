@@ -113,5 +113,9 @@ class DripResponse(dict):
         value = None
         self.Wait()
         if not self.Waiting():
-            value = self['result'].popitem()[1][field]
+            try:
+                value = self['result'].popitem()[1][field]
+            except KeyError as e:
+                if not e.message == field:
+                    raise
         return value
