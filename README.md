@@ -14,7 +14,7 @@ The preferred method of installation is with [virtualenv](https://pypi.python.or
 ```shell
 virtualenv --python=python2.7 /path/to/virtualenvironments/pypeline_env
 source /path/to/virtualenvironments/pypeline_env/bin/activate
-pip install ipython matplotlib CouchDB
+pip install ipython matplotlib scipy CouchDB
 git clone git@github.com:project8/Pypeline
 cd Pypeline
 python setup.py install
