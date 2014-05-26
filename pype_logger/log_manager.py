@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import
 # standard libs
 from multiprocessing import Pool, Process
 from uuid import uuid4
+import logging
 # local libs
 from pypeline import DripInterface
 from .logger import logger
@@ -64,3 +65,9 @@ class log_manager:
             for p in self.process_list:
                 p.terminate()
             self.process_list = []
+
+    def Update(self):
+        '''
+        '''
+        self.ConfFromDatabase()
+        self.StartLoggers()
