@@ -34,7 +34,7 @@ if __name__ == '__main__':
                         'Start':log_sup.StartLoggers,
                         'log_supervisor':log_sup,
                         'exit':sys.exit})
-        code.InteractiveConsole(context).interact('\n\n\n\nThe pypeline data logger is running. Useful commands are:\nStart\nStop\nUpdate')
+        code.InteractiveConsole(context).interact("Welcome to the pypeline data logger")
     else:
         logging.warn('no couch server url provided')
         print(' '*5,'usage: $ run_loggers <couchdb_url>:<port>')

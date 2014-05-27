@@ -1,0 +1,38 @@
+#!/bin/bash
+
+SESSION="pypeline_data_logger"
+
+#read -d 'asdfasdf' INSTRUCTIONS <<"EOF"
+INSTRUCTIONS="Welcome to the pypeline logger tmux session.
+
+The lower left pane (:0.1) is an active ipython interpreter.  You can use it to control the logging session. For your convenience, several commands have been put into the global namespace:
+
+Start():
+    Begin actively logging configured loggers. If there are running loggers, first stop all of them, then start all in the current configuration
+
+Stop():
+    Stop all active loggers
+
+Update():
+    Replace all existing logger configurations with those from the dripline_conf database, then call Start()
+
+log_supervisor:
+    The log_manager instance whose methods are exposed above. You shouldn't need to interact directly with it."
+
+IS_RUNNING=$(tmux has-session -t ${SESSION} &> /dev/null)$?
+if [ ${IS_RUNNING} -ne 0 ]; then
+    echo "starting new session"
+    # setup the tmux session
+    tmux new-session -d -s ${SESSION}
+    tmux split-window -h
+    tmux select-pane -t ${SESSION}:0.0
+    tmux split-window -v -p 20
+    tmux select-pane -t ${SESSION}:0.0
+    tmux send-keys "watch -n 0.5 tail run_loggers_status.log" C-m
+    tmux select-pane -t ${SESSION}:0.2
+    tmux send-keys "less <<< \"${INSTRUCTIONS}\"" C-m
+    tmux select-pane -t ${session}:0.1
+    tmux send-keys "source ~/python_environments/pypeline/bin/activate && run_loggers ${1}" C-m
+fi
+
+tmux attach-session -t ${SESSION}
