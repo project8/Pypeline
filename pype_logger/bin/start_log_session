@@ -39,7 +39,7 @@ if [ ${IS_RUNNING} -ne 0 ]; then
     tmux select-pane -t ${SESSION}:0.0
     tmux split-window -v -p 20
     tmux select-pane -t ${SESSION}:0.0
-    tmux send-keys "watch -n 0.5 tail run_loggers_status.log" C-m
+    tmux send-keys "watch -n 0.5 tail /tmp/run_loggers_status.log" C-m
     tmux select-pane -t ${SESSION}:0.2
     tmux send-keys "less <<< \"${INSTRUCTIONS}\"" C-m
     tmux select-pane -t ${session}:0.1
