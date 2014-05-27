@@ -104,10 +104,12 @@ class _LogInterface:
             <timestamp> is a datetime object
         '''
         result = DripResponse(self._log_database, uuid4().hex)
+        if isinstance(timestamp, datetime):
+            timestamp = timestamp.strftime(time_format)
         log_doc = {
             '_id': result['_id'],
             'sensor_name': sensor,
-            'timestamp_localstring': timestamp.strftime(time_format),
+            'timestamp_localstring': timestamp,
             'uncalibrated_value': str(uncal_val),
             'calibrated_value': str(cal_val),
         }

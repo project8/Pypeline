@@ -7,6 +7,22 @@ The goal of pypeline is to create a simple, python based, interface to the dripl
 
 Development is being done using python 2.7 and 3.2 on MacOS 10.7 or later and gentoo linux (kernel 3.3.8). Debugging and testing often uses ipython for both python 2 and python 3.
 
+Getting Started
+---------------
+The preferred method of installation is with [virtualenv](https://pypi.python.org/pypi/virtualenv). Assuming you have that installed but are otherwise starting from scratch the normal steps are:
+
+```shell
+virtualenv --python=python2.7 /path/to/virtualenvironments/pypeline_env
+source /path/to/virtualenvironments/pypeline_env/bin/activate
+pip install ipython matplotlib scipy CouchDB
+git clone git@github.com:project8/Pypeline
+cd Pypeline
+python setup.py install
+deactivate
+```
+
+Once complete, you can do: ```source /path/to/virtualenvironments/pypeline_env/bin/activate```. Pypeline should now be ready for use.
+
 Dependencies
 ------------
 Where possible, the same codebase will be used for dependencies in python 2 as in python 3.

@@ -1,0 +1,40 @@
+#!/usr/bin/python
+from __future__ import print_function, absolute_import
+
+import logging
+import pype_logger as PyLog
+import sys
+import code
+
+def start_fun(url):
+    '''
+    '''
+    log_sup = PyLog.log_manager(url)
+    log_sup.ConfFromDatabase()
+    log_sup.StartLoggers()
+    return log_sup
+
+if __name__ == '__main__':
+    status_format = logging.Formatter('%(asctime)s<%(levelname)s> %(message)s','%Y-%m-%dT%H:%M:%S')
+    status_logger = logging.getLogger()
+    status_logger.setLevel(logging.DEBUG)
+    status_handler_file = logging.FileHandler('run_loggers_status.log', mode='w')
+    status_handler_file.setLevel(logging.DEBUG)
+    status_handler_file.setFormatter(status_format)
+    status_handler_term = logging.StreamHandler()
+    status_handler_term.setLevel(logging.WARNING)
+    status_handler_term.setFormatter(status_format)
+    status_logger.addHandler(status_handler_file)
+    status_logger.addHandler(status_handler_term)
+    if len(sys.argv) == 2:
+        log_sup = start_fun(sys.argv[1])
+        context = globals()
+        context.update({'Update':log_sup.Update,
+                        'Stop':log_sup.StopLoggers,
+                        'Start':log_sup.StartLoggers,
+                        'log_supervisor':log_sup,
+                        'exit':sys.exit})
+        code.InteractiveConsole(context).interact("Welcome to the pypeline data logger")
+    else:
+        logging.warn('no couch server url provided')
+        print(' '*5,'usage: $ run_loggers <couchdb_url>:<port>')
