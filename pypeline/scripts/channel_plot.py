@@ -165,10 +165,10 @@ class channel_plot:
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
         OptionMenu(frame, self.plot_dicts[plotnum]['xname'],
-                   "None", "time", *self.pype.ListWithProperty('logging')
+                   "None", "time", *self.pype.EligibleLoggers()
                    ).grid(row=0, column=1, sticky='ew')
         OptionMenu(frame, self.plot_dicts[plotnum]['yname'],
-                   "None", *self.pype.ListWithProperty('logging')
+                   "None", *self.pype.EligibleLoggers()
                    ).grid(row=1, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 

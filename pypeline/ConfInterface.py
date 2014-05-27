@@ -49,7 +49,6 @@ class _ConfInterface:
             view_result = self._GetView('loggers')
         except:
             raise
-        print(view_result)
         return [row.key for row in view_result.rows]
 
     def LoggerConfigurations(self):
