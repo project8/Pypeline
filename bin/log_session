@@ -5,8 +5,18 @@ SESSION="pypeline_data_logger"
 #read -d 'asdfasdf' INSTRUCTIONS <<"EOF"
 INSTRUCTIONS="Welcome to the pypeline logger tmux session.
 
-The lower left pane (:0.1) is an active ipython interpreter.  You can use it to control the logging session. For your convenience, several commands have been put into the global namespace:
 
+
+Some tmux basics:
+-----------------------------
+Ctrl+b then d:
+    Detach from this session (leaves it running).
+
+Ctrl+b then <arrow>:
+    Switch to a different pane
+
+The lower left pane (:0.1) is an active ipython interpreter.  You can use it to control the logging session. For your convenience, several commands have been put into the global namespace:
+-----------------------------
 Start():
     Begin actively logging configured loggers. If there are running loggers, first stop all of them, then start all in the current configuration
 
