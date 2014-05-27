@@ -4,6 +4,7 @@ from glob import glob
 verstr = "none"
 try:
     verstr = open("VERSION").read().strip().replace(' ','.')
+    open("pypeline/__version.py", mode="w").write("'''This file generated automatically'''\n\n__version__ = '" + verstr + "'")
 except EnvironmentError:
     pass #There is no file version file
 except:
