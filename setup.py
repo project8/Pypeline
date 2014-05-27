@@ -1,4 +1,5 @@
 from distutils.core import setup
+from glob import glob
 
 verstr = "none"
 try:
@@ -12,5 +13,5 @@ setup(
     name = 'Pypeline',
     version = verstr,
     packages = ['pypeline','pypeline/scripts','pypeline/scripts/dpph', 'pypeline/scripts/take_data', 'pid_control', 'pype_logger'],
-    scripts = ['gpypeline','bin/run_loggers','bin/start_log_session']
+    scripts = glob('*/bin/*') + glob('bin/*')
 )
