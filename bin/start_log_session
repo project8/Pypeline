@@ -10,10 +10,11 @@ INSTRUCTIONS="Welcome to the pypeline logger tmux session.
 Some tmux basics:
 -----------------------------
 Ctrl+b then d:
-    Detach from this session (leaves it running).
+    Detach from this session (leaves it running). You can also simply close this xterm, the tmux session will continue to run.
 
 Ctrl+b then <arrow>:
     Switch to a different pane
+
 
 The lower left pane (:0.1) is an active ipython interpreter.  You can use it to control the logging session. For your convenience, several commands have been put into the global namespace:
 -----------------------------
