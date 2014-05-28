@@ -10,10 +10,11 @@ INSTRUCTIONS="Welcome to the pypeline logger tmux session.
 Some tmux basics:
 -----------------------------
 Ctrl+b then d:
-    Detach from this session (leaves it running).
+    Detach from this session (leaves it running). You can also simply close this xterm, the tmux session will continue to run.
 
 Ctrl+b then <arrow>:
     Switch to a different pane
+
 
 The lower left pane (:0.1) is an active ipython interpreter.  You can use it to control the logging session. For your convenience, several commands have been put into the global namespace:
 -----------------------------
@@ -38,7 +39,7 @@ if [ ${IS_RUNNING} -ne 0 ]; then
     tmux select-pane -t ${SESSION}:0.0
     tmux split-window -v -p 20
     tmux select-pane -t ${SESSION}:0.0
-    tmux send-keys "watch -n 0.5 tail run_loggers_status.log" C-m
+    tmux send-keys "watch -n 0.5 tail /tmp/run_loggers_status.log" C-m
     tmux select-pane -t ${SESSION}:0.2
     tmux send-keys "less <<< \"${INSTRUCTIONS}\"" C-m
     tmux select-pane -t ${session}:0.1

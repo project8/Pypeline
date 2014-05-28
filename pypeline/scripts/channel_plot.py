@@ -40,6 +40,7 @@ class channel_plot:
     def __init__(self, interface, toplevel=False, start_t=False, stop_t=False):
         '''
         '''
+        self.abort = False
         if not start_t:
             start_t = datetime.utcnow() - timedelta(hours=2)
         if not stop_t:
@@ -140,9 +141,7 @@ class channel_plot:
         '''
         '''
         self.figure = Figure()
-        #self.figure.set_size_inches((4, 3), forward=True)
         self.figure.subplots_adjust(left=0.15, bottom=0.2)
-        #self.subfigure = []
         self.subfigure = self.figure.add_subplot(1,1,1)
         self.notebook = Notebook(self.toplevel)
         self.notebook.grid(row=1, column=1, rowspan=3, columnspan=3, sticky='nsew')
@@ -161,53 +160,18 @@ class channel_plot:
         self.plot_dicts['xunit'] = False
         self.plot_dicts[plotnum]['yname'] = StringVar(value='None')
         self.plot_dicts['yunit'] = False
-        #self.subfigure.append(self.figure.add_subplot(1, 1, 1))
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
         OptionMenu(frame, self.plot_dicts[plotnum]['xname'],
-                   "None", "time", *self.pype.ListWithProperty('logging')
+                   "None", "time", *self.pype.EligibleLoggers()
                    ).grid(row=0, column=1, sticky='ew')
         OptionMenu(frame, self.plot_dicts[plotnum]['yname'],
-                   "None", *self.pype.ListWithProperty('logging')
+                   "None", *self.pype.EligibleLoggers()
                    ).grid(row=1, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
-    def _SetStart(self, event=None, isFirst=True):
+    def _SetStartStop(self, event=None):
         '''
-            Note: event is automatically passed in by the binding, but unused
-        '''
-        try:
-            if self.relative_start_time.get():
-                hours = float(self.start_t.get())
-                start_time = datetime.utcnow() - timedelta(hours=hours)
-            else:
-                start_time = datetime.strptime(self.start_t.get(),
-                                               time_format)
-            stop = datetime.strptime(self.stop_t.get(), time_format)
-            assert (start_time < stop)
-            self.time_interval[0] = start_time.strftime(time_format)
-            if isFirst:
-                self._SetStop(event, isFirst=False)
-            #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
-        except ValueError:
-            if self.relative_start_time.get():
-                showwarning('Warning', 'Hours ago must be a float')
-            else:
-                showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
-            self.start_t.set(self.time_interval[0])
-        except AssertionError:
-            if isFirst:
-                self._SetStop(event=None, isFirst=False)
-            else:
-                showwarning('Warning', 'Start time must be before stop time')
-                self.start_t.set(self.time_interval[0])
-
-        except:
-            raise
-
-    def _SetStop(self, event=None, isFirst=True):
-        '''
-            Note: event is automatically passed in by the binding, but unused
         '''
         try:
             if self.relative_stop_time.get():
@@ -220,41 +184,39 @@ class channel_plot:
             else:
                 start = datetime.strptime(self.start_t.get(), time_format)
             assert (start < stop_time)
+            self.time_interval[0] = start.strftime(time_format)
             self.time_interval[1] = stop_time.strftime(time_format)
-            if isFirst:
-                self._SetStart(event, isFirst=False)
-            #self.Update() -- yikes, my tibbs, leads to infinite loops if you call set stop in update
         except ValueError:
-            showwarning('Warning', 'Format must match YYYY-MM-DD HH:MM:SS')
-            self.stop_t.set(self.time_interval[1])
+            showwarning('Warning', 'invalid time format, must match yyyy-mm-ddThh:mm:ssZ')
+            raise TimeFormatError("invalid start or stop time format")
         except AssertionError:
-            if isFirst:
-                self._SetStart(event=None, isFirst=False)
-            else:
-                showwarning('Warning', 'Start time must be before stop time')
-                self.stop_t.set(self.time_interval[1])
-        except:
-            raise
+            showwarning('Warning', 'time order error, stop time must be after start time')
+            raise TimeOrderError("stop time must be after start time")
 
     def Update(self, event=None, tab='All', unpend=False):
         '''
             Call whatever sequence is needed to update local data and redraw
             the plot
         '''
+        if self.abort:
+            self.abort = False
+            return
         if unpend:
             self.update_pending = False
-        self.status_var.set('updating')
+        self.status_var.set('updating!')
         if tab == 'All':
             tab = range(len(self.notebook.tabs()))
-            #self.subfigure.cla()
         elif isinstance(tab, int):
             tab = [tab]
         else:
             raise ValueError('tab should be "All" or an int')
-        self._SetStart(event=None, isFirst=False)
-        self._SetStop(event=None, isFirst=False)
+        try:
+            self._SetStartStop(event=None)
+        except:
+            print('SetStartStop problems')
+            self.abort = True
+            
         self.subfigure.clear()
-        #git dat gibblit grayvy
         for tabi in tab:
             if tabi > len(self.subfigure.get_lines()):
                 print('wtf')
@@ -263,8 +225,6 @@ class channel_plot:
                 self._MakePlot(tab=tabi)
             else:
                 self._UpdateExisting(tab=tabi)
-                #this is where I just update the line
-        #dont stop git it git it
         self.figure.legends = []
         self.figure.legend(*self.subfigure.get_legend_handles_labels())
         self.figure.legends[0].draggable(True)
@@ -365,7 +325,6 @@ class channel_plot:
             plotformat='o-'
         else:
             plotformat='o'
-        #self.figure.get_axes()[0].clear()
         if self.plot_dicts[tab]['xname'].get() == 'time':
             self.subfigure.plot_date(self.xdata, self.ydata, plotformat,
                                           label=self.plot_dicts[tab]['yname'].get())
@@ -389,12 +348,9 @@ class channel_plot:
         yname = self.plot_dicts[tab]['yname'].get().replace('_', ' ')
         yunit = '[' + str(self.plot_dicts['yunit']) + ']'
         self.subfigure.set_ylabel(yname + ' ' + yunit)
-        #self.subfigure[tab].ticklabel_format(useOffset=False)
         tickformat = ticker.ScalarFormatter(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
-
-        #self.canvas.draw()
 
     def _PlotGasLines(self):
         '''

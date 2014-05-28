@@ -18,7 +18,7 @@ if __name__ == '__main__':
     status_format = logging.Formatter('%(asctime)s<%(levelname)s> %(message)s','%Y-%m-%dT%H:%M:%S')
     status_logger = logging.getLogger()
     status_logger.setLevel(logging.DEBUG)
-    status_handler_file = logging.FileHandler('run_loggers_status.log', mode='w')
+    status_handler_file = logging.FileHandler('/tmp/run_loggers_status.log', mode='w')
     status_handler_file.setLevel(logging.DEBUG)
     status_handler_file.setFormatter(status_format)
     status_handler_term = logging.StreamHandler()

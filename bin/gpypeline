@@ -17,6 +17,7 @@ from inspect import getargspec, getmembers, isclass, isfunction
 from numpy import pi
 # internal Libs
 from pypeline import DripInterface, scripts, NoResponseError, DriplineError
+from pypeline import __version__ as _pype_version
 
 
 class App:
@@ -56,7 +57,7 @@ class App:
         self.logchannelVar = StringVar()
         self.logintervalVar = IntVar()
         # values in loggers
-        self.loggers_list = self.pype.ListWithProperty('logging')
+        self.loggers_list = self.pype.EligibleLoggers()
         self.loggers_dict = {}
         self.loggers_time = {}
         for channel in self.loggers_list:
@@ -224,6 +225,6 @@ class App:
 
 if __name__ == "__main__":
     root = Tk()
-    root.title("gpypeline")
+    root.title("gpypeline v" + _pype_version)
     app = App(root)
     root.mainloop()

@@ -21,14 +21,14 @@ from .MantisInterface import MantisInterface
 from .CmdInterface import _CmdInterface
 from .ConfInterface import _ConfInterface
 from .LogInterface import _LogInterface
-from .PypelineConfInterface import _PypelineConfInterface
+#from .PypelineConfInterface import _PypelineConfInterface
 from .SensorDumpInterface import _SensorDumpInterface
 from .PypelineErrors import NoResponseError
 
 
 class DripInterface(_ConfInterface,
                     _CmdInterface,
-                    _PypelineConfInterface,
+                    #_PypelineConfInterface,
                     _SensorDumpInterface,
                     _LogInterface,
                     object):
@@ -65,7 +65,7 @@ class DripInterface(_ConfInterface,
 
         _ConfInterface.__init__(self, self._server['dripline_conf'])
         _CmdInterface.__init__(self, self._server['dripline_cmd'])
-        _PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
+        #_PypelineConfInterface.__init__(self, self._server['pypeline_conf'])
         _SensorDumpInterface.__init__(self,
                                       self._server['pypeline_sensor_dump'])
         _LogInterface.__init__(self, self._server['dripline_logged_data'])
@@ -164,7 +164,7 @@ class DripInterface(_ConfInterface,
             result = super(DripInterface, self).StartLoggers(instruments)
             if wait:
                 result.Wait()
-        self.AddProperties(instruments, 'logging')
+        #self.AddProperties(instruments, 'logging')
         return result
 
     def StopLoggers(self, instruments=False, wait=False):
@@ -335,7 +335,7 @@ class DripInterface(_ConfInterface,
             dumpdoc = self.NewDump(uuid4().hex)
         if runresponse:
             dumpdoc['mantis'] = runresponse
-        for ch in self.ListWithProperty('dump'):
+        for ch in []:#self.ListWithProperty('dump'):
             resp = self.Get(ch).Wait()
             if not resp.Waiting():
                 dumpdoc[ch] = resp

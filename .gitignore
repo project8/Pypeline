@@ -12,6 +12,9 @@ sdist
 develop-eggs
 .installed.cfg
 
+# Generated files
+*/__version.py
+
 # Installer logs
 pip-log.txt
 
