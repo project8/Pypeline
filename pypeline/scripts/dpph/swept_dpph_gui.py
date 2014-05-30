@@ -11,12 +11,15 @@ if inpy3:
                          Button, Checkbutton, Entry, Label, OptionMenu)
     from tkinter.filedialog import asksaveasfile, asksaveasfilename
     from tkinter.ttk import Notebook, Frame
+    from tkinter.messagebox import showwarning
 else:
     from Tkinter import (DoubleVar, StringVar, BooleanVar, IntVar,
                          Button, Checkbutton, Entry, Label, OptionMenu)
     from tkFileDialog import asksaveasfile, asksaveasfilename
     from ttk import Notebook, Frame
+    from tkMessageBox import showwarning
 from json import dump
+from datetime import datetime
 # 3rd party
 from numpy import pi, array, mean
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -167,6 +170,8 @@ class dpph_measurement:
                                   sweep_time=self.sweep_time_Var.get(),
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
+        if not sweep['frequencies_confirmed']:
+            showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
         self.sweep_result = sweep.copy()
         freqdata = sweep['frequency_curve']
         magdata = sweep['amplitude_curve']
@@ -261,10 +266,13 @@ class dpph_measurement:
             return
         result = {
                   'uncal': self.sweep_result['res_freq'],
-                  'uncal_err': self.sweep_result['fres_freq_unct'],
+                  'uncal_err': self.sweep_result['res_freq_unct'],
                   'uncal_units': 'MHz',
                   'cal': self.sweep_result['res_field'],
                   'cal_err': self.sweep_result['res_field_unct'],
                   'cal_units': 'kG',
                  }
-        self.pype.LogValue(sensor='dpph_field', **self.dpph_result)
+        dpph_result = {'uncal_val': ' '.join([str(result['uncal']), '+/-', str(result['uncal_err']), result['uncal_units']]),
+                       'cal_val': ' '.join([str(result['cal']), '+/-', str(result['cal_err']), result['cal_units']]),
+                       'timestamp': datetime.utcnow()}
+        self.pype.LogValue(sensor='dpph_field', **dpph_result)
