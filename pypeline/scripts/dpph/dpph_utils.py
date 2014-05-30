@@ -26,7 +26,7 @@ def _GetLockinValue(interface, freq=25553.440, slptime=2):
         interface.Set('hf_cw_freq', freq).Wait()['result'] == 'ok'
         drip_resp = interface.Get('dpph_magphase').Wait()
         sleep(slptime)
-        magphase = [float(val) for val in drip_resp['result'].popitem()[1]['result'].split(',')]
+        magphase = [float(val) for val in drip_resp.Result().split(',')]
         return magphase[0] * sign(sin(magphase[1] * pi / 180))
     except KeyError as keyname:
         if keyname[0] == 'result':
@@ -47,7 +47,7 @@ def _GetVoltages(pype, freq_list, power=-75, reference=0, deviation=0.2,
         <stop_volts>:   absolute voltage to stop looping
     '''
     pype.Set('hf_sweeper_power', power).Wait()
-    if not float(pype.Get('hf_sweeper_power').Wait()['result'].popitem()[1]['result']):
+    if not float(pype.Get('hf_sweeper_power').Wait().Result()):
         raise AssertionError('power setting not stable')
     VDC = []
     for count, freq in enumerate(freq_list):
@@ -75,25 +75,32 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         <num_points> number of samplings for the lockin to take
     '''
     sets = []
-    if power:
-        print('*' * 60, '\nsetting sweeper', datetime.utcnow())
-        sets.append(pype.Set('hf_sweep_start', start_freq))
-        sets.append(pype.Set('hf_sweep_stop', stop_freq))
-        sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
-        sets.append(pype.Set('hf_sweeper_power', power))
-    else:
-        print('*' * 60, '\ngetting values from sweeper', datetime.utcnow())
-        start_freq = float(pype.Get('hf_sweep_start').Wait()['result'].popitem()[1]['result'])/10**6
-        stop_freq = float(pype.Get('hf_sweep_stop').Wait()['result'].popitem()[1]['result'])/10**6
-        sweep_time = float(pype.Get('hf_sweep_time').Wait()['result'].popitem()[1]['result'])
-    for i in range(100):
-        if not sum([set.Waiting() for set in sets]):
-            break
-        sleep(1)
-    if sum([set.Waiting() for set in sets]):
-        for set in sets:
-            print(set)
-        raise DriplineError('Sweeper sets failed or not yet complete')
+    try:
+        if power:
+            print('*' * 60, '\nsetting sweeper', datetime.utcnow())
+            sets.append(pype.Set('hf_sweep_start', start_freq))
+            sets.append(pype.Set('hf_sweep_stop', stop_freq))
+            sets.append(pype.Set('hf_sweep_time', sweep_time * 1000))
+            sets.append(pype.Set('hf_sweeper_power', power))
+        else:
+            print('*' * 60, '\ngetting values from sweeper', datetime.utcnow())
+            start_freq = float(pype.Get('hf_sweep_start').Wait().Result())/10**6
+            stop_freq = float(pype.Get('hf_sweep_stop').Wait().Result())/10**6
+            sweep_time = float(pype.Get('hf_sweep_time').Wait().Result())
+        for i in range(100):
+            if not sum([set.Waiting() for set in sets]):
+                break
+            sleep(1)
+        if sum([set.Waiting() for set in sets]):
+            for set in sets:
+                print(set)
+            raise DriplineError('Sweeper sets failed or not yet complete')
+    except TypeError:
+        sets = False
+    except DriplineError:
+        sets = False
+    except:
+        raise
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) * 1000 / float(num_points)))
@@ -114,10 +121,10 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     if not status[1] > 0:
         raise DriplineError('data not taken')
     print('*' * 60, '\nretrieving data', datetime.utcnow())
-    adc_curve = pype.Get('lockin_adc1_curve').Wait()['result'].popitem()[1]['result']
-    x_curve = pype.Get('lockin_x_curve').Wait()['result'].popitem()[1]['result']
-    y_curve = pype.Get('lockin_y_curve').Wait()['result'].popitem()[1]['result']
-    amplitude_curve = pype.Get('lockin_mag_curve').Wait()['result'].popitem()[1]['result']
+    adc_curve = pype.Get('lockin_adc1_curve').Wait().Result()
+    x_curve = pype.Get('lockin_x_curve').Wait().Result()
+    y_curve = pype.Get('lockin_y_curve').Wait().Result()
+    amplitude_curve = pype.Get('lockin_mag_curve').Wait().Result()
     print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
     #amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
@@ -127,7 +134,8 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
     print('*' * 60, '\ndone')
     print('*' * 60)
-    return {'adc_curve': adc_curve,
+    return {'frequencies_confirmed': bool(sets),
+            'adc_curve': adc_curve,
             'frequency_curve': frequency_curve,
             'amplitude_curve': amplitude_curve}
 
@@ -137,11 +145,11 @@ def _WaitForLockinData(pype, timeout=100):
     '''
     return_value = None
     count = 0
-    status = pype.Get('lockin_data_status').Wait()['result'].popitem()[1]['result'].strip().split(';')
+    status = pype.Get('lockin_data_status').Wait().Result().strip().split(';')
     while (not int(status[0]) == 0) and (count < timeout) :
         count += 1
         sleep(10)
-        status = pype.Get('lockin_data_status').Wait()['result'].popitem()[1]['result'].strip().split(';')
+        status = pype.Get('lockin_data_status').Wait().Result().strip().split(';')
     if int(status[0]) == 0:
         return_value = [int(entry) for entry in status]
     return return_value

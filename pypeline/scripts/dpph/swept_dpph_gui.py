@@ -11,11 +11,13 @@ if inpy3:
                          Button, Checkbutton, Entry, Label, OptionMenu)
     from tkinter.filedialog import asksaveasfile, asksaveasfilename
     from tkinter.ttk import Notebook, Frame
+    from tkinter.messagebox import showwarning
 else:
     from Tkinter import (DoubleVar, StringVar, BooleanVar, IntVar,
                          Button, Checkbutton, Entry, Label, OptionMenu)
     from tkFileDialog import asksaveasfile, asksaveasfilename
     from ttk import Notebook, Frame
+    from tkMessageBox import showwarning
 from json import dump
 # 3rd party
 from numpy import pi, array, mean
@@ -167,6 +169,8 @@ class dpph_measurement:
                                   sweep_time=self.sweep_time_Var.get(),
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
+        if not sweep['frequencies_confirmed']:
+            showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
         self.sweep_result = sweep.copy()
         freqdata = sweep['frequency_curve']
         magdata = sweep['amplitude_curve']
