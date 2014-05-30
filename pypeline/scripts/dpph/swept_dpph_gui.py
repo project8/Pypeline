@@ -235,7 +235,7 @@ class dpph_measurement:
         res_field_unct = freq_to_field * res_unct
         print('for a field of', res_field)
         print('field unct of', res_field_unct)
-        self.result_str_Var.set('{:.2E} +/- {:.1E} MHz \n({:.2E} +/- {:.1E} kG)'.format(
+        self.result_str_Var.set('{:.4E} +/- {:.1E} MHz \n({:.4E} +/- {:.1E} kG)'.format(
             res_freq, res_unct, res_field, res_field_unct))
         self.sweep_result.update({'res_freq': res_freq,
                                   'res_freq_unct': res_unct,
