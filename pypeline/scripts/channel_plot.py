@@ -349,6 +349,8 @@ class channel_plot:
         yunit = '[' + str(self.plot_dicts['yunit']) + ']'
         self.subfigure.set_ylabel(yname + ' ' + yunit)
         tickformat = ticker.ScalarFormatter(useOffset=False)
+        # The line below sets the y-axis to be in a log-scale
+        self.subfigure.set_yscale('log')
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
 
