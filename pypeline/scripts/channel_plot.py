@@ -81,6 +81,7 @@ class channel_plot:
         self.relative_stop_time = BooleanVar(value=False)
         self.continuous_updates = BooleanVar(value=False)
         self.ManualLimits = BooleanVar(value=False)
+        self.LogYScale = BooleanVar(value=False)
         self.ConnectedPts = BooleanVar(value=True)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
@@ -119,8 +120,10 @@ class channel_plot:
         ymax.bind('<KP_Enter>', self.Update, '+')
         Checkbutton(self.toplevel, text='Manual Y-limits', variable=self.ManualLimits
                     ).grid(row=9, column=1)
-        Checkbutton(self.toplevel, text='Connected Points', variable=self.ConnectedPts
+        Checkbutton(self.toplevel, text='Log Y-scale', variable=self.LogYScale
                     ).grid(row=9, column=2)
+        Checkbutton(self.toplevel, text='Connected Points', variable=self.ConnectedPts
+                    ).grid(row=9, column=3)
 
         Button(self.toplevel, text="Update All", command=self.Update
                ).grid(row=10, column=1)
@@ -351,6 +354,8 @@ class channel_plot:
         tickformat = ticker.ScalarFormatter(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
+        if self.LogYScale.get():
+            self.subfigure.set_yscale('log')
 
     def _PlotGasLines(self):
         '''
