@@ -145,7 +145,7 @@ class App:
             result = self.pype.Get(self.getchannelVar.get()).Final()
         except KeyError:
             result = "No response from dripline"
-        except DriplineError,e:
+        except DriplineError as e:
             result = str(e)
         except:
             raise
@@ -155,7 +155,8 @@ class App:
         resp = self.pype.Set(self.setchannelVar.get(),
                              self.setchannelvalueVar.get()).Wait()
         resp_host = resp['result'].keys()[0]
-        result = resp['result'][resp_host]['result']
+        result = resp.Final()
+        #result = resp['result'][resp_host]['result']
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):
