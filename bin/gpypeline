@@ -142,20 +142,25 @@ class App:
 
     def GetChannel(self):
         try:
-            result = self.pype.Get(self.getchannelVar.get()).Final()
+            get_value = self.pype.Get(self.getchannelVar.get()).Wait()
+            result = get_value.Final()
         except KeyError:
             result = "No response from dripline"
-        except DriplineError,e:
+        except DriplineError as e:
             result = str(e)
         except:
             raise
+        if result == "{unsupported_method,read}":
+            set_dict = eval(get_value.latest_set)
+            result = '(From Set) ' + str(set_dict['command']['value'])
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
         resp = self.pype.Set(self.setchannelVar.get(),
                              self.setchannelvalueVar.get()).Wait()
         resp_host = resp['result'].keys()[0]
-        result = resp['result'][resp_host]['result']
+        result = resp.Final()
+        #result = resp['result'][resp_host]['result']
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):
