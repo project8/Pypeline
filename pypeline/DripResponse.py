@@ -128,3 +128,9 @@ class DripResponse(dict):
                 if not e.message == field:
                     raise
         return value
+
+    def _SetLocalField(self, field, value):
+        '''
+        '''
+        setattr(self, field, value)
+        return self

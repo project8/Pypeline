@@ -7,6 +7,7 @@ from __future__ import print_function, absolute_import
 # standard imports
 from time import sleep
 from uuid import uuid4
+import json
 
 # 3rd party imports
 
@@ -61,15 +62,22 @@ class _CmdInterface:
             },
         }
         self._cmd_database.save(get_doc)
+        result = self.GetFromSet(channel, resp_doc=result)
         return result
 
-    def GetFromSet(self, channel):
+    def GetFromSet(self, channel, resp_doc=False):
         '''
         '''
         vw = self._cmd_database.view('latest_set/pure_setters', group_level=2)
-        doc_id = [row['value']['_id'] for row in vw if row['key'] == channel][0]
-        result = DripResponse(self._cmd_database, doc_id)
-        result.Update()
+        try:
+            doc_id = [row['value']['_id'] for row in vw if row['key'] == channel][0]
+            set_doc = DripResponse(self._cmd_database, doc_id).Update()
+        except IndexError:
+            set_doc = {"set_value:":"Not previously set"}
+        if not resp_doc:
+            result = set_doc
+        else:
+            result = resp_doc._SetLocalField('latest_set', json.dumps(dict(set_doc)))
         return result
 
     def Set(self, channel, value):
