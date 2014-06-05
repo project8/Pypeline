@@ -42,6 +42,7 @@ class RunTagNotUnique(Exception):
         self.msg = msg
         Exception.__init__(self, msg)
 
+
 class TimeFormatError(Exception):
     '''
     '''
