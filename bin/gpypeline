@@ -142,13 +142,17 @@ class App:
 
     def GetChannel(self):
         try:
-            result = self.pype.Get(self.getchannelVar.get()).Final()
+            get_value = self.pype.Get(self.getchannelVar.get()).Wait()
+            result = get_value.Final()
         except KeyError:
             result = "No response from dripline"
         except DriplineError as e:
             result = str(e)
         except:
             raise
+        if result == "{unsupported_method,read}":
+            set_dict = eval(get_value.latest_set)
+            result = '(From Set) ' + str(set_dict['command']['value'])
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
