@@ -53,14 +53,14 @@ class dpph_measurement:
         self.toplevel = toplevel
         self.sweep_result = {}
 
-        self.powerVar = DoubleVar(value=-75) #dBm
+        self.powerVar = DoubleVar(value=20) #dBm
         self.set_power_BoolVar = BooleanVar(value=True)
-        self.start_freq_Var = DoubleVar(value=25000) #MHz
-        self.stop_freq_Var = DoubleVar(value=26500) #MHz
-        self.start_search_freq_Var = DoubleVar(value=25000) #MHz
+        self.start_freq_Var = DoubleVar(value=26350) #MHz
+        self.stop_freq_Var = DoubleVar(value=26550) #MHz
+        self.start_search_freq_Var = DoubleVar(value=26400) #MHz
         self.stop_search_freq_Var = DoubleVar(value=26500) #MHz
-        self.sweep_time_Var = DoubleVar(value=60) #s
-        self.num_points_Var = IntVar(value=360) #ms
+        self.sweep_time_Var = DoubleVar(value=15) #s
+        self.num_points_Var = IntVar(value=400) #ms
         self.spanVar = DoubleVar(value=100)
         self.stepVar = DoubleVar(value=4)
         #self.fit_channel_Var = StringVar(value='xdata')
@@ -173,8 +173,8 @@ class dpph_measurement:
         if not sweep['frequencies_confirmed']:
             showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
         self.sweep_result = sweep.copy()
-        freqdata = sweep['frequency_curve']
-        magdata = sweep['amplitude_curve']
+        freqdata = array(sweep['frequency_curve'])
+        magdata = array(sweep['amplitude_curve'])
         magdata = magdata - mean(magdata)
         #ydata = sweep['y_curve']
         print('freq range is ', min(freqdata), ' to ', max(freqdata))
