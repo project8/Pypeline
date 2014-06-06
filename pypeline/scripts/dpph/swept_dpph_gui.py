@@ -203,6 +203,8 @@ class dpph_measurement:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.canvas.show()
+        print('Searching for resonance...')
+        self._FindResonance()
 
     def _FindResonance(self):
         '''
