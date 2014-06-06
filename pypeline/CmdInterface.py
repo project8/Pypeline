@@ -68,9 +68,9 @@ class _CmdInterface:
     def GetFromSet(self, channel, resp_doc=False):
         '''
         '''
-        vw = self._cmd_database.view('latest_set/pure_setters', group_level=2)
+        vw = self._cmd_database.view('all/latest_set_values', group_level=2)
         try:
-            doc_id = [row['value']['_id'] for row in vw if row['key'] == channel][0]
+            doc_id = [row['value'][0]['_id'] for row in vw if row['key'] == channel][0]
             set_doc = DripResponse(self._cmd_database, doc_id).Update()
         except IndexError:
             set_doc = {"set_value:":"Not previously set"}
