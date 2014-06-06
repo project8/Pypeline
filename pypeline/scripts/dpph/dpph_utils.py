@@ -100,7 +100,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     except DriplineError:
         sets = False
     except:
-        raise
+        sets = False
     print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) * 1000 / float(num_points)))
@@ -129,9 +129,18 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     #amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
-    all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
-    filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
-    frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
+    try:
+        all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
+        filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
+        frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
+    except:
+        print('len of freq curve is ', len(frequency_curve))
+        print('len of x curve is ', len(x_curve))
+        print('len of y curve is ', len(y_curve))
+        print('len of amp curve is ', len(amplitude_curve))
+        print('len of adc curve is ', len(adc_curve))
+        print('adc min/max are: ', min(adc_curve), '/', max(adc_curve))
+        raise
     print('*' * 60, '\ndone')
     print('*' * 60)
     return {'frequencies_confirmed': bool(sets),
