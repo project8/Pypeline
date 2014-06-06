@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 from __future__ import print_function, absolute_import
-from sys import version_info, argv
+from sys import version_info
 inpy3 = not version_info[0] < 3
 
 # Standard Libs
@@ -22,14 +22,13 @@ from pypeline import __version__ as _pype_version
 
 class App:
 
-    def __init__(self, master, url):
-        print("init with url")
+    def __init__(self, master):
         self.master = master
 
         self.frame = Frame(master)
         self.frame.grid()
 
-        self.pype = DripInterface(url)
+        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
 
         self.BuildGUI()
         self.update_values()
@@ -232,5 +231,5 @@ class App:
 if __name__ == "__main__":
     root = Tk()
     root.title("gpypeline v" + _pype_version)
-    app = App(root, argv[1])
+    app = App(root)
     root.mainloop()
