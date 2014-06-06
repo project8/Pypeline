@@ -56,9 +56,9 @@ class dpph_measurement:
         self.powerVar = DoubleVar(value=20) #dBm
         self.set_power_BoolVar = BooleanVar(value=True)
         self.start_freq_Var = DoubleVar(value=26350) #MHz
-        self.stop_freq_Var = DoubleVar(value=26550) #MHz
-        self.start_search_freq_Var = DoubleVar(value=26400) #MHz
-        self.stop_search_freq_Var = DoubleVar(value=26500) #MHz
+        self.stop_freq_Var = DoubleVar(value=26600) #MHz
+        self.start_search_freq_Var = DoubleVar(value=26450) #MHz
+        self.stop_search_freq_Var = DoubleVar(value=26510) #MHz
         self.sweep_time_Var = DoubleVar(value=15) #s
         self.num_points_Var = IntVar(value=400) #ms
         self.spanVar = DoubleVar(value=100)
@@ -164,17 +164,25 @@ class dpph_measurement:
         tmp_power = self.powerVar.get()
         if self.set_power_BoolVar.get():
             tmp_power = False
-        sweep = _GetSweptVoltages(pype=self.pype,
+        while True:
+            sweep = _GetSweptVoltages(pype=self.pype,
                                   start_freq=self.start_freq_Var.get(),
                                   stop_freq=self.stop_freq_Var.get(),
                                   sweep_time=self.sweep_time_Var.get(),
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
+            self.sweep_result = sweep.copy()
+            freqdata = array(sweep['frequency_curve'])
+            magdata = sweep['amplitude_curve']
+            if type(magdata[0]) is unicode:
+                print('Warning: _GetSweptVoltages failed;')
+                print('magdata:')
+                print(magdata)
+                print('Acquiring data again...')
+            elif type(magdata[0]) is int:
+                break
         if not sweep['frequencies_confirmed']:
             showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
-        self.sweep_result = sweep.copy()
-        freqdata = array(sweep['frequency_curve'])
-        magdata = array(sweep['amplitude_curve'])
         magdata = magdata - mean(magdata)
         #ydata = sweep['y_curve']
         print('freq range is ', min(freqdata), ' to ', max(freqdata))
@@ -276,3 +284,6 @@ class dpph_measurement:
                        'cal_val': ' '.join([str(result['cal']), '+/-', str(result['cal_err']), result['cal_units']]),
                        'timestamp': datetime.utcnow()}
         self.pype.LogValue(sensor='dpph_field', **dpph_result)
+        print('dpph_result stored')
+
+
