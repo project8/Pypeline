@@ -7,7 +7,7 @@ import subprocess
 import json
 import sys
 
-frequencies = range(400, 1401, 10)
+frequencies = range(400, 1601, 10)
 frequencies = [500, 520]
 
 #def Digitize(filename, lo):
