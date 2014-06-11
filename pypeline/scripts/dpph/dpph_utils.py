@@ -100,8 +100,8 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     except DriplineError:
         sets = False
     except:
-        raise
-    print('*' * 60, '\nsweeper complete, setting lockin', datetime.utcnow())
+        sets = False
+    print('sweeper complete, setting lockin', datetime.utcnow())
     sample_length = num_points
     sample_period = int(((sweep_time + 5) * 1000 / float(num_points)))
     sample_period = sample_period - (sample_period % 5)
@@ -111,7 +111,7 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     #LEN is number of samples to take, STR is how often in ms (must be a multiple of 5ms)
     pype.Set('lockin_raw_write', "LEN " + str(int(sample_length))).Wait()
     pype.Set('lockin_raw_write', "STR " + str(int(sample_period))).Wait()
-    print('*' * 60, '\ntaking data', datetime.utcnow())
+    print('taking data', datetime.utcnow())
     pype.Set('lockin_raw_write', "TD").Wait()
     sleep(sweep_time + 10)
     #wait for it to finish if needed
@@ -120,19 +120,28 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
         raise DriplineError('lockin is taking longer than expected')
     if not status[1] > 0:
         raise DriplineError('data not taken')
-    print('*' * 60, '\nretrieving data', datetime.utcnow())
+    print('retrieving data', datetime.utcnow())
     adc_curve = pype.Get('lockin_adc1_curve').Wait().Result()
     x_curve = pype.Get('lockin_x_curve').Wait().Result()
     y_curve = pype.Get('lockin_y_curve').Wait().Result()
     amplitude_curve = pype.Get('lockin_mag_curve').Wait().Result()
-    print('*' * 60, '\ncomputing final form and return', datetime.utcnow())
+    print('computing final form and return', datetime.utcnow())
     #amplitude_curve = [sqrt(xi**2 + yi**2) for xi, yi in zip(x_curve, y_curve)]
     slope = (stop_freq - start_freq) / 10000.
     frequency_curve = [start_freq+ slope * adc for adc in adc_curve]
-    all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
-    filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
-    frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
-    print('*' * 60, '\ndone')
+    try:
+        all_curves = list(zip(frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve))
+        filtered_data = [pt for pt in all_curves[5:-3] if (pt[-1] > 0.1 and pt[-1] < 10000.)]
+        frequency_curve, x_curve, y_curve, amplitude_curve, adc_curve = zip(*sorted(filtered_data))
+    except:
+        print('len of freq curve is ', len(frequency_curve))
+        print('len of x curve is ', len(x_curve))
+        print('len of y curve is ', len(y_curve))
+        print('len of amp curve is ', len(amplitude_curve))
+        print('len of adc curve is ', len(adc_curve))
+        print('adc min/max are: ', min(adc_curve), '/', max(adc_curve))
+        raise
+    print('done')
     print('*' * 60)
     return {'frequencies_confirmed': bool(sets),
             'adc_curve': adc_curve,
