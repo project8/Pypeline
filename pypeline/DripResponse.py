@@ -2,6 +2,7 @@
     File to contain the DripResponse class which inherits from dict.
 '''
 
+from __future__ import absolute_import, print_function
 # import standard libraries
 from time import sleep
 from .PypelineErrors import DriplineError
@@ -89,17 +90,25 @@ class DripResponse(dict):
         self.Update()
         return self
 
-    def Result(self):
+    def Error(self):
         '''
         '''
-        return self._RespField('result')
+        return self._RespField('error')
 
-    def Final(self, orResult=True):
+    def Result(self, orError=True):
+        '''
+        '''
+        result = self._RespField('result')
+        if result is None and orError:
+            result = self.Error()
+        return result
+
+    def Final(self, orResult=True, orError=True):
         '''
         '''
         final = self._RespField('final')
         if final is None and orResult:
-            final = self._RespField('result')
+            final = self.Result(orError=orError)
         return final
 
     def TimeStamp(self):
@@ -119,3 +128,9 @@ class DripResponse(dict):
                 if not e.message == field:
                     raise
         return value
+
+    def _SetLocalField(self, field, value):
+        '''
+        '''
+        setattr(self, field, value)
+        return self

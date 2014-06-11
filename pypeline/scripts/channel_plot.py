@@ -81,6 +81,8 @@ class channel_plot:
         self.relative_stop_time = BooleanVar(value=False)
         self.continuous_updates = BooleanVar(value=False)
         self.ManualLimits = BooleanVar(value=False)
+        self.LogYScale = BooleanVar(value=False)
+        self.ShowGrid = BooleanVar(value=False)
         self.ConnectedPts = BooleanVar(value=True)
         Button(self.toplevel, text="Add Line", command=self._AddSubplot
                ).grid(row=0, column=1)
@@ -99,25 +101,29 @@ class channel_plot:
                     variable=self.relative_start_time).grid(row=4, column=4,
                                                             sticky='W')
 
-        Label(self.toplevel, text='Stop Time').grid(row=6, column=1)
+        Label(self.toplevel, text='Stop Time').grid(row=5, column=1)
         stop_entry = Entry(self.toplevel, textvariable=self.stop_t)
         stop_entry.bind('<Return>', self.Update)
         stop_entry.bind('<KP_Enter>', self.Update, '+')
-        stop_entry.grid(row=6, column=2, columnspan=2)
+        stop_entry.grid(row=5, column=2, columnspan=2)
         Checkbutton(self.toplevel, text='Now',
-                    variable=self.relative_stop_time).grid(row=6, column=4,
+                    variable=self.relative_stop_time).grid(row=5, column=4,
                                                            sticky='W')
 
-        Label(self.toplevel, text='Y limits (min-max)').grid(row=8, column=1)
+        Label(self.toplevel, text='Y limits (min-max)').grid(row=7, column=1)
         ymin = Entry(self.toplevel, textvariable=self.ymin)
-        ymin.grid(row=8, column=2)
+        ymin.grid(row=7, column=2)
         ymin.bind('<Return>', self.Update)
         ymin.bind('<KP_Enter>', self.Update, '+')
         ymax = Entry(self.toplevel, textvariable=self.ymax)
-        ymax.grid(row=8, column=3)
+        ymax.grid(row=7, column=3)
         ymax.bind('<Return>', self.Update)
         ymax.bind('<KP_Enter>', self.Update, '+')
         Checkbutton(self.toplevel, text='Manual Y-limits', variable=self.ManualLimits
+                    ).grid(row=8, column=1)
+        Checkbutton(self.toplevel, text='Log Y-scale', variable=self.LogYScale
+                    ).grid(row=8, column=2)
+        Checkbutton(self.toplevel, text='Show Grid', variable=self.ShowGrid
                     ).grid(row=9, column=1)
         Checkbutton(self.toplevel, text='Connected Points', variable=self.ConnectedPts
                     ).grid(row=9, column=2)
@@ -163,10 +169,10 @@ class channel_plot:
         Label(frame, text='X Channel').grid(row=0, column=0)
         Label(frame, text='Y Channel').grid(row=1, column=0)
         OptionMenu(frame, self.plot_dicts[plotnum]['xname'],
-                   "None", "time", *self.pype.EligibleLoggers()
+                   "None", "time", "dpph_field", *self.pype.EligibleLoggers()
                    ).grid(row=0, column=1, sticky='ew')
         OptionMenu(frame, self.plot_dicts[plotnum]['yname'],
-                   "None", *self.pype.EligibleLoggers()
+                   "None", "dpph_field", *self.pype.EligibleLoggers()
                    ).grid(row=1, column=1, sticky='ew')
         self.notebook.add(frame, text='line:'+str(plotnum))
 
@@ -351,6 +357,11 @@ class channel_plot:
         tickformat = ticker.ScalarFormatter(useOffset=False)
         if self.ManualLimits.get():
             self.subfigure.set_ylim(bottom=self.ymin.get(), top=self.ymax.get())
+        if self.LogYScale.get():
+            self.subfigure.set_yscale('log')
+        if self.ShowGrid.get():
+            self.subfigure.grid(b=True, which='major')
+            self.subfigure.grid(b=True, which='minor')
 
     def _PlotGasLines(self):
         '''

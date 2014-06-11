@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 from __future__ import print_function, absolute_import
-from sys import version_info
+from sys import version_info, argv
 inpy3 = not version_info[0] < 3
 
 # Standard Libs
@@ -22,13 +22,14 @@ from pypeline import __version__ as _pype_version
 
 class App:
 
-    def __init__(self, master):
+    def __init__(self, master, url):
+        print("init with url")
         self.master = master
 
         self.frame = Frame(master)
         self.frame.grid()
 
-        self.pype = DripInterface('http://myrna.phys.washington.edu:5984')
+        self.pype = DripInterface(url)
 
         self.BuildGUI()
         self.update_values()
@@ -142,20 +143,25 @@ class App:
 
     def GetChannel(self):
         try:
-            result = self.pype.Get(self.getchannelVar.get()).Final()
+            get_value = self.pype.Get(self.getchannelVar.get()).Wait()
+            result = get_value.Final()
         except KeyError:
             result = "No response from dripline"
-        except DriplineError,e:
+        except DriplineError as e:
             result = str(e)
         except:
             raise
+        if result == "{unsupported_method,read}":
+            set_dict = eval(get_value.latest_set)
+            result = '(From Set) ' + str(set_dict['command']['value'])
         self.getchannelvalueVar.set(result)
 
     def SetChannel(self):
         resp = self.pype.Set(self.setchannelVar.get(),
                              self.setchannelvalueVar.get()).Wait()
         resp_host = resp['result'].keys()[0]
-        result = resp['result'][resp_host]['result']
+        result = resp.Final()
+        #result = resp['result'][resp_host]['result']
         self.setchannelvalueVar.set(result)
 
     def StartLogger(self):
@@ -226,5 +232,5 @@ class App:
 if __name__ == "__main__":
     root = Tk()
     root.title("gpypeline v" + _pype_version)
-    app = App(root)
+    app = App(root, argv[1])
     root.mainloop()

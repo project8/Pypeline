@@ -62,7 +62,7 @@ class _LogInterface:
                 timelist.append(timestamp)
                 valuelist.append(float(row.value[
                                  'calibrated_value'].split()[0]))
-                unitlist.append(str(row.value['calibrated_value'].split()[1]))
+                unitlist.append(str(row.value['calibrated_value'].split()[-1]))
         if max_len and (len(valuelist) > max_len):
             timelist = [val for n,val in enumerate(timelist) if not n % len(timelist)/max_len]
             valuelist = [val for n,val in enumerate(valuelist) if not n % len(valuelist)/max_len]

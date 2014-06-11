@@ -22,12 +22,7 @@ class MantisInterface():
             
         '''
         self.mantis_client = None
-        self.conf_dict = {"file-writer": "server",
-                          "host": "localhost",
-                          "buffer-size": 512,
-                          "port": 98342,
-                          "description": ""
-        }
+        self.conf_dict = {}
         self.actions = []
         self.errors = []
 
@@ -51,10 +46,13 @@ class MantisInterface():
         conf_file.close()
 
         ####### build the execution string
-        client_exe = '/home/laroque/Repos/mantis/cbuild/bin/mantis_client'
-        self.mantis_client = Popen(split(client_exe + ' config="/tmp/mantis_client_conf.json"'),
+        client_exe = 'mantis_client'
+        try:
+            self.mantis_client = Popen(split(client_exe + ' config="/tmp/mantis_client_conf.json"'),
                                    stdout=self.out_file,
                                    stderr=self.out_file)
+        except OSError:
+            raise EnvironmentError("the mantis_client executable is likely not being found")
         #print(client_exe + ' config=/tmp/mantis_client_conf.json')
         return self
 
