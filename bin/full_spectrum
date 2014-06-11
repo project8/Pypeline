@@ -1,4 +1,4 @@
-#######!/usr/bin/python
+#!/usr/bin/python
 
 from __future__ import print_function
 
@@ -32,8 +32,6 @@ def full_spectrum(config):
         set_lo = lo_pype.Set("lo_cw_freq", freq).Wait()
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
         mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_off'})
-        print("?")
-        print(mantis_kwargs)
         lo_pype.RunMantis(**mantis_kwargs)
         #trap on
         trap_on = trap_pype.Set("trap_output", "ON").Wait()

@@ -261,13 +261,14 @@ class DripInterface(_ConfInterface,
             instruments = [instruments]
         super(DripInterface, self).RemoveLoggers(instruments)
 
-    def RunMantis(self, server="localhost", output="/data/temp.egg", rate=250, duration=1,
+    def RunMantis(self, host="localhost", output="/data/temp.egg", rate=250, duration=1,
                   mode=0, description="None provided"):
         '''
             Posts a document to the command database instructing dripline to
             start a mantis run.
 
             Inputs:
+                <host> host running mantis_server
                 <output> the output file to which we should write
                 <rate> digitization rate in MHz
                 <duration> duration in ms
@@ -293,7 +294,7 @@ class DripInterface(_ConfInterface,
             description['lo_cw_freq'] = int(latest_set['command']['value'])
         description = json.dumps(description)
         mantis_args = {
-            "host": server,
+            "host": host,
             "file": output,
             "rate": int(rate),
             "duration": duration,
