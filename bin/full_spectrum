@@ -8,15 +8,6 @@ import json
 import sys
 
 frequencies = range(400, 1601, 10)
-frequencies = [500, 520]
-
-#def Digitize(filename, lo):
-#    temp_conf = open("full_spectrum_mantis_temp.json", "w")
-#    subprocess.call(['sed', 's/FILENAME/{:s}/'.format(filename), 'full_spectrum_mantis_template.json'], stdout=temp_conf)
-#    temp_conf.close()
-#    subprocess.call(['sed', '-i', 's/LOFREQ/%i/'%lo, 'full_spectrum_mantis_temp.json'])
-#    subprocess.call(['cat full_spectrum_mantis_temp.json | ssh ignatius "cat > temp.json"'], shell=True)
-#    subprocess.call(['ssh','ignatius','/usr/local/bin/mantis_client','config=~/temp.json'])
 
 def full_spectrum(config):
     '''
@@ -31,11 +22,11 @@ def full_spectrum(config):
         #trap off
         set_lo = lo_pype.Set("lo_cw_freq", freq).Wait()
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
-        mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_off'})
+        mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_off.egg'})
         lo_pype.RunMantis(**mantis_kwargs)
         #trap on
         trap_on = trap_pype.Set("trap_output", "ON").Wait()
-        mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_on'})
+        mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_on.egg'})
         lo_pype.RunMantis(**mantis_kwargs)
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
 
