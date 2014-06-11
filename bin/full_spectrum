@@ -39,7 +39,7 @@ def full_spectrum(config):
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2
+    if len(sys.argv) == 2:
         config = open(sys.argv[1])
         conf_dict = json.load(config)
         full_spectrum(conf_dict)
