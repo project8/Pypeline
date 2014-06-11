@@ -37,6 +37,7 @@ class take_data:
 
         self.keep_runningVar = BooleanVar(value=True)
         self.extend_runVar = BooleanVar(value=False)
+        self.run_typeVar = StringVar(value="/tmp/")
         self.run_tagVar = StringVar(value=run_tag)
         self.num_sequencesVar = IntVar(value=num_sequences)
         self.sequence_spacingVar = DoubleVar(value=0)
@@ -54,45 +55,63 @@ class take_data:
         '''
             Setup all of the buttons and user entries
         '''
+        # Data Location
         row = 0
-
-        Label(self.toplevel, text='Run tag').grid(row=row, column=0)
+        Label(self.toplevel, text='-'*20+'Data Location'+'-'*20).grid(row=row,
+                                                        columnspan=3, column=0)
+        row += 1
+        Label(self.toplevel, text='/data').grid(row=row, column=0, sticky='E')
+        run_type_options = ["/tmp/", "/commissioning/", "/runs/"]
+        OptionMenu(self.toplevel, self.run_typeVar, *run_type_options).grid(
+                                             row=row, column=1, sticky='EW')
         Entry(self.toplevel, textvariable=self.run_tagVar).grid(row=row,
-                                                                column=1)
-        Checkbutton(self.toplevel, text="Extend Existing",
-                    variable=self.extend_runVar).grid(row=row, column=2)
+                                                                column=2)
+        Checkbutton(self.toplevel, text="Extend if Exists",
+                    variable=self.extend_runVar).grid(row=row, column=3)
+        row += 1
+        Label(self.toplevel, text="(raid location)").grid(row=row, column=0, sticky='E')
+        Label(self.toplevel, text="(run type)").grid(row=row, column=1)
+        Label(self.toplevel, text="(run tag)").grid(row=row, column=2)
         row += 1
 
+        # Acquisition Cycle Details
+        Label(self.toplevel, text='-'*20+'Acquisition Cycles'+'-'*20).grid(row=row,
+                                                        columnspan=3, column=0)
+        row += 1
         Label(self.toplevel, text='Number of Sequences').grid(row=row,
                                                               column=0)
         Entry(self.toplevel, textvariable=self.num_sequencesVar).grid(row=row,
                                                                       column=1)
         row += 1
-
-        Label(self.toplevel, text='Sequence Length').grid(row=row, column=0)
-        Entry(self.toplevel, textvariable=self.len_sequenceVar).grid(row=row,
-                                                                     column=1)
-        Label(self.toplevel, text='[ms]').grid(row=row, column=2, sticky='W')
-        row += 1
-
-        Label(self.toplevel, text='Sequence Spacing').grid(row=row, column=0)
+        Label(self.toplevel, text='Delay Between').grid(row=row, column=0)
         Entry(self.toplevel, textvariable=self.sequence_spacingVar).grid(row=row, column=1)
         Label(self.toplevel, text='[s]').grid(row=row, column=2, sticky='W')
         row += 1
-
         builtins_list = ['default_run', 'noise_analysis_run']
+        self.conf_filename.set(builtins_list[0])
         Button(self.toplevel, text='Load Builtin Run Def',
                command=self._GetParamFuncs).grid(row=row, column=0)
         OptionMenu(self.toplevel, self.conf_filename, *builtins_list).grid(
             row=row, column=1)
         self.conf_filename.set(builtins_list[0])
-
         row += 1
-
         Label(self.toplevel, text='Load Custom Run Def').grid(row=row,
                                                               column=0)
         Button(self.toplevel, text="find file", command=self._ParamFuncFile
                ).grid(row=row, column=1)
+        row += 1
+
+        # Mantis Settings
+        Label(self.toplevel, text='-'*20+'Mantis Settings'+'-'*20).grid(row=row,
+                                                        columnspan=3, column=0)
+        row += 1
+        Label(self.toplevel, text='(Empty fields use default values)').grid(row=row,
+                                                        columnspan=3, column=0)
+        row += 1
+        Label(self.toplevel, text='Digitization Time').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.len_sequenceVar).grid(row=row,
+                                                                     column=1)
+        Label(self.toplevel, text='[ms]').grid(row=row, column=2, sticky='W')
         row += 1
 
         Button(self.toplevel, text="Start Run", command=self.DoRun

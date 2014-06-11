@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+# do some things before anything starts
+
+# a subprocess that can be aborted
+
+# a function to check the status
+
+# a function to take the sequence count and decide what to do this time (and set it up, or maybe call something else to do so
