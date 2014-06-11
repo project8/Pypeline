@@ -22,13 +22,16 @@ def full_spectrum(config):
         #trap off
         set_lo = lo_pype.Set("lo_cw_freq", freq).Wait()
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
+        trap_off = trap_pype.Set("cell_heater_output", "OFF").Wait()
         mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_off.egg'})
         lo_pype.RunMantis(**mantis_kwargs)
         #trap on
         trap_on = trap_pype.Set("trap_output", "ON").Wait()
+        trap_on = trap_pype.Set("cell_heater_output", "ON").Wait()
         mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_on.egg'})
         lo_pype.RunMantis(**mantis_kwargs)
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
+        trap_off = trap_pype.Set("cell_heater_output", "OFF").Wait()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
