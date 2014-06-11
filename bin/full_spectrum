@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#######!/usr/bin/python
 
 from __future__ import print_function
 
@@ -25,12 +25,15 @@ def full_spectrum(config):
     trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
     file_prefix = config.pop('data_prefix')
     mantis_kwargs = {"description": "full_spectrum, automatic run"}
+    mantis_kwargs.update(config)
     for n,freq in enumerate(frequencies):
-        print('doing frequency: ', freq)
+        print('doing a frequency: ', freq)
         #trap off
         set_lo = lo_pype.Set("lo_cw_freq", freq).Wait()
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
         mantis_kwargs.update({"output":file_prefix+str(n)+'_trap_off'})
+        print("?")
+        print(mantis_kwargs)
         lo_pype.RunMantis(**mantis_kwargs)
         #trap on
         trap_on = trap_pype.Set("trap_output", "ON").Wait()
