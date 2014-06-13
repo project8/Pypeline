@@ -5,7 +5,7 @@
 RUNDATE=20140613
 SESSION=python_night_run
 
-if [[ -n $(find /data/runs/$RUNDATE -mmin -10) ]]; then
+if [[ -n $(ssh ignatius 'find /data/runs/$RUNDATE/*.egg -mmin -10') ]]; then
 	ls /data/runs/$RUNDATE
 	echo
 	echo All is fine
