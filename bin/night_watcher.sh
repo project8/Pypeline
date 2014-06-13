@@ -21,6 +21,7 @@ if [[ -n $(find /data/runs/$RUNDATE -mmin -10) ]]; then
 	sleep 60
 else
 	echo Data acquisition stopped more than 10 minutes ago
+	sleep 10
 	echo restarting Ignatius
 	ssh root@ignatius 'shutdown -h now'
 	sleep 120
