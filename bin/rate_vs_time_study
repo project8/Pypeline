@@ -25,7 +25,7 @@ def full_spectrum(config):
     lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
     trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
     file_prefix = config.pop('data_prefix')
-    filename = file_prefix + sequence + '_lo_{:d}MHz_trap_{:s}.egg'
+    filename = file_prefix + str(sequence) + '_lo_{:d}MHz_trap_{:s}.egg'
     description = "'lo':{:d}, 'trap_state':{:s}"
     mantis_kwargs.update(config)
     delay = -1 
