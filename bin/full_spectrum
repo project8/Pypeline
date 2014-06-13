@@ -6,6 +6,7 @@ import pypeline
 import subprocess
 import json
 import sys
+import time
 
 frequencies = range(400, 1601, 10)
 
@@ -32,6 +33,7 @@ def full_spectrum(config):
         lo_pype.RunMantis(**mantis_kwargs)
         trap_off = trap_pype.Set("trap_output", "OFF").Wait()
         trap_off = trap_pype.Set("cell_heater_output", "OFF").Wait()
+        time.sleep(1)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
