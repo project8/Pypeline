@@ -27,8 +27,9 @@ def full_spectrum(config):
     file_prefix = config.pop('data_prefix')
     filename = file_prefix + '{:d}_lo_{:d}MHz_trap_{:s}.egg'
     description = "'lo':{:d}, 'trap_state':{:s}"
+
     mantis_kwargs.update(config)
-    delay = -1 
+    delay = -1
     while True:
         delay += 1
         for freq in frequencies:
