@@ -1,0 +1,80 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+
+import pypeline
+import subprocess
+import json
+import sys
+import time
+import os
+
+
+def full_spectrum(config):
+    '''
+    '''
+    stat_file_name = '/tmp/pypeline_script_count.json'
+    if not os.path.isfile(stat_file_name):
+        f = open(stat_file_name, 'w')
+        json.dump({'trap_mA': 2000}, f)
+        json.dump({'freq_MHz': 400}, f)
+        f.close()
+    freq_MHz = json.load(open(stat_file_name))['freq_MHz']
+    trap_mA = json.load(open(stat_file_name))['trap_mA']
+    frequency_list = range(freq_MHz, 1300, 50)
+    trap_list = range(trap_mA, 0, -100)
+
+    ############
+    mantis_kwargs = {}
+    lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
+    trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
+    file_prefix = config.pop('data_prefix')
+    filename = file_prefix + 'lo_{:d}MHz_trap_{:d}mA.egg'
+    description = "'lo':{:d} MHz, 'trap_state':{:d} mA"
+
+    mantis_kwargs.update(config)
+    delay = -1
+
+
+    # Turn on Trap
+    if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
+        break
+
+
+    # Loop over frequencies
+    for freq_MHz in frequency_list:
+        # Set the frequency for the LO
+        print('LO frequency ', freq_MHz, ' MHz, in sequence ', frequency_list)
+        if lo_pype.Set("lo_cw_freq", freq_MHz).Result(orError=False) is None:
+            break
+        # Loop over trap currents
+        for trap_mA in trap_list:
+            # Set the trap current
+            print('Trap current ', trap_mA, ' MHz, in sequence ', trap_list)
+            if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+                break
+
+            time.sleep(5)
+            print('Acquire data')
+            mantis_kwargs.update({"output":filename.format(freq_MHz, trap_mA),
+                                  "description":description.format(freq_MHz, trap_mA)})
+            lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
+            f = open(stat_file_name, 'w')
+            json.dump({'trap_mA': trap_mA}, f)
+            json.dump({'freq_MHz': 400}, f)
+            f.close()
+            delay += 1
+            time.sleep(5)
+
+    # Turn off Trap
+    if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+        break
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        config = open(sys.argv[1])
+        conf_dict = json.load(config)
+        full_spectrum(conf_dict)
+    else:
+        print("usage: $ ./full_spectrum.py /path/to/config.json")
