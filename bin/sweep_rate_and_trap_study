@@ -47,7 +47,7 @@ def sweep_freq_only(config):
         # Get the trap current
         trap_state_str = trap_pype.Get("cell_heater_limit").Result().replace('"','').split(',')
         trap_mA = int(float(trap_state_str[1]) * 1000)
-        print('Trap current ', trap_mA, ' mA, in sequence ', trap_list)
+        print('Trap current ', trap_mA, ' mA')
 
         time.sleep(1)
         print('Acquire data')
