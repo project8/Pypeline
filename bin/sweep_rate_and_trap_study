@@ -56,10 +56,10 @@ def sweep_freq_only(config):
                               "description":description.format(freq_MHz, trap_mA)})
         lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
         f = open(stat_file_name, 'w')
-        json.dump({'trap_mA': trap_mA}, f)
-        json.dump({'freq_MHz': freq_MHz}, f)
+        json.dump({'trap_mA': trap_mA, 'freq_MHz': freq_MHz}, f)
         f.close()
         delay += 1
+        print(' ')
         time.sleep(1)
 
     # Turn off Trap
