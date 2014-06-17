@@ -27,8 +27,8 @@ def sweep_freq_only(config):
     lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
     trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
     file_prefix = config.pop('data_prefix')
-    filename = file_prefix + 'lo_{:d}MHz_trap_{:d}mA.egg'
-    description = "'lo':{:d} MHz, 'trap_state':{:d} mA"
+    filename = file_prefix + 'trap_{:d}mA_lo_{:d}MHz.egg'
+    description = "'trap_state':{:d} mA, 'lo':{:d} MHz"
 
     mantis_kwargs.update(config)
     delay = -1
@@ -53,8 +53,8 @@ def sweep_freq_only(config):
         time.sleep(1)
         print('Acquire data')
         print(filename.format(freq_MHz, trap_mA))
-        mantis_kwargs.update({"output":filename.format(freq_MHz, trap_mA),
-                              "description":description.format(freq_MHz, trap_mA)})
+        mantis_kwargs.update({"output":filename.format(trap_mA, freq_MHz),
+                              "description":description.format(trap_mA, freq_MHz)})
         lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
         f = open(stat_file_name, 'w')
         json.dump({'freq_MHz': freq_MHz, 'trap_mA': trap_mA}, f)
