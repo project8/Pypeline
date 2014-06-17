@@ -71,11 +71,12 @@ def sweep_freq_only(config):
 def sweep_freq_and_trapcurrent(config):
     '''
     '''
+    freq_MHz_initial = 400
     stat_file_name = '/tmp/pypeline_script_count.json'
     if not os.path.isfile(stat_file_name):
         f = open(stat_file_name, 'w')
         json.dump({'trap_mA': 2000}, f)
-        json.dump({'freq_MHz': 400}, f)
+        json.dump({'freq_MHz': freq_MHz_initial}, f)
         f.close()
     freq_MHz = json.load(open(stat_file_name))['freq_MHz']
     trap_mA = json.load(open(stat_file_name))['trap_mA']
@@ -127,6 +128,12 @@ def sweep_freq_and_trapcurrent(config):
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
         return False
+
+    f = open(stat_file_name, 'w')
+    json.dump({'trap_mA': 0}, f)
+    json.dump({'freq_MHz': freq_MHz_initial}, f)
+    f.close()
+
 
     return True
 
