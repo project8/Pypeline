@@ -13,7 +13,7 @@ import os
 def sweep_freq_only(config):
     '''
     '''
-    stat_file_name = '/tmp/pypeline_script_count.json'
+    stat_file_name = '/tmp/pypeline_script_sweep_count.json'
     if not os.path.isfile(stat_file_name):
         f = open(stat_file_name, 'w')
         json.dump({'freq_MHz': 400}, f)
