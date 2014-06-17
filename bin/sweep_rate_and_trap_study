@@ -13,10 +13,11 @@ import os
 def sweep_freq_only(config):
     '''
     '''
+    freq_MHz_initial = 400
     stat_file_name = '/tmp/pypeline_script_sweep_count.json'
     if not os.path.isfile(stat_file_name):
         f = open(stat_file_name, 'w')
-        json.dump({'freq_MHz': 400}, f)
+        json.dump({'freq_MHz': freq_MHz_initial}, f)
         f.close()
     freq_MHz = json.load(open(stat_file_name))['freq_MHz']
     frequency_list = range(freq_MHz, 1300, 50)
@@ -65,6 +66,10 @@ def sweep_freq_only(config):
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
         return False
+
+    f = open(stat_file_name, 'w')
+    json.dump({'freq_MHz': freq_MHz_initial}, f)
+    f.close()
 
     return True
 
