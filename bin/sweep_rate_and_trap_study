@@ -35,7 +35,7 @@ def sweep_freq_only(config):
 
     # Turn on Trap
     if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
-        break
+        return False
 
     # Loop over frequencies
     for freq_MHz in frequency_list:
@@ -63,8 +63,9 @@ def sweep_freq_only(config):
 
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
-        break
+        return False
 
+    return True
 
 def sweep_freq_and_trapcurrent(config):
     '''
@@ -94,7 +95,7 @@ def sweep_freq_and_trapcurrent(config):
 
     # Turn on Trap
     if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
-        break
+        return False
 
 
     # Loop over frequencies
@@ -124,8 +125,9 @@ def sweep_freq_and_trapcurrent(config):
 
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
-        break
+        return False
 
+    return True
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
