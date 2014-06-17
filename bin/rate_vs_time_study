@@ -43,7 +43,8 @@ def full_spectrum(config):
             print('digitize')
             mantis_kwargs.update({"output":filename.format(sequence,freq, 'off'),
                                   "description":description.format(freq, 'off')})
-            lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
+            if lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60).Result(orError=False) is None:
+                break
             #trap on
             print('trap on...')
             if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
