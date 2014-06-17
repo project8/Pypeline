@@ -57,7 +57,7 @@ def sweep_freq_only(config):
                               "description":description.format(freq_MHz, trap_mA)})
         lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
         f = open(stat_file_name, 'w')
-        json.dump({'trap_mA': trap_mA, 'freq_MHz': freq_MHz}, f)
+        json.dump({'freq_MHz': freq_MHz, 'trap_mA': trap_mA}, f)
         f.close()
         delay += 1
         print(' ')
@@ -68,7 +68,7 @@ def sweep_freq_only(config):
         return False
 
     f = open(stat_file_name, 'w')
-    json.dump({'freq_MHz': freq_MHz_initial}, f)
+    json.dump({'freq_MHz': freq_MHz_initial, 'trap_mA': 0}, f)
     f.close()
 
     return True
@@ -124,8 +124,7 @@ def sweep_freq_and_trapcurrent(config):
                                   "description":description.format(freq_MHz, trap_mA)})
             lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
             f = open(stat_file_name, 'w')
-            json.dump({'trap_mA': trap_mA}, f)
-            json.dump({'freq_MHz': freq_MHz}, f)
+            json.dump({'freq_MHz': freq_MHz, 'trap_mA': trap_mA}, f)
             f.close()
             delay += 1
             time.sleep(5)
@@ -135,8 +134,7 @@ def sweep_freq_and_trapcurrent(config):
         return False
 
     f = open(stat_file_name, 'w')
-    json.dump({'trap_mA': 0}, f)
-    json.dump({'freq_MHz': freq_MHz_initial}, f)
+    json.dump({'freq_MHz': freq_MHz_initial, 'trap_mA': 0}, f)
     f.close()
 
 
