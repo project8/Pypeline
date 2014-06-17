@@ -20,7 +20,7 @@ def sweep_freq_only(config):
         json.dump({'freq_MHz': freq_MHz_initial}, f)
         f.close()
     freq_MHz = json.load(open(stat_file_name))['freq_MHz']
-    frequency_list = range(freq_MHz, 1300, 50)
+    frequency_list = range(freq_MHz, 1301, 50)
 
     ############
     mantis_kwargs = {}
@@ -61,7 +61,7 @@ def sweep_freq_only(config):
         f.close()
         delay += 1
         print(' ')
-        time.sleep(1)
+        time.sleep(5)
 
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
