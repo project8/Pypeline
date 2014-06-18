@@ -52,7 +52,7 @@ def sweep_freq_only(config):
 
         time.sleep(1)
         print('Acquire data')
-        print(filename.format(freq_MHz, trap_mA))
+        print(filename.format(trap_mA, freq_MHz))
         mantis_kwargs.update({"output":filename.format(trap_mA, freq_MHz),
                               "description":description.format(trap_mA, freq_MHz)})
         lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
