@@ -13,14 +13,16 @@ import os
 def sweep_freq_only(config):
     '''
     '''
-    freq_MHz_initial = 400
+    print('Reading /tmp/pypeline_script_sweep_count.json')
+    freq_MHz_initial = 100
     stat_file_name = '/tmp/pypeline_script_sweep_count.json'
     if not os.path.isfile(stat_file_name):
         f = open(stat_file_name, 'w')
         json.dump({'freq_MHz': freq_MHz_initial}, f)
         f.close()
     freq_MHz = json.load(open(stat_file_name))['freq_MHz']
-    frequency_list = range(freq_MHz, 1301, 50)
+    frequency_list = range(freq_MHz, 2001, 50)
+    print('Frequency list: ',frequency_list)
 
     ############
     mantis_kwargs = {}
@@ -29,19 +31,23 @@ def sweep_freq_only(config):
     file_prefix = config.pop('data_prefix')
     filename = file_prefix + 'trap_{:d}mA_lo_{:d}MHz.egg'
     description = "'trap_state':{:d} mA, 'lo':{:d} MHz"
+    print('DripLine Interface OK')
 
     mantis_kwargs.update(config)
     delay = -1
+    print('Mantis Interface OK')
 
 
     # Turn on Trap
     if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
         return False
 
+    print('Trap ON ')
+
     # Loop over frequencies
     for freq_MHz in frequency_list:
         # Set the frequency for the LO
-        print('LO frequency ', freq_MHz, ' MHz, in sequence ', frequency_list)
+        print('LO frequency ', freq_MHz, ' MHz')
         if lo_pype.Set("lo_cw_freq", freq_MHz).Result(orError=False) is None:
             break
 
@@ -60,12 +66,14 @@ def sweep_freq_only(config):
         json.dump({'freq_MHz': freq_MHz, 'trap_mA': trap_mA}, f)
         f.close()
         delay += 1
+        print('data acquired')
         print(' ')
         time.sleep(5)
 
     # Turn off Trap
     if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
         return False
+    print('Trap OFF')
 
     f = open(stat_file_name, 'w')
     json.dump({'freq_MHz': freq_MHz_initial, 'trap_mA': 0}, f)
@@ -76,7 +84,7 @@ def sweep_freq_only(config):
 def sweep_freq_and_trapcurrent(config):
     '''
     '''
-    freq_MHz_initial = 400
+    freq_MHz_initial = 100
     stat_file_name = '/tmp/pypeline_script_count.json'
     if not os.path.isfile(stat_file_name):
         f = open(stat_file_name, 'w')
@@ -85,7 +93,7 @@ def sweep_freq_and_trapcurrent(config):
         f.close()
     freq_MHz = json.load(open(stat_file_name))['freq_MHz']
     trap_mA = json.load(open(stat_file_name))['trap_mA']
-    frequency_list = range(freq_MHz, 1300, 50)
+    frequency_list = range(freq_MHz, 2000, 50)
     trap_list = range(trap_mA, 0, -100)
 
     ############
@@ -142,8 +150,8 @@ def sweep_freq_and_trapcurrent(config):
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        config = open(sys.argv[1])
-        conf_dict = json.load(config)
+        configfile = open(sys.argv[1])
+        conf_dict = json.load(configfile)
         sweep_freq_only(conf_dict)
     else:
         print("usage: $ ./sweep_rate_and_trap_study /path/to/config.json")
