@@ -200,3 +200,6 @@ if __name__ == "__main__":
         sweep_freq_only(config)
     else:
         print("usage: $ ./sweep_rate_and_trap_study /path/to/config.json")
+        print("Make sure your JSON file contains the following fields:")
+        print("lo_pype, trap_pype, data_prefix, host, rate, duration, nb_sweeps and trap_state")
+
