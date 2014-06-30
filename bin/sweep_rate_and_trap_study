@@ -112,7 +112,7 @@ def sweep_freq_only(config):
             delay += 1
             print('data acquired')
             print(' ')
-            time.sleep(5)
+            time.sleep(1)
 
     # Turn off Trap
     # Always turn off the trap at the end of a run!
