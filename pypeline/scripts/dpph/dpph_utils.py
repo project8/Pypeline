@@ -163,7 +163,7 @@ def _WaitForLockinData(pype, timeout=100):
         return_value = [int(entry) for entry in status]
     return return_value
         
-def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
+def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data, width=3):
     '''
     '''
     #cut down to a window
@@ -172,7 +172,7 @@ def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
     frequencies, voltages = zip(*cut_data)
     #build target
     target_signal = []
-    expected_width = 3
+    expected_width = width
     for f in frequencies:
         x = (f - mean([min_freq, max_freq])) / expected_width
         gderiv = x * exp(-x * x / 2.)
@@ -185,4 +185,5 @@ def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data):
     filtered = fftpack.ifft(filtered_fft)
     idx = int(len(filtered)/2)
     return {'freqs': frequencies,
-            'result': abs(concatenate([filtered[idx:], filtered[0:idx]]))}
+            'result': abs(concatenate([filtered[idx:], filtered[0:idx]])),
+            'filter': target_signal}
