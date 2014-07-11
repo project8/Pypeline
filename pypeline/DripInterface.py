@@ -10,7 +10,7 @@ from time import sleep
 from uuid import uuid4
 from datetime import datetime
 from ast import literal_eval
-from json import dumps
+import json
 
 # 3rd party imports
 from couchdb import Server as CouchServer
@@ -261,13 +261,14 @@ class DripInterface(_ConfInterface,
             instruments = [instruments]
         super(DripInterface, self).RemoveLoggers(instruments)
 
-    def RunMantis(self, server="localhost", output="/data/temp.egg", rate=200, duration=100,
+    def RunMantis(self, host="localhost", output="/data/temp.egg", rate=250, duration=1,
                   mode=0, description="None provided"):
         '''
             Posts a document to the command database instructing dripline to
             start a mantis run.
 
             Inputs:
+                <host> host running mantis_server
                 <output> the output file to which we should write
                 <rate> digitization rate in MHz
                 <duration> duration in ms
@@ -289,13 +290,14 @@ class DripInterface(_ConfInterface,
             if isinstance(description, str):
                 description = {'comment': description}
         if not 'lo_cw_freq' in description:
-            description['lo_cw_freq'] = float(self.Get('lo_cw_freq').Update()['result'])
-        description = dumps(description)
+            latest_set = json.loads(self.Get('lo_cw_freq').Update().latest_set)
+            description['lo_cw_freq'] = int(latest_set['command']['value'])
+        description = json.dumps(description)
         mantis_args = {
-            "server": server,
+            "host": host,
             "file": output,
             "rate": int(rate),
-            "duration": int(duration),
+            "duration": duration,
             "mode": int(mode),
             "description": description
         }
