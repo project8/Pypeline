@@ -328,6 +328,8 @@ class channel_plot:
             plotformat='o-'
         else:
             plotformat='o'
+        self.subfigure.yaxis.set_major_formatter(ticker.ScalarFormatter(
+            useOffset=False))
         if self.plot_dicts[tab]['xname'].get() == 'time':
             self.subfigure.plot_date(self.xdata, self.ydata, plotformat,
                                           label=self.plot_dicts[tab]['yname'].get())
@@ -335,8 +337,6 @@ class channel_plot:
                                            rotation=-45)
             self.subfigure.xaxis.set_major_formatter(dates.DateFormatter(
                 "%m/%d %H:%M"))
-            self.subfigure.yaxis.set_major_formatter(ticker.ScalarFormatter(
-                useOffset=False))
         else:
             self.subfigure.plot(self.xdata, self.ydata, plotformat,
                                 label=self.plot_dicts[tab]['yname'].get())
