@@ -146,6 +146,8 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
     return {'frequencies_confirmed': bool(sets),
             'adc_curve': adc_curve,
             'frequency_curve': frequency_curve,
+            'x_curve': x_curve,
+            'y_curve': y_curve,
             'amplitude_curve': amplitude_curve}
 
 def _WaitForLockinData(pype, timeout=100):
@@ -174,9 +176,16 @@ def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data, width=3):
     target_signal = []
     expected_width = width
     for f in frequencies:
-        x = (f - mean([min_freq, max_freq])) / expected_width
-        gderiv = x * exp(-x * x / 2.)
-        target_signal.append(0.00001 * gderiv)
+        x1 = (f - min_freq) / expected_width
+        x2 = (f - max_freq) / expected_width
+        gderiv1 = x1 * exp(-x1 * x1 / 2.)
+        gderiv2 = x2 * exp(-x2 * x2 / 2.)
+        target_signal.append(0.00001 * (gderiv1+gderiv2))
+
+    #for f in frequencies:
+    #    x = (f - mean([min_freq, max_freq])) / expected_width
+    #    gderiv = x * exp(-x * x / 2.)
+    #    target_signal.append(0.00001 * gderiv)
     target_fft = fftpack.fft(target_signal)
     data_fft = fftpack.fft(voltages)
     data_fft[0] = 0
@@ -184,6 +193,8 @@ def _FindFieldFFT(min_freq, max_freq, freq_data, volts_data, width=3):
     filtered_fft = multiply(data_fft, target_fft)
     filtered = fftpack.ifft(filtered_fft)
     idx = int(len(filtered)/2)
+    print(expected_width)
     return {'freqs': frequencies,
-            'result': abs(concatenate([filtered[idx:], filtered[0:idx]])),
+            #'result': abs(concatenate([filtered[idx:], filtered[0:idx]])),
+            'result': abs(filtered),
             'filter': target_signal}

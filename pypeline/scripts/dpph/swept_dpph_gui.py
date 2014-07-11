@@ -30,6 +30,7 @@ from matplotlib.figure import Figure
 from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
+
 class __non_guiVar:
     def __init__(self, value=False):
         self.value = value
@@ -39,7 +40,6 @@ class __non_guiVar:
 
     def set(self, value):
         self.value = value
-
 
 class dpph_measurement:
     '''
@@ -55,18 +55,17 @@ class dpph_measurement:
 
         self.powerVar = DoubleVar(value=20) #dBm
         self.set_power_BoolVar = BooleanVar(value=True)
-        self.start_freq_Var = DoubleVar(value=26350) #MHz
-        self.stop_freq_Var = DoubleVar(value=26600) #MHz
-        self.start_search_freq_Var = DoubleVar(value=26450) #MHz
-        self.stop_search_freq_Var = DoubleVar(value=26510) #MHz
+        self.start_freq_Var = DoubleVar(value=26000) #MHz
+        self.stop_freq_Var = DoubleVar(value=26500) #MHz
+        self.start_search_freq_Var = DoubleVar(value=26200) #MHz
+        self.stop_search_freq_Var = DoubleVar(value=26400) #MHz
         self.expected_width_Var = DoubleVar(value=3) #????
-        self.sweep_time_Var = DoubleVar(value=15) #s
+        self.sweep_time_Var = DoubleVar(value=30) #s
         self.num_points_Var = IntVar(value=400) #ms
         self.spanVar = DoubleVar(value=100)
         self.stepVar = DoubleVar(value=4)
         #self.fit_channel_Var = StringVar(value='xdata')
         self.result_str_Var = StringVar(value='')
-
         self._BuildGui()
 
     def _BuildGui(self):
@@ -200,7 +199,7 @@ class dpph_measurement:
         line = self.subfigure.get_lines()[0]
         line.set_xdata(array(freqdata))
         line.set_ydata(array(magdata))
-        line.set_label('lockin output')
+        line.set_label('lockin output "X"')
         #line = self.subfigure.get_lines()[1]
         #line.set_xdata(array(freqdata))
         #line.set_ydata(array(ydata))
@@ -228,7 +227,8 @@ class dpph_measurement:
         fit = _FindFieldFFT(min_freq=self.start_search_freq_Var.get(),
                             max_freq=self.stop_search_freq_Var.get(),
                             freq_data=xdata,
-                            volts_data=ydata)
+                            volts_data=ydata,
+                            width=self.expected_width_Var.get())
         #compute and calibrate resonance
         res_freq = max(zip(fit['result'], fit['freqs']))[1]
         res_unct = fit['freqs'][1] - fit['freqs'][0]
@@ -252,9 +252,9 @@ class dpph_measurement:
         # and a line showing the filter shape
         filterline = self.subfigure.get_lines()[2]
         filter_factor = max(ydata)/max(fit['filter'])
-        scaled_filter_data = [val * filter_factor for val in fit['filter']]
+        scaled_filter_data = [val * -1*filter_factor for val in fit['filter']]
         scaled_filter_data = scaled_filter_data - mean(scaled_data)
-        shift = list(fit['result']).index(max(abs(fit['result'])))
+        shift = (-1*(list(fit['result']).index(max(abs(fit['result'])))+len(scaled_filter_data)/2)%len(scaled_filter_data))
         scaled_filter_data = list(scaled_filter_data)[shift:]+list(scaled_filter_data)[:shift]
         filterline.set_xdata(fit['freqs'])
         filterline.set_ydata(array(scaled_filter_data))
