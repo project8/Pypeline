@@ -254,7 +254,10 @@ class dpph_measurement:
         filter_factor = max(ydata)/max(fit['filter'])
         scaled_filter_data = [val * -1*filter_factor for val in fit['filter']]
         scaled_filter_data = scaled_filter_data - mean(scaled_data)
-        shift = (-1*(list(fit['result']).index(max(abs(fit['result'])))+len(scaled_filter_data)/2)%len(scaled_filter_data))
+        print("len of result:", len(fit['result']))
+        print("len of filter:", len(scaled_filter_data))
+        shift = -1*abs(fit['result']).argmax()#list(fit['result']).index(max(abs(fit['result'])))
+        print("shift is:", shift)
         scaled_filter_data = list(scaled_filter_data)[shift:]+list(scaled_filter_data)[:shift]
         filterline.set_xdata(fit['freqs'])
         filterline.set_ydata(array(scaled_filter_data))
