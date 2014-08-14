@@ -1,0 +1,39 @@
+#!/usr/bin/python
+
+from __future__ import print_function, absolute_import
+
+import sys
+import pypeline
+import time
+from datetime import datetime
+
+def log_dpph(url, interval):
+    '''
+    '''
+    pype = pypeline.DripInterface(url)
+    dpph = pypeline.dpph_measurement(pype)
+    while True:
+        try:
+            dpph._CollectSweep()
+            freq_res = '{:f} +/- {:f}'.format(dpph.sweep_result['res_freq'],dpph.sweep_result['res_freq_unct'])
+            mag_res = '{:f} +/- {:f}'.format(dpph.sweep_result['res_field'],dpph.sweep_result['res_field_unct'])
+            pype.LogValue("dpph_field", freq_res, mag_res, timestamp=datetime.utcnow())
+            time.sleep(interval)
+        except:
+            print("there was some error")
+
+if __name__ == "__main__":
+    url = ''
+    interval = 60
+    usage_str = "Usage: log_dpph <url> [interval_in_seconds]"
+    if len(sys.argv) == 1:
+        print("dripline couchdb url required\n" + usage_str)
+    elif len(sys.argv) == 2:
+        url = sys.argv[1]
+    elif len(sys.argv) == 3:
+        url = sys.argv[1]
+        interval = sys.argv[2]
+    else:
+        print("too many args give\n" + usage_str)
+        sys.exit()
+    log_dpph(url, interval)
