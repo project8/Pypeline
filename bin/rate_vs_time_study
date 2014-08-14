@@ -1,9 +1,70 @@
 #!/usr/bin/python
 
-# do some things before anything starts
+from __future__ import print_function
 
-# a subprocess that can be aborted
+import pypeline
+import subprocess
+import json
+import sys
+import time
+import os
 
-# a function to check the status
 
-# a function to take the sequence count and decide what to do this time (and set it up, or maybe call something else to do so
+def full_spectrum(config):
+    '''
+    '''
+    stat_file_name = '/tmp/pypeline_script_count.json'
+    if not os.path.isfile(stat_file_name):
+        f = open(stat_file_name, 'w')
+        json.dump({'sequence': 0}, f)
+        f.close()
+    sequence = json.load(open(stat_file_name))['sequence']
+    frequencies = [520, 1060]
+    ############
+    mantis_kwargs = {}
+    lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
+    trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
+    file_prefix = config.pop('data_prefix')
+    filename = file_prefix + '{:d}_lo_{:d}MHz_trap_{:s}.egg'
+    description = "'lo':{:d}, 'trap_state':{:s}"
+
+    mantis_kwargs.update(config)
+    delay = -1
+    while True:
+        delay += 1
+        for freq in frequencies:
+            print('doing a frequency:', freq, 'in sequence', sequence)
+            if lo_pype.Set("lo_cw_freq", freq).Result(orError=False) is None:
+                break
+            #trap off
+            print('trap off...')
+            if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+                break
+            print('digitize')
+            mantis_kwargs.update({"output":filename.format(sequence,freq, 'off'),
+                                  "description":description.format(freq, 'off')})
+            if lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60).Result(orError=False) is None:
+                break
+            #trap on
+            print('trap on...')
+            if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
+                break
+            print('digitize')
+            mantis_kwargs.update({"output":filename.format(sequence,freq, 'on'),
+                                  "description":description.format(freq, 'on')})
+            lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
+            #trap off for sleep
+            print('trap back off')
+            if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+                break
+        sequence += 1
+        json.dump({'sequence':sequence}, open(stat_file_name, 'w'))
+        time.sleep(260)
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        config = open(sys.argv[1])
+        conf_dict = json.load(config)
+        full_spectrum(conf_dict)
+    else:
+        print("usage: $ ./full_spectrum.py /path/to/config.json")

@@ -1,0 +1,205 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+
+import pypeline
+import subprocess
+import json
+import sys
+import time
+import os
+
+
+def sweep_freq_only(config):
+    '''
+    '''
+
+    #####################################
+    # Inputs and Run parameters
+    #####################################
+
+    # Should the trap be on or off?
+    trap_state = config.pop('trap_state')
+
+    # How many sweeps to perform?
+    nb_sweeps = config.pop('nb_sweeps')
+
+    # Which frequencies to acquire?
+    # frequency_list_original = range(freq_MHz, 2001, 50)
+    frequency_list_original = [450,500,550,600,650,700,750,800,1050,1100,1150,1200,1250,1300,1350]
+
+    print('Reading /tmp/pypeline_script_sweep_count.json')
+    stat_file_name = '/tmp/pypeline_script_sweep_count.json'
+    if not os.path.isfile(stat_file_name):
+        f = open(stat_file_name, 'w')
+        json.dump({'trap_mA': 0, 'freq_MHz': frequency_list_original[0],'sweep_nb': 1}, f)
+        f.close()
+    freq_MHz_initial = json.load(open(stat_file_name))['freq_MHz']
+    sweep_nb_initial = json.load(open(stat_file_name))['sweep_nb']
+    frequency_list = [ii for ii in frequency_list_original if ii >= freq_MHz_initial]
+    sweep_nb_list = range(sweep_nb_initial,nb_sweeps+1,1)
+    print('Frequency list: ',frequency_list)
+    print('Acquire files: ',sweep_nb_list)
+    livetime_sec = config['duration'] / 1000
+    
+
+    #####################################
+    # Prepare Dripline and Mantis
+    #####################################
+    mantis_kwargs = {}
+    lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
+    trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
+    file_prefix = config.pop('data_prefix')
+    filename = file_prefix + 'Trap{:s}_{:04d}mA_LO_{:04d}MHz_{:02d}sec_sweep_{:02d}.egg'
+    description = "'trap_state':{:s}, 'trap_current':{:d} mA, 'lo':{:d} MHz, 'livetime':{:d} s, 'sweep_nb':{:d}"
+    print('DripLine Interface OK')
+
+    mantis_kwargs.update(config)
+    delay = -1
+    print('Mantis Interface OK')
+
+
+    #####################################
+    # Configure Harmonic Trap
+    #####################################
+
+    # Get the trap current
+    trap_current_str = trap_pype.Get("cell_heater_limit").Result().replace('"','').split(',')
+    trap_mA = int(float(trap_current_str[1]) * 1000)
+    print('Trap current ', trap_mA, ' mA')
+
+    # Turn Trap On or Off (according to user input)
+    if trap_state==1:
+        if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
+            return False
+        print('Trap ON ')
+        trap_state_str="On"
+    else:
+        if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+            return False
+        print('Trap OFF ')
+        trap_state_str="Off"
+
+    time.sleep(1)
+
+
+    #####################################
+    # Start acquisition sweeps
+    #####################################
+
+    # Loop over sweep number
+    for sweep_nb in sweep_nb_list:
+        print('Sweep number ', sweep_nb)
+
+        # Loop over frequencies
+        for freq_MHz in frequency_list:
+            # Set the frequency for the LO
+            print('LO frequency ', freq_MHz, ' MHz')
+            if lo_pype.Set("lo_cw_freq", freq_MHz).Result(orError=False) is None:
+                break
+            time.sleep(1)
+
+            print('Acquire data')
+            print(filename.format(trap_state_str, trap_mA, freq_MHz, livetime_sec, sweep_nb))
+            mantis_kwargs.update({"output":filename.format(trap_state_str, trap_mA, freq_MHz, livetime_sec, sweep_nb),
+                                  "description":description.format(trap_state_str, trap_mA, freq_MHz, livetime_sec, sweep_nb)})
+            lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
+
+            # After a successful acquisition, write down status on the tmp file
+            f = open(stat_file_name, 'w')
+            json.dump({'trap_mA': trap_mA, 'freq_MHz': freq_MHz,'sweep_nb': sweep_nb}, f)
+            f.close()
+            delay += 1
+            print('data acquired')
+            print(' ')
+            time.sleep(1)
+
+    # Turn off Trap
+    # Always turn off the trap at the end of a run!
+    if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+        return False
+    print('Trap OFF')
+
+    f = open(stat_file_name, 'w')
+    json.dump({'trap_mA': 0, 'freq_MHz': frequency_list_original[0],'sweep_nb': 1}, f)
+    f.close()
+
+    return True
+
+def sweep_freq_and_trapcurrent(config):
+    '''
+    '''
+    freq_MHz_initial = 100
+    stat_file_name = '/tmp/pypeline_script_count.json'
+    if not os.path.isfile(stat_file_name):
+        f = open(stat_file_name, 'w')
+        json.dump({'trap_mA': 2000}, f)
+        json.dump({'freq_MHz': freq_MHz_initial}, f)
+        f.close()
+    freq_MHz = json.load(open(stat_file_name))['freq_MHz']
+    trap_mA = json.load(open(stat_file_name))['trap_mA']
+    frequency_list = range(freq_MHz, 2000, 50)
+    trap_list = range(trap_mA, 0, -100)
+
+    ############
+    mantis_kwargs = {}
+    lo_pype = pypeline.DripInterface(config.pop('lo_pype'))
+    trap_pype = pypeline.DripInterface(config.pop('trap_pype'))
+    file_prefix = config.pop('data_prefix')
+    filename = file_prefix + 'lo_{:d}MHz_trap_{:d}mA.egg'
+    description = "'lo':{:d} MHz, 'trap_state':{:d} mA"
+
+    mantis_kwargs.update(config)
+    delay = -1
+
+
+    # Turn on Trap
+    if trap_pype.Set("cell_heater_output", "ON").Result(orError=False) is None:
+        return False
+
+
+    # Loop over frequencies
+    for freq_MHz in frequency_list:
+        # Set the frequency for the LO
+        print('LO frequency ', freq_MHz, ' MHz, in sequence ', frequency_list)
+        if lo_pype.Set("lo_cw_freq", freq_MHz).Result(orError=False) is None:
+            break
+        # Loop over trap currents
+        for trap_mA in trap_list:
+            # Set the trap current
+            print('Trap current ', trap_mA, ' mA, in sequence ', trap_list)
+            if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+                break
+
+            time.sleep(5)
+            print('Acquire data')
+            mantis_kwargs.update({"output":filename.format(freq_MHz, trap_mA),
+                                  "description":description.format(freq_MHz, trap_mA)})
+            lo_pype.RunMantis(**mantis_kwargs).Wait(timeout=60)
+            f = open(stat_file_name, 'w')
+            json.dump({'freq_MHz': freq_MHz, 'trap_mA': trap_mA}, f)
+            f.close()
+            delay += 1
+            time.sleep(5)
+
+    # Turn off Trap
+    if trap_pype.Set("cell_heater_output", "OFF").Result(orError=False) is None:
+        return False
+
+    f = open(stat_file_name, 'w')
+    json.dump({'freq_MHz': freq_MHz_initial, 'trap_mA': 0}, f)
+    f.close()
+
+
+    return True
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        configfile = open(sys.argv[1])
+        config = json.load(configfile)
+        sweep_freq_only(config)
+    else:
+        print("usage: $ ./sweep_rate_and_trap_study /path/to/config.json")
+        print("Make sure your JSON file contains the following fields:")
+        print("lo_pype, trap_pype, data_prefix, host, rate, duration, nb_sweeps and trap_state")
+

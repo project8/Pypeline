@@ -42,6 +42,8 @@ class take_data:
         self.num_sequencesVar = IntVar(value=num_sequences)
         self.sequence_spacingVar = DoubleVar(value=0)
         self.len_sequenceVar = DoubleVar()
+        self.mantis_serverVar = StringVar(value='')
+        self.mantis_portVar = IntVar()
         self.stateVar = StringVar(value='done')
         self.conf_filename = StringVar(value='')
         self.params = {}
@@ -112,6 +114,14 @@ class take_data:
         Entry(self.toplevel, textvariable=self.len_sequenceVar).grid(row=row,
                                                                      column=1)
         Label(self.toplevel, text='[ms]').grid(row=row, column=2, sticky='W')
+        row += 1
+        Label(self.toplevel, text='Server Host').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.mantis_serverVar).grid(row=row,
+                column=1)
+        row += 1
+        Label(self.toplevel, text='Port').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.mantis_portVar).grid(row=row,
+                column=1)
         row += 1
 
         Button(self.toplevel, text="Start Run", command=self.DoRun
@@ -219,10 +229,13 @@ class take_data:
             run_doc[channel].Update()
             run_doc[channel].Wait()
         run_doc._UpdateTo()
-        outfilename = '/data/{:s}_{:05d}_{:05d}.egg'.format(
-            self.FilenamePrefix(sequence_number),
-            run_doc['run_number'],
-            run_doc['sequence_number'])
+        type = self.run_typeVar.get()
+        tag = self.run_typeVar.get()
+        if not tag.endswith('/'):
+            tag = tag + '/'
+        outfilename = '/data/{:s}{:s}{:s}_{:05d}_{:05d}.egg'.format(
+                type, tag, self.FilenamePrefix(sequence_number),
+                run_doc['run_number'], run_doc['sequence_number'])
         print('outputting '+outfilename)
         run_descrip = ast.literal_eval(mantis_kwargs['description'])
         for (chan, val) in self.SequenceParams(sequence_number):

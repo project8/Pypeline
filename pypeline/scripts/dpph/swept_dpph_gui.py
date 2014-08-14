@@ -31,6 +31,7 @@ from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
 class _non_guiVar:
+
     def __init__(self, value=False):
         self.value = value
 
@@ -39,7 +40,6 @@ class _non_guiVar:
 
     def set(self, value):
         self.value = value
-
 
 class dpph_measurement:
     '''
@@ -137,6 +137,11 @@ class dpph_measurement:
               ).grid(row=row, column=2, columnspan=2, sticky='ew')
         Label(self.toplevel, text='[MHz]').grid(row=row, column=4, sticky='w')
         row += 1
+        
+        Label(self.toplevel, text='Filter Target Width').grid(row=row, column=0)
+        Entry(self.toplevel, textvariable=self.expected_width_Var
+              ).grid(row=row, column=1, sticky='ew')
+        row += 1
 
         #ch_options = ['xdata', 'ydata']
         #OptionMenu(self.toplevel, self.fit_channel_Var, *ch_options
@@ -165,6 +170,7 @@ class dpph_measurement:
         self.subfigure = self.figure.add_subplot(1, 1, 1)
         self.subfigure.plot([0], [0])
         self.subfigure.plot([0], [0])
+        self.subfigure.plot([0], [0])
         self.subfigure.set_xlabel('Freq [MHz]')
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.toplevel)
         self.canvas.show()
@@ -176,17 +182,25 @@ class dpph_measurement:
         tmp_power = self.powerVar.get()
         if self.set_power_BoolVar.get():
             tmp_power = False
-        sweep = _GetSweptVoltages(pype=self.pype,
+        while True:
+            sweep = _GetSweptVoltages(pype=self.pype,
                                   start_freq=self.start_freq_Var.get(),
                                   stop_freq=self.stop_freq_Var.get(),
                                   sweep_time=self.sweep_time_Var.get(),
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
+            self.sweep_result = sweep.copy()
+            freqdata = array(sweep['frequency_curve'])
+            magdata = sweep['amplitude_curve']
+            if type(magdata[0]) is unicode:
+                print('Warning: _GetSweptVoltages failed;')
+                print('magdata:')
+                print(magdata)
+                print('Acquiring data again...')
+            elif type(magdata[0]) is int:
+                break
         if not sweep['frequencies_confirmed']:
             showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
-        self.sweep_result = sweep.copy()
-        freqdata = sweep['frequency_curve']
-        magdata = sweep['amplitude_curve']
         magdata = magdata - mean(magdata)
         #ydata = sweep['y_curve']
         print('freq range is ', min(freqdata), ' to ', max(freqdata))
@@ -197,7 +211,7 @@ class dpph_measurement:
         line = self.subfigure.get_lines()[0]
         line.set_xdata(array(freqdata))
         line.set_ydata(array(magdata))
-        line.set_label('lockin output')
+        line.set_label('lockin output "X"')
         #line = self.subfigure.get_lines()[1]
         #line.set_xdata(array(freqdata))
         #line.set_ydata(array(ydata))
@@ -207,6 +221,8 @@ class dpph_measurement:
         self.figure.legends[0].draggable(True)
         self.canvas.draw()
         self.canvas.show()
+        print('Searching for resonance...')
+        self._FindResonance()
 
     def _FindResonance(self):
         '''
@@ -223,19 +239,9 @@ class dpph_measurement:
         fit = _FindFieldFFT(min_freq=self.start_search_freq_Var.get(),
                             max_freq=self.stop_search_freq_Var.get(),
                             freq_data=xdata,
-                            volts_data=ydata)
-        outline = self.subfigure.get_lines()[1]
-        factor = max(ydata) / max(fit['result'])
-        scaled_data = [val * factor for val in fit['result']]
-        scaled_data = scaled_data - mean(scaled_data)
-        outline.set_xdata(fit['freqs'])
-        outline.set_ydata(scaled_data)
-        outline.set_label('filter result')
-        self.figure.legends = []
-        self.figure.legend(*self.subfigure.get_legend_handles_labels())
-        self.figure.legends[0].draggable(True)
-        self.canvas.draw()
-        self.canvas.show()
+                            volts_data=ydata,
+                            width=self.expected_width_Var.get())
+        #compute and calibrate resonance
         res_freq = max(zip(fit['result'], fit['freqs']))[1]
         res_unct = fit['freqs'][1] - fit['freqs'][0]
         print('resonance found at:', res_freq, 'MHz')
@@ -247,6 +253,34 @@ class dpph_measurement:
         res_field_unct = freq_to_field * res_unct
         print('for a field of', res_field)
         print('field unct of', res_field_unct)
+        # update a line for the filter result
+        outline = self.subfigure.get_lines()[1]
+        factor = max(ydata) / max(fit['result'])
+        scaled_data = [val * factor for val in fit['result']]
+        scaled_data = scaled_data - mean(scaled_data)
+        outline.set_xdata(fit['freqs'])
+        outline.set_ydata(scaled_data)
+        outline.set_label('filter result')
+        # and a line showing the filter shape
+        filterline = self.subfigure.get_lines()[2]
+        filter_factor = max(ydata)/max(fit['filter'])
+        scaled_filter_data = [val * -1*filter_factor for val in fit['filter']]
+        scaled_filter_data = scaled_filter_data - mean(scaled_data)
+        print("len of result:", len(fit['result']))
+        print("len of filter:", len(scaled_filter_data))
+        shift = -1*abs(fit['result']).argmax()#list(fit['result']).index(max(abs(fit['result'])))
+        print("shift is:", shift)
+        scaled_filter_data = list(scaled_filter_data)[shift:]+list(scaled_filter_data)[:shift]
+        filterline.set_xdata(fit['freqs'])
+        filterline.set_ydata(array(scaled_filter_data))
+        filterline.set_label('filter shape')
+        print('filter shape done')
+        # then some legend stuff
+        self.figure.legends = []
+        self.figure.legend(*self.subfigure.get_legend_handles_labels())
+        self.figure.legends[0].draggable(True)
+        self.canvas.draw()
+        self.canvas.show()
         self.result_str_Var.set('{:.4E} +/- {:.1E} MHz \n({:.4E} +/- {:.1E} kG)'.format(
             res_freq, res_unct, res_field, res_field_unct))
         self.sweep_result.update({'res_freq': res_freq,
@@ -288,3 +322,6 @@ class dpph_measurement:
                        'cal_val': ' '.join([str(result['cal']), '+/-', str(result['cal_err']), result['cal_units']]),
                        'timestamp': datetime.utcnow()}
         self.pype.LogValue(sensor='dpph_field', **dpph_result)
+        print('dpph_result stored')
+
+
