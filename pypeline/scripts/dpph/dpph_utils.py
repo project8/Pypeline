@@ -84,9 +84,9 @@ def _GetSweptVoltages(pype, start_freq, stop_freq, sweep_time=60, power=-75, num
             sets.append(pype.Set('hf_sweeper_power', power))
         else:
             print('*' * 60, '\ngetting values from sweeper', datetime.utcnow())
-            start_freq = float(pype.Get('hf_sweep_start').Wait().Result())/10**6
-            stop_freq = float(pype.Get('hf_sweep_stop').Wait().Result())/10**6
-            sweep_time = float(pype.Get('hf_sweep_time').Wait().Result())
+            start_freq = float(pype.Get('hf_sweep_start').Wait().Result(orError=False))/10**6
+            stop_freq = float(pype.Get('hf_sweep_stop').Wait().Result(orError=False))/10**6
+            sweep_time = float(pype.Get('hf_sweep_time').Wait().Result(orError=False))
         for i in range(100):
             if not sum([set.Waiting() for set in sets]):
                 break

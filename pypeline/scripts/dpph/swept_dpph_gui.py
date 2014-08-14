@@ -30,8 +30,8 @@ from matplotlib.figure import Figure
 from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
+class _non_guiVar:
 
-class __non_guiVar:
     def __init__(self, value=False):
         self.value = value
 
@@ -53,20 +53,33 @@ class dpph_measurement:
         self.toplevel = toplevel
         self.sweep_result = {}
 
-        self.powerVar = DoubleVar(value=20) #dBm
-        self.set_power_BoolVar = BooleanVar(value=True)
-        self.start_freq_Var = DoubleVar(value=26000) #MHz
-        self.stop_freq_Var = DoubleVar(value=26500) #MHz
-        self.start_search_freq_Var = DoubleVar(value=26200) #MHz
-        self.stop_search_freq_Var = DoubleVar(value=26400) #MHz
-        self.expected_width_Var = DoubleVar(value=3) #????
-        self.sweep_time_Var = DoubleVar(value=30) #s
-        self.num_points_Var = IntVar(value=400) #ms
-        self.spanVar = DoubleVar(value=100)
-        self.stepVar = DoubleVar(value=4)
+        if not toplevel:
+            DV = _non_guiVar
+            BV = _non_guiVar
+            IV = _non_guiVar
+            SV = _non_guiVar
+        else:
+            DV = DoubleVar
+            BV = BooleanVar
+            IV = IntVar
+            SV = StringVar
+        self.powerVar = DV(value=-75) #dBm
+        self.set_power_BoolVar = BV(value=True)
+        self.start_freq_Var = DV(value=26500) #MHz
+        self.stop_freq_Var = DV(value=26950) #MHz
+        self.start_search_freq_Var = DV(value=26500) #MHz
+        self.stop_search_freq_Var = DV(value=26950) #MHz
+        self.expected_width_Var = DV(value=3) #???
+        self.sweep_time_Var = DV(value=30) #s
+        self.num_points_Var = IV(value=400) #ms
+        self.spanVar = DV(value=100)
+        self.stepVar = DV(value=4)
         #self.fit_channel_Var = StringVar(value='xdata')
-        self.result_str_Var = StringVar(value='')
-        self._BuildGui()
+        self.result_str_Var = SV(value='')
+            
+
+        if self.toplevel:
+            self._BuildGui()
 
     def _BuildGui(self):
         '''
@@ -178,52 +191,45 @@ class dpph_measurement:
                                   power=tmp_power,
                                   num_points=self.num_points_Var.get())
             self.sweep_result = sweep.copy()
-            freqdata = array(sweep['frequency_curve'])
-            magdata = sweep['amplitude_curve']
-            if type(magdata[0]) is unicode:
+            self.freqdata = array(sweep['frequency_curve'])
+            self.magdata = sweep['amplitude_curve']
+            if type(self.magdata[0]) is unicode:
                 print('Warning: _GetSweptVoltages failed;')
                 print('magdata:')
-                print(magdata)
+                print(self.magdata)
                 print('Acquiring data again...')
-            elif type(magdata[0]) is int:
+            elif type(self.magdata[0]) is int:
                 break
-        if not sweep['frequencies_confirmed']:
+        if (not sweep['frequencies_confirmed'] and self.toplevel):
             showwarning('Warning', 'Communication with lockin amp failed. Frequencies data may be wrong')
-        magdata = magdata - mean(magdata)
-        #ydata = sweep['y_curve']
-        print('freq range is ', min(freqdata), ' to ', max(freqdata))
-        #xdata = sweep['x_curve']
-        y_del = max((max(magdata) - min(magdata)) * .05, 1)
-        self.subfigure.set_xlim(left=freqdata[0], right=freqdata[-1])
-        self.subfigure.set_ylim(bottom=(min(magdata) - y_del), top=(max(magdata) + y_del))
-        line = self.subfigure.get_lines()[0]
-        line.set_xdata(array(freqdata))
-        line.set_ydata(array(magdata))
-        line.set_label('lockin output "X"')
-        #line = self.subfigure.get_lines()[1]
-        #line.set_xdata(array(freqdata))
-        #line.set_ydata(array(ydata))
-        #line.set_label('y output')
-        self.figure.legends = []
-        self.figure.legend(*self.subfigure.get_legend_handles_labels())
-        self.figure.legends[0].draggable(True)
-        self.canvas.draw()
-        self.canvas.show()
+        self.magdata = self.magdata - mean(self.magdata)
+        print('freq range is ', min(self.freqdata), ' to ', max(self.freqdata))
+        y_del = max((max(self.magdata) - min(self.magdata)) * .05, 1)
+        if self.toplevel:
+            self.subfigure.set_xlim(left=self.freqdata[0], right=self.freqdata[-1])
+            self.subfigure.set_ylim(bottom=(min(self.magdata) - y_del), top=(max(self.magdata) + y_del))
+            line = self.subfigure.get_lines()[0]
+            line.set_xdata(array(self.freqdata))
+            line.set_ydata(array(self.magdata))
+            line.set_label('lockin output "X"')
+            self.figure.legends = []
+            self.figure.legend(*self.subfigure.get_legend_handles_labels())
+            self.figure.legends[0].draggable(True)
+            self.canvas.draw()
+            self.canvas.show()
         print('Searching for resonance...')
         self._FindResonance()
 
     def _FindResonance(self):
         '''
         '''
-        #if self.fit_channel_Var.get() == 'xdata':
-        #    line = self.subfigure.get_lines()[0]
-        #elif self.fit_channel_Var.get() == 'ydata':
-        #    line = self.subfigure.get_lines()[1]
-        line = self.subfigure.get_lines()[0]
-        #else:
-        #    raise ValueError('not a valid dataset selection')
-        xdata = line.get_xdata()
-        ydata = line.get_ydata()
+        #line = self.subfigure.get_lines()[0]
+        #xdata = line.get_xdata()
+        #ydata = line.get_ydata()
+
+        xdata = array(self.freqdata)
+        ydata = array(self.magdata)
+
         fit = _FindFieldFFT(min_freq=self.start_search_freq_Var.get(),
                             max_freq=self.stop_search_freq_Var.get(),
                             freq_data=xdata,
@@ -241,34 +247,37 @@ class dpph_measurement:
         res_field_unct = freq_to_field * res_unct
         print('for a field of', res_field)
         print('field unct of', res_field_unct)
+        
+        if self.toplevel:
         # update a line for the filter result
-        outline = self.subfigure.get_lines()[1]
-        factor = max(ydata) / max(fit['result'])
-        scaled_data = [val * factor for val in fit['result']]
-        scaled_data = scaled_data - mean(scaled_data)
-        outline.set_xdata(fit['freqs'])
-        outline.set_ydata(scaled_data)
-        outline.set_label('filter result')
-        # and a line showing the filter shape
-        filterline = self.subfigure.get_lines()[2]
-        filter_factor = max(ydata)/max(fit['filter'])
-        scaled_filter_data = [val * -1*filter_factor for val in fit['filter']]
-        scaled_filter_data = scaled_filter_data - mean(scaled_data)
-        print("len of result:", len(fit['result']))
-        print("len of filter:", len(scaled_filter_data))
-        shift = -1*abs(fit['result']).argmax()#list(fit['result']).index(max(abs(fit['result'])))
-        print("shift is:", shift)
-        scaled_filter_data = list(scaled_filter_data)[shift:]+list(scaled_filter_data)[:shift]
-        filterline.set_xdata(fit['freqs'])
-        filterline.set_ydata(array(scaled_filter_data))
-        filterline.set_label('filter shape')
-        print('filter shape done')
-        # then some legend stuff
-        self.figure.legends = []
-        self.figure.legend(*self.subfigure.get_legend_handles_labels())
-        self.figure.legends[0].draggable(True)
-        self.canvas.draw()
-        self.canvas.show()
+            outline = self.subfigure.get_lines()[1]
+            factor = max(ydata) / max(fit['result'])
+            scaled_data = [val * factor for val in fit['result']]
+            scaled_data = scaled_data - mean(scaled_data)
+            outline.set_xdata(fit['freqs'])
+            outline.set_ydata(scaled_data)
+            outline.set_label('filter result')
+            # and a line showing the filter shape
+            filterline = self.subfigure.get_lines()[2]
+            filter_factor = max(ydata)/max(fit['filter'])
+            scaled_filter_data = [val * -1*filter_factor for val in fit['filter']]
+            scaled_filter_data = scaled_filter_data - mean(scaled_data)
+            print("len of result:", len(fit['result']))
+            print("len of filter:", len(scaled_filter_data))
+            shift = -1*abs(fit['result']).argmax()#list(fit['result']).index(max(abs(fit['result'])))
+            print("shift is:", shift)
+            scaled_filter_data = list(scaled_filter_data)[shift:]+list(scaled_filter_data)[:shift]
+            filterline.set_xdata(fit['freqs'])
+            filterline.set_ydata(array(scaled_filter_data))
+            filterline.set_label('filter shape')
+            print('filter shape done')
+            # then some legend stuff
+            self.figure.legends = []
+            self.figure.legend(*self.subfigure.get_legend_handles_labels())
+            self.figure.legends[0].draggable(True)
+            self.canvas.draw()
+            self.canvas.show()
+
         self.result_str_Var.set('{:.4E} +/- {:.1E} MHz \n({:.4E} +/- {:.1E} kG)'.format(
             res_freq, res_unct, res_field, res_field_unct))
         self.sweep_result.update({'res_freq': res_freq,
