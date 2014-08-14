@@ -30,7 +30,7 @@ from matplotlib.figure import Figure
 from .dpph_utils import _GetSweptVoltages, _FindFieldFFT
 
 
-class __non_guiVar:
+class _non_guiVar:
     def __init__(self, value=False):
         self.value = value
 
@@ -53,20 +53,32 @@ class dpph_measurement:
         self.toplevel = toplevel
         self.sweep_result = {}
 
-        self.powerVar = DoubleVar(value=-75) #dBm
-        self.set_power_BoolVar = BooleanVar(value=True)
-        self.start_freq_Var = DoubleVar(value=25000) #MHz
-        self.stop_freq_Var = DoubleVar(value=26500) #MHz
-        self.start_search_freq_Var = DoubleVar(value=25000) #MHz
-        self.stop_search_freq_Var = DoubleVar(value=26500) #MHz
-        self.sweep_time_Var = DoubleVar(value=60) #s
-        self.num_points_Var = IntVar(value=360) #ms
-        self.spanVar = DoubleVar(value=100)
-        self.stepVar = DoubleVar(value=4)
+        if not toplevel:
+            DV = _non_guiVar
+            BV = _non_guiVar
+            IV = _non_guiVar
+            SV = _non_guiVar
+        else:
+            DV = DoubleVar
+            BV = BooleanVar
+            IV = IntVar
+            SV = StringVar
+        self.powerVar = DV(value=-75) #dBm
+        self.set_power_BoolVar = BV(value=True)
+        self.start_freq_Var = DV(value=25000) #MHz
+        self.stop_freq_Var = DV(value=26500) #MHz
+        self.start_search_freq_Var = DV(value=25000) #MHz
+        self.stop_search_freq_Var = DV(value=26500) #MHz
+        self.sweep_time_Var = DV(value=60) #s
+        self.num_points_Var = IV(value=360) #ms
+        self.spanVar = DV(value=100)
+        self.stepVar = DV(value=4)
         #self.fit_channel_Var = StringVar(value='xdata')
-        self.result_str_Var = StringVar(value='')
+        self.result_str_Var = SV(value='')
+            
 
-        self._BuildGui()
+        if self.toplevel:
+            self._BuildGui()
 
     def _BuildGui(self):
         '''
